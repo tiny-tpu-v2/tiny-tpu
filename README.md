@@ -1,0 +1,1 @@
+make sure u use arm64 cocotb in conda, iverlog to path and uh yeah. 

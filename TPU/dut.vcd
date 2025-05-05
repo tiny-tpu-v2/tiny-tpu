@@ -1,0 +1,32 @@
+$date
+	Mon May  5 01:49:21 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ns
+$end
+$scope module dut $end
+$var wire 1 ! clk $end
+$var wire 1 " reset $end
+$var reg 8 # count [7:0] $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 #
+0"
+1!
+$end
+#5000
+0!
+#10000
+b1 #
+1!
+#15000
+0!
+#20000
+b10 #
+1!
+#20001
