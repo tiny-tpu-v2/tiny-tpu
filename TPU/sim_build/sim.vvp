@@ -8,41 +8,41 @@
 :vpi_module "/Users/evanlin/opt/anaconda3/envs/cocotb_arm64/lib/ivl/v2005_math.vpi";
 :vpi_module "/Users/evanlin/opt/anaconda3/envs/cocotb_arm64/lib/ivl/va_math.vpi";
 :vpi_module "/Users/evanlin/opt/anaconda3/envs/cocotb_arm64/lib/ivl/v2009.vpi";
-S_0x7fd7130059a0 .scope package, "$unit" "$unit" 2 1;
+S_0x7f97d1906a30 .scope package, "$unit" "$unit" 2 1;
  .timescale 0 0;
-S_0x7fd713005b10 .scope module, "dut" "dut" 3 4;
+S_0x7f97d1906ba0 .scope module, "dut" "dut" 3 4;
  .timescale -9 -9;
     .port_info 0 /INPUT 1 "clk";
     .port_info 1 /INPUT 1 "reset";
     .port_info 2 /OUTPUT 8 "count";
-o0x7fd718040008 .functor BUFZ 1, C4<z>; HiZ drive
-v0x7fd713007250_0 .net "clk", 0 0, o0x7fd718040008;  0 drivers
-v0x7fd713019380_0 .var "count", 7 0;
-o0x7fd718040068 .functor BUFZ 1, C4<z>; HiZ drive
-v0x7fd713019420_0 .net "reset", 0 0, o0x7fd718040068;  0 drivers
-E_0x7fd713009380 .event posedge, v0x7fd713019420_0, v0x7fd713007250_0;
-S_0x7fd7130093b0 .scope module, "dump" "dump" 4 4;
+o0x7f97c8030008 .functor BUFZ 1, C4<z>; HiZ drive
+v0x7f97d1908cd0_0 .net "clk", 0 0, o0x7f97c8030008;  0 drivers
+v0x7f97d1918b60_0 .var "count", 7 0;
+o0x7f97c8030068 .functor BUFZ 1, C4<z>; HiZ drive
+v0x7f97d1918c00_0 .net "reset", 0 0, o0x7f97c8030068;  0 drivers
+E_0x7f97d1907690 .event posedge, v0x7f97d1918c00_0, v0x7f97d1908cd0_0;
+S_0x7f97d1905360 .scope module, "dump" "dump" 4 4;
  .timescale -9 -9;
-    .scope S_0x7fd713005b10;
+    .scope S_0x7f97d1906ba0;
 T_0 ;
-    %wait E_0x7fd713009380;
-    %load/vec4 v0x7fd713019420_0;
+    %wait E_0x7f97d1907690;
+    %load/vec4 v0x7f97d1918c00_0;
     %flag_set/vec4 8;
     %jmp/0xz  T_0.0, 8;
     %pushi/vec4 0, 0, 8;
-    %assign/vec4 v0x7fd713019380_0, 0;
+    %assign/vec4 v0x7f97d1918b60_0, 0;
     %jmp T_0.1;
 T_0.0 ;
-    %load/vec4 v0x7fd713019380_0;
+    %load/vec4 v0x7f97d1918b60_0;
     %addi 1, 0, 8;
-    %assign/vec4 v0x7fd713019380_0, 0;
+    %assign/vec4 v0x7f97d1918b60_0, 0;
 T_0.1 ;
     %jmp T_0;
     .thread T_0;
-    .scope S_0x7fd7130093b0;
+    .scope S_0x7f97d1905360;
 T_1 ;
     %vpi_call/w 4 7 "$dumpfile", "dut.vcd" {0 0 0};
-    %vpi_call/w 4 9 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x7fd713005b10 {0 0 0};
+    %vpi_call/w 4 9 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x7f97d1906ba0 {0 0 0};
     %delay 1, 0;
     %end;
     .thread T_1;
