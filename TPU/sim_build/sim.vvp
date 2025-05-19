@@ -8,78 +8,45 @@
 :vpi_module "/Users/evanlin/opt/anaconda3/envs/cocotb_arm64/lib/ivl/v2005_math.vpi";
 :vpi_module "/Users/evanlin/opt/anaconda3/envs/cocotb_arm64/lib/ivl/va_math.vpi";
 :vpi_module "/Users/evanlin/opt/anaconda3/envs/cocotb_arm64/lib/ivl/v2009.vpi";
-S_0x7f9826908a60 .scope package, "$unit" "$unit" 2 1;
+S_0x7fca5f908ac0 .scope package, "$unit" "$unit" 2 1;
  .timescale 0 0;
-S_0x7f9826908bd0 .scope module, "pe" "pe" 3 4;
+S_0x7fca5f90c360 .scope module, "test" "test" 3 4;
  .timescale -9 -9;
     .port_info 0 /INPUT 1 "clk";
     .port_info 1 /INPUT 1 "reset";
-    .port_info 2 /INPUT 1 "valid";
-    .port_info 3 /INPUT 1 "load_weight";
-    .port_info 4 /INPUT 32 "a_in";
-    .port_info 5 /INPUT 32 "weight";
-    .port_info 6 /INPUT 32 "acc_in";
-    .port_info 7 /OUTPUT 32 "a_out";
-    .port_info 8 /OUTPUT 32 "acc_out";
-o0x7f9818030008 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
-v0x7f982690aa30_0 .net "a_in", 31 0, o0x7f9818030008;  0 drivers
-v0x7f982691cb30_0 .var "a_out", 31 0;
-o0x7f9818030068 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
-v0x7f982691cbd0_0 .net "acc_in", 31 0, o0x7f9818030068;  0 drivers
-v0x7f982691cc80_0 .var "acc_out", 31 0;
-o0x7f98180300c8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x7f982691cd30_0 .net "clk", 0 0, o0x7f98180300c8;  0 drivers
-o0x7f98180300f8 .functor BUFZ 1, C4<z>; HiZ drive
-v0x7f982691ce10_0 .net "load_weight", 0 0, o0x7f98180300f8;  0 drivers
-o0x7f9818030128 .functor BUFZ 1, C4<z>; HiZ drive
-v0x7f982691ceb0_0 .net "reset", 0 0, o0x7f9818030128;  0 drivers
-o0x7f9818030158 .functor BUFZ 1, C4<z>; HiZ drive
-v0x7f982691cf50_0 .net "valid", 0 0, o0x7f9818030158;  0 drivers
-o0x7f9818030188 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
-v0x7f982691cff0_0 .net "weight", 31 0, o0x7f9818030188;  0 drivers
-v0x7f982691d100_0 .var "weight_reg", 31 0;
-E_0x7f982690b3f0 .event posedge, v0x7f982691cd30_0;
-S_0x7f982690a8c0 .scope module, "dump" "dump" 4 1;
+    .port_info 2 /INPUT 32 "in_test";
+    .port_info 3 /OUTPUT 32 "out_test";
+L_0x7fca5f91c8b0 .functor BUFZ 32, v0x7fca5f91c780_0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+o0x7fca40030008 .functor BUFZ 1, C4<z>; HiZ drive
+v0x7fca5f90d080_0 .net "clk", 0 0, o0x7fca40030008;  0 drivers
+o0x7fca40030038 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v0x7fca5f91c590_0 .net "in_test", 31 0, o0x7fca40030038;  0 drivers
+v0x7fca5f91c630_0 .net "out_test", 31 0, L_0x7fca5f91c8b0;  1 drivers
+o0x7fca40030098 .functor BUFZ 1, C4<z>; HiZ drive
+v0x7fca5f91c6e0_0 .net "reset", 0 0, o0x7fca40030098;  0 drivers
+v0x7fca5f91c780_0 .var "test_reg", 31 0;
+E_0x7fca5f90b450 .event posedge, v0x7fca5f90d080_0;
+S_0x7fca5f908c30 .scope module, "dump" "dump" 4 1;
  .timescale -9 -9;
-    .scope S_0x7f9826908bd0;
+    .scope S_0x7fca5f90c360;
 T_0 ;
-    %wait E_0x7f982690b3f0;
-    %load/vec4 v0x7f982691ceb0_0;
+    %wait E_0x7fca5f90b450;
+    %load/vec4 v0x7fca5f91c6e0_0;
     %flag_set/vec4 8;
     %jmp/0xz  T_0.0, 8;
     %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0x7f982691cb30_0, 0;
-    %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0x7f982691cc80_0, 0;
-    %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0x7f982691d100_0, 0;
+    %assign/vec4 v0x7fca5f91c780_0, 0;
     %jmp T_0.1;
 T_0.0 ;
-    %load/vec4 v0x7f982691ce10_0;
-    %flag_set/vec4 8;
-    %jmp/0xz  T_0.2, 8;
-    %load/vec4 v0x7f982691cff0_0;
-    %assign/vec4 v0x7f982691d100_0, 0;
-T_0.2 ;
-    %load/vec4 v0x7f982691cf50_0;
-    %flag_set/vec4 8;
-    %jmp/0xz  T_0.4, 8;
-    %load/vec4 v0x7f982691cbd0_0;
-    %load/vec4 v0x7f982690aa30_0;
-    %load/vec4 v0x7f982691cff0_0;
-    %mul;
-    %add;
-    %assign/vec4 v0x7f982691cc80_0, 0;
-    %load/vec4 v0x7f982690aa30_0;
-    %assign/vec4 v0x7f982691cb30_0, 0;
-T_0.4 ;
+    %load/vec4 v0x7fca5f91c590_0;
+    %assign/vec4 v0x7fca5f91c780_0, 0;
 T_0.1 ;
     %jmp T_0;
     .thread T_0;
-    .scope S_0x7f982690a8c0;
+    .scope S_0x7fca5f908c30;
 T_1 ;
-    %vpi_call/w 4 4 "$dumpfile", "pe.vcd" {0 0 0};
-    %vpi_call/w 4 6 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x7f9826908bd0 {0 0 0};
+    %vpi_call/w 4 4 "$dumpfile", "test.vcd" {0 0 0};
+    %vpi_call/w 4 6 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x7fca5f90c360 {0 0 0};
     %delay 1, 0;
     %end;
     .thread T_1;
@@ -88,5 +55,5 @@ T_1 ;
     "N/A";
     "<interactive>";
     "-";
-    "src/pe.sv";
-    "test/dump_pe.sv";
+    "src/test.sv";
+    "test/dump_test.sv";
