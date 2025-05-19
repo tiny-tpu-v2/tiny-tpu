@@ -39,6 +39,7 @@ test_test: $(SIM_BUILD_DIR)
 
 
 # Create simulation build directory
+#dasdasdsadadsad
 $(SIM_BUILD_DIR):
 	mkdir -p $(SIM_BUILD_DIR)
 
