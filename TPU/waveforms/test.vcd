@@ -1,0 +1,36 @@
+$date
+	Mon May 19 17:00:35 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ns
+$end
+$scope module test $end
+$var wire 1 ! clk $end
+$var wire 32 " in_test [31:0] $end
+$var wire 32 # out_test [31:0] $end
+$var wire 1 $ reset $end
+$var reg 32 % test_reg [31:0] $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 %
+0$
+b0 #
+b100000 "
+1!
+$end
+#5000
+0!
+#10000
+b100000 #
+b100000 %
+1!
+#15000
+0!
+#20000
+1!
+#20001

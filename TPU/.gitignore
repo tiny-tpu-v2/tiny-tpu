@@ -1,8 +1,6 @@
 # Build and simulation artifacts
 sim_build/
 *.vvp
-*.vcd
-# *.gtkw
 *.xml
 *.log
 *.xml
