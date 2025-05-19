@@ -1,72 +1,60 @@
-# Simulation parameters
-SIM ?= icarus
-TOPLEVEL_LANG ?= verilog
+#================DO NOT MODIFY BELOW===================== Compiler and simulator settings
+IVERILOG = iverilog
+VVP = vvp
+COCOTB_PREFIX = $(shell cocotb-config --prefix)
 
-# Use the correct file path and module name
-VERILOG_SOURCES += $(PWD)/divider.sv
 
-# Enable SystemVerilog support for Icarus Verilog
-IVERILOG_ARGS += -g2012
+COCOTB_LIBS = $(COCOTB_PREFIX)/cocotb/libs
 
-test_pe:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog -o sim_build/sim.vvp -s pe -s dump -g2012 src/pe.sv tests/dump_pe.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_pe vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
+SIM_BUILD_DIR = sim_build
+SIM_VVP = $(SIM_BUILD_DIR)/sim.vvp
+
+# Environment variables
+export COCOTB_REDUCED_LOG_FMT=1
+export LIBPYTHON_LOC=$(shell cocotb-config --libpython)
+export PYTHONPATH := test:$(PYTHONPATH)
+
+#=============== MODIFY BELOW ======================
+# IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
+SOURCES = src/pe.sv  src/leaky_relu.sv
+
+# MODIFY 1) variable next to -s 
+# MODIFY 2) variable next to $(SOURCES)
+# MODIFY 3) variable right of MODULE=
+# MODIFY 4) file name next to mv (i.e. pe.vcd)
+
+
+# Test targets
+test_pe: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s pe -s dump -g2012 $(SOURCES) test/dump_pe.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_pe $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
+	mv pe.vcd waveforms/ 2>/dev/null || true
 
-test_systolic:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog -o sim_build/sim.vvp -s systolic -s dump -g2012 src/pe.sv src/systolic.sv tests/dump_systolic.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_systolic vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
+test_leaky_relu: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s leaky_relu -s dump -g2012 $(SOURCES) test/dump_leaky_relu.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_leaky_relu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
+	mv test.vcd waveforms/ 2>/dev/null || true
 
-test_leaky_relu:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog $(IVERILOG_ARGS) -o sim_build/sim.vvp -s leaky_relu -s dump src/leaky_relu.sv tests/dump_leaky_relu.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_leaky_relu vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
-	! grep failure results.xml
 
-test_layer1:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog $(IVERILOG_ARGS) -o sim_build/sim.vvp -s layer1 -s dump src/pe.sv src/systolic.sv src/leaky_relu.sv src/layer1.sv tests/dump_layer1.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_layer1 vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
-	! grep failure results.xml
+# ============ DO NOT MODIFY BELOW THIS LINE ==============
 
-test_exp:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog $(IVERILOG_ARGS) -o sim_build/sim.vvp -s exp -s dump src/exp.sv tests/dump_exp.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_exp vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
-	! grep failure results.xml
+# Create simulation build directory and waveforms directory
+$(SIM_BUILD_DIR):
+	mkdir -p $(SIM_BUILD_DIR)
+	mkdir -p waveforms
 
-test_max:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog $(IVERILOG_ARGS) -o sim_build/sim.vvp -s max -s dump src/fifo.sv src/max.sv tests/dump_max.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_max vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
-	! grep failure results.xml
+# Waveform viewing
+show_%: waveforms/%.vcd waveforms/%.gtkw
+	gtkwave $^
 
-test_subtract:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog $(IVERILOG_ARGS) -o sim_build/sim.vvp -s subtract -s dump src/subtract.sv tests/dump_subtract.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_subtract vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
-	! grep failure results.xml
+# Linting
+lint:
+	verible-verilog-lint src/*sv --rules_config verible.rules
 
-test_softmax:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog $(IVERILOG_ARGS) -o sim_build/sim.vvp -s softmax -s dump src/fifo.sv src/exp.sv src/max.sv src/divider.sv src/softmax.sv tests/dump_softmax.sv
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=tests.test_softmax vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
-	! grep failure results.xml
+# Cleanup
+clean:
+	rm -rf waveforms/*vcd $(SIM_BUILD_DIR) test/__pycache__
 
-# Other targets
-clean::
-	rm -rf __pycache__
-	rm -rf sim_build 
-	rm -f results.xml
-	rm -f pe.vcd
+.PHONY: clean

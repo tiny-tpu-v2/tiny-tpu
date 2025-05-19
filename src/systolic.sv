@@ -43,6 +43,7 @@ module systolic (
     logic [15:0] psum_23;
 
     logic [15:0] zero_wire;
+    logic [15:0] test_reg;
     assign zero_wire = 16'b0;
 
     pe pe11 (

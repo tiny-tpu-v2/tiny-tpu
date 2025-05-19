@@ -55,6 +55,7 @@ async def test_systolic_array(dut):
     dut.input_11.value = 5
     dut.input_21.value = 0
     dut.input_31.value = 0
+    dut.test_reg.value = 3
 
     await Timer(10, units="ns")
     dut.input_11.value = 0
