@@ -9,19 +9,12 @@ module test (
 ); 
 
 
-typedef enum logic [1:0] {
-    IDLE = 2'b00,
-    WORK = 2'b01,
-} state_t;
-
-state_t current_state, next_state; 
 
 reg [31:0] test_reg; 
 
 always @(posedge clk) begin
     if (reset) begin
         test_reg <= 32'h00000000;
-        current_state <= IDLE; 
     end else begin
         test_reg <= in_test; 
         
