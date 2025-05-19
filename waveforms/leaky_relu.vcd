@@ -1,0 +1,65 @@
+$date
+	Sun May 18 13:30:04 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module leaky_relu $end
+$var wire 1 ! clk $end
+$var wire 16 " input_in [15:0] $end
+$var wire 16 # leak_factor [15:0] $end
+$var wire 1 $ rst $end
+$var reg 16 % out [15:0] $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+bx %
+z$
+bz #
+bz "
+1!
+$end
+#5000
+0!
+#10000
+b0 %
+1!
+b0 #
+b0 "
+1$
+#15000
+0!
+#20000
+b1010 %
+1!
+b10 #
+b1010 "
+0$
+#25000
+0!
+#30000
+b101 %
+1!
+b101 "
+#35000
+0!
+#40000
+b1111111111101100 %
+1!
+b1111111111101100 "
+#45000
+0!
+#50000
+b0 %
+1!
+b0 "
+#55000
+0!
+#60001

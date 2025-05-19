@@ -1,0 +1,66 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Mon May 19 17:32:05 2025
+[*]
+[dumpfile] "/Users/suryasure/projects/apex/waveforms/layer1.vcd"
+[dumpfile_mtime] "Mon May 19 17:31:22 2025"
+[dumpfile_size] 7610
+[savefile] "/Users/suryasure/projects/apex/waveforms/layer1.gtkw"
+[timestart] 0
+[size] 1344 600
+[pos] -1 -1
+*-15.300000 6400 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[sst_width] 255
+[signals_width] 185
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@421
+layer1.clk
+layer1.input_11[15:0]
+layer1.input_21[15:0]
+layer1.load_weights
+layer1.out_31[15:0]
+layer1.out_31_preact[15:0]
+layer1.out_32[15:0]
+layer1.out_32_preact[15:0]
+layer1.out_33[15:0]
+layer1.out_33_preact[15:0]
+layer1.rst
+layer1.start
+layer1.weight_11[15:0]
+layer1.weight_12[15:0]
+layer1.weight_13[15:0]
+layer1.weight_21[15:0]
+layer1.weight_22[15:0]
+layer1.weight_23[15:0]
+layer1.weight_31[15:0]
+layer1.weight_32[15:0]
+layer1.weight_33[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

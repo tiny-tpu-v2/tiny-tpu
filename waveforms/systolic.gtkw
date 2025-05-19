@@ -1,0 +1,54 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sun May 18 15:56:18 2025
+[*]
+[dumpfile] "/Users/suryasure/projects/apex/waveforms/systolic.vcd"
+[dumpfile_mtime] "Sun May 18 15:43:05 2025"
+[dumpfile_size] 6216
+[savefile] "/Users/suryasure/projects/apex/waveforms/systolic.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-15.600000 60000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[sst_width] 255
+[signals_width] 177
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@420
+systolic.clk
+systolic.done
+systolic.input_11[15:0]
+systolic.input_11_out[15:0]
+systolic.input_12_out[15:0]
+systolic.input_21[15:0]
+systolic.input_21_out[15:0]
+systolic.input_22_out[15:0]
+systolic.input_31[15:0]
+systolic.input_31_out[15:0]
+systolic.input_32_out[15:0]
+systolic.load_weights
+systolic.out_31[15:0]
+systolic.out_32[15:0]
+systolic.out_33[15:0]
+systolic.psum_11[15:0]
+systolic.psum_12[15:0]
+systolic.psum_13[15:0]
+@421
+systolic.psum_21[15:0]
+@420
+systolic.psum_22[15:0]
+systolic.psum_23[15:0]
+systolic.rst
+systolic.start
+systolic.weight_11[15:0]
+systolic.weight_12[15:0]
+systolic.weight_13[15:0]
+systolic.weight_21[15:0]
+systolic.weight_22[15:0]
+systolic.weight_23[15:0]
+systolic.weight_31[15:0]
+systolic.weight_32[15:0]
+systolic.weight_33[15:0]
+systolic.zero_wire[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

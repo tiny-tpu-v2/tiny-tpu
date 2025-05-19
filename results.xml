@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1747676476" />
+    <testcase name="test_layer1" classname="tests.test_layer1" file="/Users/suryasure/projects/apex/tests/test_layer1.py" lineno="8" time="0.0016751289367675781" sim_time_ns="180.001" ratio_time="107455.01199886137" />
+  </testsuite>
+</testsuites>

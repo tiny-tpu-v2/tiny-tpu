@@ -1,0 +1,95 @@
+$date
+	Sat May 17 09:24:36 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module pe $end
+$var wire 1 ! clk $end
+$var wire 16 " input_in [15:0] $end
+$var wire 16 # load_weight [15:0] $end
+$var wire 16 $ psum_in [15:0] $end
+$var wire 1 % rst $end
+$var wire 1 & start $end
+$var wire 16 ' weight [15:0] $end
+$var reg 1 ( done $end
+$var reg 16 ) input_out [15:0] $end
+$var reg 16 * psum_out [15:0] $end
+$var reg 16 + weight_reg [15:0] $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+bx +
+bx *
+bx )
+x(
+bz '
+z&
+z%
+bz $
+bz #
+bz "
+1!
+$end
+#5000
+0!
+#10000
+b0 +
+0(
+b0 *
+b0 )
+1!
+b0 $
+b0 '
+b0 "
+0&
+b0 #
+1%
+#15000
+0!
+#20000
+b1010 +
+1!
+b1010 '
+b1 #
+0%
+#25000
+0!
+#30000
+1(
+b110100 *
+b101 )
+1!
+1&
+b10 $
+b101 "
+b0 #
+#35000
+0!
+#40000
+1!
+0&
+#45000
+0!
+#50000
+b100010 *
+b11 )
+1!
+1&
+b100 $
+b11 "
+#55000
+0!
+#60000
+1!
+0&
+#65000
+0!
+#70001
