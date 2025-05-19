@@ -1,30 +1,57 @@
-SOURCES = src/dut.sv
-SEED = 1
+# Compiler and simulator settings
+IVERILOG = iverilog
+VVP = vvp
+COCOTB_PREFIX = $(shell cocotb-config --prefix)
+COCOTB_LIBS = $(COCOTB_PREFIX)/cocotb/libs
 
-# COCOTB variables
+SIM_BUILD_DIR = sim_build
+SIM_VVP = $(SIM_BUILD_DIR)/sim.vvp
+
+#========================================================
+
+# Source files and test files (MODIFY THIS)
+SOURCES = src/pe.sv src/systolic_array.sv src/test.sv
+
+#========================================================
+
+# Environment variables
 export COCOTB_REDUCED_LOG_FMT=1
-export PYTHONPATH := test:$(PYTHONPATH)
 export LIBPYTHON_LOC=$(shell cocotb-config --libpython)
+export PYTHONPATH := test:$(PYTHONPATH)
 
-all: test_dut
+# Default target
+all: test_pe 
 
-# if you run rules with NOASSERT=1 it will set PYTHONOPTIMIZE, which turns off assertions in the tests
-test_dut:
-	rm -rf sim_build/
-	mkdir sim_build/
-	iverilog -o sim_build/sim.vvp -s dut -s dump -g2012 src/dut.sv test/dump_dut.sv 
-	PYTHONOPTIMIZE=${NOASSERT} MODULE=test_dut vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus sim_build/sim.vvp
+# Test targets
+test_pe: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s pe -s dump -g2012 $(SOURCES) test/dump_pe.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_pe $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 
-# show_%: %.vcd %.gtkw (%.gtkw file allows me to config my waveform) but MUST have the gtkw file to work
+
+# MODIFY 1) variable next to -s 
+# MODIFY 2) variable next to $(SOURCES)
+# MODIFY 3) variable right of MODULE=
+test_test: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s test -s dump -g2012 $(SOURCES) test/dump_test.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_test $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+
+
+# Create simulation build directory
+$(SIM_BUILD_DIR):
+	mkdir -p $(SIM_BUILD_DIR)
+
+# Waveform viewing
 show_%: %.vcd %.gtkw
 	gtkwave $^
 
-# general recipes
+# Linting
 lint:
 	verible-verilog-lint src/*sv --rules_config verible.rules
 
+# Cleanup
 clean:
-	rm -rf *vcd sim_build test/__pycache__
+	rm -rf *vcd $(SIM_BUILD_DIR) test/__pycache__
 
-.PHONY: clean
+.PHONY: all test_pe test_test test_sv clean lint show_%
