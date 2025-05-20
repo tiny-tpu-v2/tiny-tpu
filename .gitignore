@@ -1,1 +1,5 @@
 /my-env/
+
+/test/__pycache__/
+results.xml
+/sim_build/
