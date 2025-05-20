@@ -1,5 +1,5 @@
 $date
-	Mon May 19 16:29:48 2025
+	Mon May 19 20:09:51 2025
 $end
 $version
 	Icarus Verilog
@@ -9,197 +9,76 @@ $timescale
 $end
 $scope module systolic $end
 $var wire 1 ! clk $end
-$var wire 16 " input_11 [15:0] $end
-$var wire 16 # input_21 [15:0] $end
-$var wire 16 $ input_31 [15:0] $end
+$var wire 1 " done $end
+$var wire 16 # input_11 [15:0] $end
+$var wire 16 $ input_21 [15:0] $end
 $var wire 1 % load_weights $end
 $var wire 1 & rst $end
 $var wire 1 ' start $end
 $var wire 16 ( weight_11 [15:0] $end
 $var wire 16 ) weight_12 [15:0] $end
-$var wire 16 * weight_13 [15:0] $end
-$var wire 16 + weight_21 [15:0] $end
-$var wire 16 , weight_22 [15:0] $end
-$var wire 16 - weight_23 [15:0] $end
-$var wire 16 . weight_31 [15:0] $end
-$var wire 16 / weight_32 [15:0] $end
-$var wire 16 0 weight_33 [15:0] $end
-$var wire 16 1 zero_wire [15:0] $end
-$var wire 16 2 psum_23 [15:0] $end
-$var wire 16 3 psum_22 [15:0] $end
-$var wire 16 4 psum_21 [15:0] $end
-$var wire 16 5 psum_13 [15:0] $end
-$var wire 16 6 psum_12 [15:0] $end
-$var wire 16 7 psum_11 [15:0] $end
-$var wire 16 8 out_33 [15:0] $end
-$var wire 16 9 out_32 [15:0] $end
-$var wire 16 : out_31 [15:0] $end
-$var wire 16 ; input_32_out [15:0] $end
-$var wire 16 < input_31_out [15:0] $end
-$var wire 16 = input_22_out [15:0] $end
-$var wire 16 > input_21_out [15:0] $end
-$var wire 16 ? input_12_out [15:0] $end
-$var wire 16 @ input_11_out [15:0] $end
-$var reg 1 A done $end
+$var wire 16 * weight_21 [15:0] $end
+$var wire 16 + weight_22 [15:0] $end
+$var wire 16 , zero_wire_inputs [15:0] $end
+$var wire 16 - zero_wire_outputs [15:0] $end
+$var wire 16 . psum_12 [15:0] $end
+$var wire 16 / psum_11 [15:0] $end
+$var wire 16 0 out_22 [15:0] $end
+$var wire 16 1 out_21 [15:0] $end
+$var wire 16 2 input_21_out [15:0] $end
+$var wire 16 3 input_11_out [15:0] $end
 $scope module pe11 $end
 $var wire 1 ! clk $end
-$var wire 16 B input_in [15:0] $end
+$var wire 16 4 input_in [15:0] $end
 $var wire 1 % load_weight $end
-$var wire 16 C psum_in [15:0] $end
+$var wire 16 5 psum_in [15:0] $end
 $var wire 1 & rst $end
 $var wire 1 ' start $end
-$var wire 16 D weight [15:0] $end
-$var reg 16 E input_out [15:0] $end
-$var reg 16 F psum_out [15:0] $end
-$var reg 16 G weight_reg [15:0] $end
+$var wire 16 6 weight [15:0] $end
+$var reg 16 7 input_out [15:0] $end
+$var reg 16 8 psum_out [15:0] $end
+$var reg 16 9 weight_reg [15:0] $end
 $upscope $end
 $scope module pe12 $end
 $var wire 1 ! clk $end
-$var wire 16 H input_in [15:0] $end
+$var wire 16 : input_in [15:0] $end
 $var wire 1 % load_weight $end
-$var wire 16 I psum_in [15:0] $end
+$var wire 16 ; psum_in [15:0] $end
 $var wire 1 & rst $end
 $var wire 1 ' start $end
-$var wire 16 J weight [15:0] $end
-$var reg 16 K input_out [15:0] $end
-$var reg 16 L psum_out [15:0] $end
-$var reg 16 M weight_reg [15:0] $end
-$upscope $end
-$scope module pe13 $end
-$var wire 1 ! clk $end
-$var wire 16 N input_in [15:0] $end
-$var wire 1 % load_weight $end
-$var wire 16 O psum_in [15:0] $end
-$var wire 1 & rst $end
-$var wire 1 ' start $end
-$var wire 16 P weight [15:0] $end
-$var reg 16 Q input_out [15:0] $end
-$var reg 16 R psum_out [15:0] $end
-$var reg 16 S weight_reg [15:0] $end
+$var wire 16 < weight [15:0] $end
+$var reg 16 = input_out [15:0] $end
+$var reg 16 > psum_out [15:0] $end
+$var reg 16 ? weight_reg [15:0] $end
 $upscope $end
 $scope module pe21 $end
 $var wire 1 ! clk $end
-$var wire 16 T input_in [15:0] $end
+$var wire 16 @ input_in [15:0] $end
 $var wire 1 % load_weight $end
-$var wire 16 U psum_in [15:0] $end
+$var wire 16 A psum_in [15:0] $end
 $var wire 1 & rst $end
 $var wire 1 ' start $end
-$var wire 16 V weight [15:0] $end
-$var reg 16 W input_out [15:0] $end
-$var reg 16 X psum_out [15:0] $end
-$var reg 16 Y weight_reg [15:0] $end
+$var wire 16 B weight [15:0] $end
+$var reg 16 C input_out [15:0] $end
+$var reg 16 D psum_out [15:0] $end
+$var reg 16 E weight_reg [15:0] $end
 $upscope $end
 $scope module pe22 $end
 $var wire 1 ! clk $end
-$var wire 16 Z input_in [15:0] $end
+$var wire 16 F input_in [15:0] $end
 $var wire 1 % load_weight $end
-$var wire 16 [ psum_in [15:0] $end
+$var wire 16 G psum_in [15:0] $end
 $var wire 1 & rst $end
 $var wire 1 ' start $end
-$var wire 16 \ weight [15:0] $end
-$var reg 16 ] input_out [15:0] $end
-$var reg 16 ^ psum_out [15:0] $end
-$var reg 16 _ weight_reg [15:0] $end
-$upscope $end
-$scope module pe23 $end
-$var wire 1 ! clk $end
-$var wire 16 ` input_in [15:0] $end
-$var wire 1 % load_weight $end
-$var wire 16 a psum_in [15:0] $end
-$var wire 1 & rst $end
-$var wire 1 ' start $end
-$var wire 16 b weight [15:0] $end
-$var reg 16 c input_out [15:0] $end
-$var reg 16 d psum_out [15:0] $end
-$var reg 16 e weight_reg [15:0] $end
-$upscope $end
-$scope module pe31 $end
-$var wire 1 ! clk $end
-$var wire 16 f input_in [15:0] $end
-$var wire 1 % load_weight $end
-$var wire 16 g psum_in [15:0] $end
-$var wire 1 & rst $end
-$var wire 1 ' start $end
-$var wire 16 h weight [15:0] $end
-$var reg 16 i input_out [15:0] $end
-$var reg 16 j psum_out [15:0] $end
-$var reg 16 k weight_reg [15:0] $end
-$upscope $end
-$scope module pe32 $end
-$var wire 1 ! clk $end
-$var wire 16 l input_in [15:0] $end
-$var wire 1 % load_weight $end
-$var wire 16 m psum_in [15:0] $end
-$var wire 1 & rst $end
-$var wire 1 ' start $end
-$var wire 16 n weight [15:0] $end
-$var reg 16 o input_out [15:0] $end
-$var reg 16 p psum_out [15:0] $end
-$var reg 16 q weight_reg [15:0] $end
-$upscope $end
-$scope module pe33 $end
-$var wire 1 ! clk $end
-$var wire 16 r input_in [15:0] $end
-$var wire 1 % load_weight $end
-$var wire 16 s psum_in [15:0] $end
-$var wire 1 & rst $end
-$var wire 1 ' start $end
-$var wire 16 t weight [15:0] $end
-$var reg 16 u input_out [15:0] $end
-$var reg 16 v psum_out [15:0] $end
-$var reg 16 w weight_reg [15:0] $end
+$var wire 16 H weight [15:0] $end
+$var reg 16 I input_out [15:0] $end
+$var reg 16 J psum_out [15:0] $end
+$var reg 16 K weight_reg [15:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
-$comment Show the parameter values. $end
-$dumpall
-$end
 #0
 $dumpvars
-b0 w
-b0 v
-b0 u
-b0 t
-b0 s
-b0 r
-b0 q
-b0 p
-b0 o
-b0 n
-b0 m
-b0 l
-b0 k
-b0 j
-b0 i
-b0 h
-b0 g
-b0 f
-b0 e
-b0 d
-b0 c
-b0 b
-b0 a
-b0 `
-b0 _
-b0 ^
-b0 ]
-b0 \
-b0 [
-b0 Z
-b0 Y
-b0 X
-b0 W
-b0 V
-b0 U
-b0 T
-b0 S
-b0 R
-b0 Q
-b0 P
-b0 O
-b0 N
-b0 M
-b0 L
 b0 K
 b0 J
 b0 I
@@ -210,7 +89,7 @@ b0 E
 b0 D
 b0 C
 b0 B
-xA
+b0 A
 b0 @
 b0 ?
 b0 >
@@ -241,7 +120,7 @@ b0 (
 0%
 b0 $
 b0 #
-b0 "
+0"
 1!
 $end
 #5000
@@ -252,34 +131,19 @@ $end
 #15000
 0!
 #20000
-b1 G
-b10 M
-b11 S
-b100 Y
-b101 _
-b110 e
-b111 k
-b1000 q
-b1001 w
+b1 9
+b11 ?
+b10 E
+b100 K
 1!
-b1001 0
-b1001 t
-b1000 /
-b1000 n
-b111 .
-b111 h
-b110 -
-b110 b
-b101 ,
-b101 \
 b100 +
-b100 V
-b11 *
-b11 P
-b10 )
-b10 J
+b100 H
+b10 *
+b10 B
+b11 )
+b11 <
 b1 (
-b1 D
+b1 6
 1%
 #25000
 0!
@@ -289,4 +153,115 @@ b1 D
 1'
 #35000
 0!
-#40001
+#40000
+b101 /
+b101 8
+b101 A
+b101 3
+b101 7
+b101 :
+1!
+b101 #
+b101 4
+#45000
+0!
+#50000
+b10001 1
+b10001 D
+b110 2
+b110 C
+b110 F
+b1111 .
+b1111 >
+b1111 G
+b0x0x -
+b101 =
+b0 /
+b0 8
+b0 A
+b0 3
+b0 7
+b0 :
+1!
+b110 $
+b110 @
+b0 #
+b0 4
+#55000
+0!
+#60000
+b0 .
+b0 >
+b0 G
+b0 =
+b0 1
+b0 D
+b0 2
+b0 C
+b0 F
+b100111 0
+b100111 J
+b0xx0 -
+b110 I
+1!
+b0 $
+b0 @
+#65000
+0!
+#70000
+b0 0
+b0 J
+b0 -
+b0 I
+1!
+#75000
+0!
+#80000
+1!
+#85000
+0!
+#90000
+1!
+#95000
+0!
+#100000
+1!
+#105000
+0!
+#110000
+1!
+#115000
+0!
+#120000
+1!
+#125000
+0!
+#130000
+1!
+#135000
+0!
+#140000
+1!
+#145000
+0!
+#150000
+1!
+#155000
+0!
+#160000
+1!
+#165000
+0!
+#170000
+1!
+#175000
+0!
+#180000
+1!
+#185000
+0!
+#190000
+1!
+#195000
+0!
+#200001

@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1747689564" />
-    <testcase name="test_leaky_relu" classname="test_leaky_relu" file="/Users/suryasure/projects/apex/test/test_leaky_relu.py" lineno="5" time="0.0009350776672363281" sim_time_ns="60.001" ratio_time="64166.8623926568" />
+    <property name="random_seed" value="1747699791" />
+    <testcase name="test_systolic_array" classname="test_systolic" file="/Users/evanlin/Desktop/tinytpuv2/test/test_systolic.py" lineno="7" time="0.003744840621948242" sim_time_ns="200.001" ratio_time="53407.07928337684" />
   </testsuite>
 </testsuites>
