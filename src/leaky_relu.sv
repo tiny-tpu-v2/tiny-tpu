@@ -31,6 +31,7 @@ module leaky_relu (
             lr_valid_out <= 1;
         end else begin
             lr_valid_out <= 0;
+            out <= 0;
         end
     end
 

@@ -20,6 +20,7 @@ module bias (
                 bias_valid_out <= 1;
         end else begin
                 bias_valid_out <= 0;
+                output_out <= 0;
         end
     end
 

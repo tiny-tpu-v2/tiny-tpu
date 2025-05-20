@@ -56,6 +56,8 @@ module pe #(
             // so that valid pe_valid_out becomes zero after that. 
         end else if (!pe_valid_in) begin
             pe_valid_out <= 0; // we can probably refactor this into a FSM 
+            psum_out <= 0;
+
         end
     end
 

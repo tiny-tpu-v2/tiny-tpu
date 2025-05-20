@@ -78,7 +78,7 @@ async def test_layer1(dut):
     dut.start.value = 1 # Now systolic array will start processing
     await RisingEdge(dut.clk)
 
-    dut.start.value = 1
+    dut.start.value = 0
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(6.0)
     await RisingEdge(dut.clk)
