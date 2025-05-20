@@ -8,11 +8,11 @@ module pe #(
     input logic rst,
     input logic start,
     input logic load_weight,
-    input logic [DATA_WIDTH-1:0] input_in,
-    input logic [DATA_WIDTH-1:0] psum_in,
-    input logic [DATA_WIDTH-1:0] weight,
-    output logic [DATA_WIDTH-1:0] input_out,
-    output logic [DATA_WIDTH-1:0] psum_out,
+    input logic signed [DATA_WIDTH-1:0] input_in,
+    input logic signed [DATA_WIDTH-1:0] psum_in,
+    input logic signed [DATA_WIDTH-1:0] weight,
+    output logic signed [DATA_WIDTH-1:0] input_out,
+    output logic signed [DATA_WIDTH-1:0] psum_out,
     output logic done
     );
 
