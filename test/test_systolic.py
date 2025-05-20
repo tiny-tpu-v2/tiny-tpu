@@ -51,7 +51,7 @@ async def test_systolic_array(dut):
     dut.start.value = 1 
     await RisingEdge(dut.clk)
 
-    dut.start.value = 1 # i think this should be off now ?? keep it on for now
+    dut.start.value = 0
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(6.0)
 
