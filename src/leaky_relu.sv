@@ -8,14 +8,21 @@ module leaky_relu (
     input logic signed [15:0] leak_factor,
     output logic signed [15:0] out
 );
+    logic signed[15:0] mul_out;
+
+    fxp_mul mul_inst(
+        .ina(input_in),
+        .inb(leak_factor),
+        .out(mul_out)
+    );
 
     always @(posedge clk) begin
         if (rst) begin
-            out <= 0;
+            out <= 16'b0;
         end else if (input_in > 0) begin
             out <= input_in;
         end else begin
-            out <= input_in * leak_factor;
+            out <= mul_out;
         end
     end
 

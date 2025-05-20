@@ -1,5 +1,5 @@
 $date
-	Mon May 19 17:27:16 2025
+	Mon May 19 20:27:34 2025
 $end
 $version
 	Icarus Verilog
@@ -15,74 +15,281 @@ $var wire 16 $ psum_in [15:0] $end
 $var wire 1 % rst $end
 $var wire 1 & start $end
 $var wire 16 ' weight [15:0] $end
-$var reg 16 ( input_out [15:0] $end
-$var reg 16 ) psum_out [15:0] $end
-$var reg 16 * weight_reg [15:0] $end
+$var wire 16 ( psum_reg [15:0] $end
+$var wire 16 ) mult_out [15:0] $end
+$var parameter 32 * DATA_WIDTH $end
+$var reg 1 + done $end
+$var reg 16 , input_out [15:0] $end
+$var reg 16 - psum_out [15:0] $end
+$var reg 16 . weight_reg [15:0] $end
+$scope module adder $end
+$var wire 16 / inb [15:0] $end
+$var wire 17 0 res [16:0] $end
+$var wire 1 1 overflow $end
+$var wire 16 2 out [15:0] $end
+$var wire 16 3 inbz [15:0] $end
+$var wire 16 4 inaz [15:0] $end
+$var wire 16 5 ina [15:0] $end
+$var parameter 32 6 ROUND $end
+$var parameter 32 7 WIF $end
+$var parameter 32 8 WIFA $end
+$var parameter 32 9 WIFB $end
+$var parameter 32 : WII $end
+$var parameter 32 ; WIIA $end
+$var parameter 32 < WIIB $end
+$var parameter 32 = WOF $end
+$var parameter 32 > WOI $end
+$var parameter 32 ? WRF $end
+$var parameter 33 @ WRI $end
+$scope module ina_zoom $end
+$var wire 16 A out [15:0] $end
+$var wire 16 B in [15:0] $end
+$var parameter 32 C ROUND $end
+$var parameter 32 D WIF $end
+$var parameter 32 E WII $end
+$var parameter 32 F WOF $end
+$var parameter 32 G WOI $end
+$var reg 8 H ini [7:0] $end
+$var reg 16 I inr [15:0] $end
+$var reg 8 J outf [7:0] $end
+$var reg 8 K outi [7:0] $end
+$var reg 1 L overflow $end
+$scope begin genblk1 $end
+$upscope $end
+$scope begin genblk2 $end
+$upscope $end
+$upscope $end
+$scope module inb_zoom $end
+$var wire 16 M in [15:0] $end
+$var wire 16 N out [15:0] $end
+$var parameter 32 O ROUND $end
+$var parameter 32 P WIF $end
+$var parameter 32 Q WII $end
+$var parameter 32 R WOF $end
+$var parameter 32 S WOI $end
+$var reg 8 T ini [7:0] $end
+$var reg 16 U inr [15:0] $end
+$var reg 8 V outf [7:0] $end
+$var reg 8 W outi [7:0] $end
+$var reg 1 X overflow $end
+$scope begin genblk1 $end
+$upscope $end
+$scope begin genblk2 $end
+$upscope $end
+$upscope $end
+$scope module res_zoom $end
+$var wire 17 Y in [16:0] $end
+$var wire 16 Z out [15:0] $end
+$var parameter 32 [ ROUND $end
+$var parameter 32 \ WIF $end
+$var parameter 33 ] WII $end
+$var parameter 32 ^ WOF $end
+$var parameter 32 _ WOI $end
+$var reg 9 ` ini [8:0] $end
+$var reg 17 a inr [16:0] $end
+$var reg 8 b outf [7:0] $end
+$var reg 8 c outi [7:0] $end
+$var reg 1 1 overflow $end
+$scope begin genblk1 $end
+$upscope $end
+$scope begin genblk2 $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope module mult $end
+$var wire 16 d ina [15:0] $end
+$var wire 16 e inb [15:0] $end
+$var wire 32 f res [31:0] $end
+$var wire 1 g overflow $end
+$var wire 16 h out [15:0] $end
+$var parameter 32 i ROUND $end
+$var parameter 32 j WIFA $end
+$var parameter 32 k WIFB $end
+$var parameter 32 l WIIA $end
+$var parameter 32 m WIIB $end
+$var parameter 32 n WOF $end
+$var parameter 32 o WOI $end
+$var parameter 33 p WRF $end
+$var parameter 33 q WRI $end
+$scope module res_zoom $end
+$var wire 32 r in [31:0] $end
+$var wire 16 s out [15:0] $end
+$var parameter 32 t ROUND $end
+$var parameter 33 u WIF $end
+$var parameter 33 v WII $end
+$var parameter 32 w WOF $end
+$var parameter 32 x WOI $end
+$var reg 16 y ini [15:0] $end
+$var reg 24 z inr [23:0] $end
+$var reg 8 { outf [7:0] $end
+$var reg 8 | outi [7:0] $end
+$var reg 1 g overflow $end
+$scope begin genblk1 $end
+$scope begin genblk1 $end
+$upscope $end
+$upscope $end
+$scope begin genblk2 $end
+$upscope $end
+$upscope $end
+$upscope $end
 $upscope $end
 $enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1000 x
+b1000 w
+b10000 v
+b10000 u
+b1 t
+b10000 q
+b10000 p
+b1000 o
+b1000 n
+b1000 m
+b1000 l
+b1000 k
+b1000 j
+b1 i
+b1000 _
+b1000 ^
+b1001 ]
+b1000 \
+b1 [
+b1000 S
+b1000 R
+b1000 Q
+b1000 P
+b0 O
+b1000 G
+b1000 F
+b1000 E
+b1000 D
+b0 C
+b1001 @
+b1000 ?
+b1000 >
+b1000 =
+b1000 <
+b1000 ;
+b1000 :
+b1000 9
+b1000 8
+b1000 7
+b1 6
+b10000 *
+$end
 #0
 $dumpvars
-bx *
-bx )
-bx (
-bz '
-z&
-z%
-bz $
-z#
-bz "
+b0 |
+b0 {
+b0 z
+b0 y
+b0 s
+b0 r
+b0 h
+0g
+b0 f
+b0 e
+b0 d
+b0 c
+b0 b
+b0 a
+b0 `
+b0 Z
+b0 Y
+0X
+b0 W
+b0 V
+b0 U
+b0 T
+b0 N
+b0 M
+0L
+b0 K
+b0 J
+b0 I
+b0 H
+b0 B
+b0 A
+b0 5
+b0 4
+b0 3
+b0 2
+01
+b0 0
+b0 /
+b0 .
+b0 -
+b0 ,
+x+
+b0 )
+b0 (
+b0 '
+0&
+1%
+b0 $
+0#
+b0 "
 1!
 $end
 #5000
 0!
 #10000
-b0 *
-b0 )
-b0 (
+b1010000000 .
+b1010000000 e
 1!
-b0 $
-b0 '
-b0 "
-0&
-0#
-1%
+1#
+b1010000000 '
+0%
 #15000
 0!
 #20000
-b1010 *
+b1100000000 ,
+b10000000 b
+b100010000000 (
+b100010000000 2
+b100010000000 Z
+b1000 c
+b1000 `
+b111 K
+b111 H
+b11110000000 4
+b11110000000 A
+b10000000 J
+b100010000000 a
+b11110000000 I
+b100010000000 0
+b100010000000 Y
+b100000000 3
+b100000000 N
+b1 W
+b1 T
+b111 |
+b111 y
+b11110000000 )
+b11110000000 5
+b11110000000 B
+b11110000000 h
+b11110000000 s
+b10000000 {
+b100000000 U
+b11110000000 z
 1!
-b1010 '
-1#
-0%
+1&
+b100000000 $
+b100000000 /
+b100000000 M
+b1111000000000000000 f
+b1111000000000000000 r
+b1100000000 "
+b1100000000 d
+0#
 #25000
 0!
 #30000
-b110100 )
-b101 (
+b100010000000 -
 1!
-1&
-b10 $
-b101 "
-0#
+0&
 #35000
 0!
-#40000
-1!
-0&
-#45000
-0!
-#50000
-b100010 )
-b11 (
-1!
-1&
-b100 $
-b11 "
-#55000
-0!
-#60000
-1!
-0&
-#65000
-0!
-#70001
+#40001
