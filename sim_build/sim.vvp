@@ -8,173 +8,174 @@
 :vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
 :vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
 :vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2009.vpi";
-S_0x55b2252a2020 .scope package, "$unit" "$unit" 2 1;
+S_0x561c1aa447a0 .scope package, "$unit" "$unit" 2 1;
  .timescale 0 0;
-S_0x55b2252a21b0 .scope module, "acc_output" "acc_output" 3 1;
+S_0x561c1aa44930 .scope module, "acc_input" "acc_input" 3 1;
  .timescale -9 -12;
     .port_info 0 /INPUT 1 "clk";
     .port_info 1 /INPUT 1 "rst";
-    .port_info 2 /INPUT 1 "acc_valid_i";
-    .port_info 3 /INPUT 16 "acc_data_in";
-    .port_info 4 /OUTPUT 1 "acc_valid_o";
-    .port_info 5 /OUTPUT 64 "acc_mem_out";
-P_0x55b22528bef0 .param/l "ACC_WIDTH" 0 3 2, +C4<00000000000000000000000000000100>;
-o0x7fbf6833c0a8 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
-v0x55b2252a55d0_0 .net "acc_data_in", 15 0, o0x7fbf6833c0a8;  0 drivers
-v0x55b2252a5180_0 .var "acc_mem_counter", 15 0;
-v0x55b2252a52f0 .array "acc_mem_out", 3 0, 15 0;
-v0x55b225266600 .array "acc_mem_reg", 3 0, 15 0;
-o0x7fbf6833c108 .functor BUFZ 1, C4<z>; HiZ drive
-v0x55b225357ee0_0 .net "acc_valid_i", 0 0, o0x7fbf6833c108;  0 drivers
-v0x55b225357ff0_0 .var "acc_valid_o", 0 0;
-o0x7fbf6833c168 .functor BUFZ 1, C4<z>; HiZ drive
-v0x55b2253580b0_0 .net "clk", 0 0, o0x7fbf6833c168;  0 drivers
-o0x7fbf6833c198 .functor BUFZ 1, C4<z>; HiZ drive
-v0x55b225358170_0 .net "rst", 0 0, o0x7fbf6833c198;  0 drivers
-E_0x55b22534d330 .event posedge, v0x55b2253580b0_0;
-S_0x55b225354a50 .scope begin, "$ivl_for_loop0" "$ivl_for_loop0" 3 24, 3 24 0, S_0x55b2252a21b0;
+    .port_info 2 /INPUT 1 "acc_load_i";
+    .port_info 3 /INPUT 1 "acc_valid_i";
+    .port_info 4 /INPUT 64 "acc_data_in";
+    .port_info 5 /OUTPUT 1 "acc_valid_o";
+    .port_info 6 /OUTPUT 16 "acc_data_out";
+P_0x561c1a983ef0 .param/l "ACC_WIDTH" 0 3 2, +C4<00000000000000000000000000000100>;
+o0x7f4548ccc0a8 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
+v0x561c1a99d460 .array "acc_data_in", 3 0;
+v0x561c1a99d460_0 .net v0x561c1a99d460 0, 15 0, o0x7f4548ccc0a8; 0 drivers
+o0x7f4548ccc0d8 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
+v0x561c1a99d460_1 .net v0x561c1a99d460 1, 15 0, o0x7f4548ccc0d8; 0 drivers
+o0x7f4548ccc108 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
+v0x561c1a99d460_2 .net v0x561c1a99d460 2, 15 0, o0x7f4548ccc108; 0 drivers
+o0x7f4548ccc138 .functor BUFZ 16, C4<zzzzzzzzzzzzzzzz>; HiZ drive
+v0x561c1a99d460_3 .net v0x561c1a99d460 3, 15 0, o0x7f4548ccc138; 0 drivers
+v0x561c1a99d5d0_0 .var "acc_data_out", 15 0;
+o0x7f4548ccc198 .functor BUFZ 1, C4<z>; HiZ drive
+v0x561c1a99d180_0 .net "acc_load_i", 0 0, o0x7f4548ccc198;  0 drivers
+v0x561c1a99d2f0_0 .var "acc_mem_counter", 15 0;
+v0x561c1a95e600 .array "acc_mem_reg", 3 0, 15 0;
+o0x7f4548ccc1f8 .functor BUFZ 1, C4<z>; HiZ drive
+v0x561c1aa589a0_0 .net "acc_valid_i", 0 0, o0x7f4548ccc1f8;  0 drivers
+v0x561c1aa58a60_0 .var "acc_valid_o", 0 0;
+o0x7f4548ccc258 .functor BUFZ 1, C4<z>; HiZ drive
+v0x561c1aa58b20_0 .net "clk", 0 0, o0x7f4548ccc258;  0 drivers
+o0x7f4548ccc288 .functor BUFZ 1, C4<z>; HiZ drive
+v0x561c1aa58be0_0 .net "rst", 0 0, o0x7f4548ccc288;  0 drivers
+E_0x561c1aa4e3e0 .event posedge, v0x561c1aa58b20_0;
+S_0x561c1a99a1b0 .scope begin, "$ivl_for_loop4" "$ivl_for_loop4" 3 25, 3 25 0, S_0x561c1aa44930;
  .timescale -9 -12;
-v0x55b225301780_0 .var/2s "i", 31 0;
-S_0x55b225357a10 .scope begin, "$ivl_for_loop1" "$ivl_for_loop1" 3 30, 3 30 0, S_0x55b2252a21b0;
+v0x561c1a98f2a0_0 .var/2s "i", 31 0;
+S_0x561c1aa583e0 .scope begin, "$ivl_for_loop5" "$ivl_for_loop5" 3 31, 3 31 0, S_0x561c1aa44930;
  .timescale -9 -12;
-v0x55b2253018f0_0 .var/2s "i", 31 0;
-S_0x55b225357c00 .scope begin, "$ivl_for_loop2" "$ivl_for_loop2" 3 45, 3 45 0, S_0x55b2252a21b0;
+v0x561c1a9f9780_0 .var/2s "i", 31 0;
+S_0x561c1aa585d0 .scope begin, "$ivl_for_loop6" "$ivl_for_loop6" 3 40, 3 40 0, S_0x561c1aa44930;
  .timescale -9 -12;
-v0x55b2252a5460_0 .var/2s "i", 31 0;
-S_0x55b2253548c0 .scope module, "dump" "dump" 4 1;
+v0x561c1a9f98f0_0 .var/2s "i", 31 0;
+S_0x561c1a99a020 .scope module, "dump" "dump" 4 1;
  .timescale -9 -12;
-    .scope S_0x55b2252a21b0;
+    .scope S_0x561c1aa44930;
 T_0 ;
-    %wait E_0x55b22534d330;
-    %fork t_1, S_0x55b225354a50;
+    %wait E_0x561c1aa4e3e0;
+    %fork t_1, S_0x561c1a99a1b0;
     %jmp t_0;
-    .scope S_0x55b225354a50;
+    .scope S_0x561c1a99a1b0;
 t_1 ;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x55b225301780_0, 0, 32;
+    %store/vec4 v0x561c1a98f2a0_0, 0, 32;
 T_0.0 ;
-    %load/vec4 v0x55b225301780_0;
+    %load/vec4 v0x561c1a98f2a0_0;
     %cmpi/s 4, 0, 32;
     %jmp/0xz T_0.1, 5;
-    %vpi_call/w 3 25 "$dumpvars", 32'sb00000000000000000000000000000000, &A<v0x55b225266600, v0x55b225301780_0 > {0 0 0};
-    %vpi_call/w 3 26 "$dumpvars", 32'sb00000000000000000000000000000000, &A<v0x55b2252a52f0, v0x55b225301780_0 > {0 0 0};
+    %vpi_call/w 3 26 "$dumpvars", 32'sb00000000000000000000000000000000, &A<v0x561c1a95e600, v0x561c1a98f2a0_0 > {0 0 0};
+    %vpi_call/w 3 27 "$dumpvars", 32'sb00000000000000000000000000000000, &A<v0x561c1a99d460, v0x561c1a98f2a0_0 > {0 0 0};
     ; show_stmt_assign_vector: Get l-value for compressed += operand
-    %load/vec4 v0x55b225301780_0;
+    %load/vec4 v0x561c1a98f2a0_0;
     %pushi/vec4 1, 0, 32;
     %add;
     %cast2;
-    %store/vec4 v0x55b225301780_0, 0, 32;
+    %store/vec4 v0x561c1a98f2a0_0, 0, 32;
     %jmp T_0.0;
 T_0.1 ;
     %end;
-    .scope S_0x55b2252a21b0;
+    .scope S_0x561c1aa44930;
 t_0 %join;
-    %load/vec4 v0x55b225358170_0;
+    %load/vec4 v0x561c1aa58be0_0;
     %flag_set/vec4 8;
     %jmp/0xz  T_0.2, 8;
-    %fork t_3, S_0x55b225357a10;
+    %fork t_3, S_0x561c1aa583e0;
     %jmp t_2;
-    .scope S_0x55b225357a10;
+    .scope S_0x561c1aa583e0;
 t_3 ;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x55b2253018f0_0, 0, 32;
+    %store/vec4 v0x561c1a9f9780_0, 0, 32;
 T_0.4 ;
-    %load/vec4 v0x55b2253018f0_0;
+    %load/vec4 v0x561c1a9f9780_0;
     %cmpi/s 4, 0, 32;
     %jmp/0xz T_0.5, 5;
     %pushi/vec4 0, 0, 16;
-    %ix/getv/s 3, v0x55b2253018f0_0;
+    %ix/getv/s 3, v0x561c1a9f9780_0;
     %ix/load 4, 0, 0; Constant delay
-    %assign/vec4/a/d v0x55b225266600, 0, 4;
+    %assign/vec4/a/d v0x561c1a95e600, 0, 4;
     %pushi/vec4 0, 0, 16;
-    %ix/getv/s 3, v0x55b2253018f0_0;
-    %ix/load 4, 0, 0; Constant delay
-    %assign/vec4/a/d v0x55b2252a52f0, 0, 4;
+    %assign/vec4 v0x561c1a99d5d0_0, 0;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0x561c1aa58a60_0, 0;
+    %pushi/vec4 0, 0, 16;
+    %assign/vec4 v0x561c1a99d2f0_0, 0;
     ; show_stmt_assign_vector: Get l-value for compressed += operand
-    %load/vec4 v0x55b2253018f0_0;
+    %load/vec4 v0x561c1a9f9780_0;
     %pushi/vec4 1, 0, 32;
     %add;
     %cast2;
-    %store/vec4 v0x55b2253018f0_0, 0, 32;
+    %store/vec4 v0x561c1a9f9780_0, 0, 32;
     %jmp T_0.4;
 T_0.5 ;
     %end;
-    .scope S_0x55b2252a21b0;
+    .scope S_0x561c1aa44930;
 t_2 %join;
-    %pushi/vec4 0, 0, 16;
-    %assign/vec4 v0x55b2252a5180_0, 0;
-    %pushi/vec4 0, 0, 1;
-    %assign/vec4 v0x55b225357ff0_0, 0;
     %jmp T_0.3;
 T_0.2 ;
-    %load/vec4 v0x55b225357ee0_0;
-    %flag_set/vec4 9;
-    %flag_get/vec4 9;
-    %jmp/0 T_0.8, 9;
-    %load/vec4 v0x55b225357ff0_0;
-    %nor/r;
-    %and;
-T_0.8;
+    %load/vec4 v0x561c1a99d180_0;
     %flag_set/vec4 8;
     %jmp/0xz  T_0.6, 8;
-    %load/vec4 v0x55b2252a55d0_0;
-    %ix/getv 3, v0x55b2252a5180_0;
-    %ix/load 4, 0, 0; Constant delay
-    %assign/vec4/a/d v0x55b225266600, 0, 4;
-    %load/vec4 v0x55b2252a5180_0;
-    %addi 1, 0, 16;
-    %assign/vec4 v0x55b2252a5180_0, 0;
-    %jmp T_0.7;
-T_0.6 ;
-    %load/vec4 v0x55b2252a5180_0;
-    %pad/u 32;
-    %cmpi/u 0, 0, 32;
-    %flag_or 5, 4; GT is !LE
-    %flag_inv 5;
-    %jmp/0xz  T_0.9, 5;
-    %pushi/vec4 1, 0, 1;
-    %assign/vec4 v0x55b225357ff0_0, 0;
     %pushi/vec4 0, 0, 16;
-    %assign/vec4 v0x55b2252a5180_0, 0;
-    %fork t_5, S_0x55b225357c00;
+    %assign/vec4 v0x561c1a99d2f0_0, 0;
+    %fork t_5, S_0x561c1aa585d0;
     %jmp t_4;
-    .scope S_0x55b225357c00;
+    .scope S_0x561c1aa585d0;
 t_5 ;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x55b2252a5460_0, 0, 32;
-T_0.11 ;
-    %load/vec4 v0x55b2252a5460_0;
+    %store/vec4 v0x561c1a9f98f0_0, 0, 32;
+T_0.8 ;
+    %load/vec4 v0x561c1a9f98f0_0;
     %cmpi/s 4, 0, 32;
-    %jmp/0xz T_0.12, 5;
-    %ix/getv/s 4, v0x55b2252a5460_0;
-    %load/vec4a v0x55b225266600, 4;
-    %ix/getv/s 3, v0x55b2252a5460_0;
+    %jmp/0xz T_0.9, 5;
+    %ix/getv/s 4, v0x561c1a9f98f0_0;
+    %load/vec4a v0x561c1a99d460, 4;
+    %ix/getv/s 3, v0x561c1a9f98f0_0;
     %ix/load 4, 0, 0; Constant delay
-    %assign/vec4/a/d v0x55b2252a52f0, 0, 4;
+    %assign/vec4/a/d v0x561c1a95e600, 0, 4;
     ; show_stmt_assign_vector: Get l-value for compressed += operand
-    %load/vec4 v0x55b2252a5460_0;
+    %load/vec4 v0x561c1a9f98f0_0;
     %pushi/vec4 1, 0, 32;
     %add;
     %cast2;
-    %store/vec4 v0x55b2252a5460_0, 0, 32;
-    %jmp T_0.11;
-T_0.12 ;
-    %end;
-    .scope S_0x55b2252a21b0;
-t_4 %join;
-    %jmp T_0.10;
+    %store/vec4 v0x561c1a9f98f0_0, 0, 32;
+    %jmp T_0.8;
 T_0.9 ;
-    %pushi/vec4 0, 0, 1;
-    %assign/vec4 v0x55b225357ff0_0, 0;
+    %end;
+    .scope S_0x561c1aa44930;
+t_4 %join;
+    %jmp T_0.7;
+T_0.6 ;
+    %load/vec4 v0x561c1aa589a0_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.10, 8;
+    %ix/getv 4, v0x561c1a99d2f0_0;
+    %load/vec4a v0x561c1a95e600, 4;
+    %assign/vec4 v0x561c1a99d5d0_0, 0;
+    %load/vec4 v0x561c1a99d2f0_0;
+    %addi 1, 0, 16;
+    %assign/vec4 v0x561c1a99d2f0_0, 0;
+    %pushi/vec4 1, 0, 1;
+    %assign/vec4 v0x561c1aa58a60_0, 0;
+    %jmp T_0.11;
 T_0.10 ;
+    %pushi/vec4 0, 0, 1;
+    %assign/vec4 v0x561c1aa58a60_0, 0;
+    %pushi/vec4 0, 0, 16;
+    %assign/vec4 v0x561c1a99d5d0_0, 0;
+    %pushi/vec4 0, 0, 16;
+    %assign/vec4 v0x561c1a99d2f0_0, 0;
+T_0.11 ;
 T_0.7 ;
 T_0.3 ;
     %jmp T_0;
     .thread T_0;
-    .scope S_0x55b2253548c0;
+    .scope S_0x561c1a99a020;
 T_1 ;
-    %vpi_call/w 4 3 "$dumpfile", "waveforms/acc_output.vcd" {0 0 0};
-    %vpi_call/w 4 4 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x55b2252a21b0 {0 0 0};
+    %vpi_call/w 4 3 "$dumpfile", "waveforms/acc_input.vcd" {0 0 0};
+    %vpi_call/w 4 4 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x561c1aa44930 {0 0 0};
     %end;
     .thread T_1;
 # The file index is used to find the file name in the following table.
@@ -182,5 +183,5 @@ T_1 ;
     "N/A";
     "<interactive>";
     "-";
-    "src/acc_output.sv";
-    "test/dump_acc_output.sv";
+    "src/acc_input.sv";
+    "test/dump_acc_input.sv";

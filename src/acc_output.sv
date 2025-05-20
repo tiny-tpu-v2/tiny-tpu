@@ -1,3 +1,5 @@
+// TODO: Add streaming output functionality to the acc_output module
+
 module acc_output #(
     parameter int ACC_WIDTH = 4 // This equals the size of the systolic array that we decide to use (if the systolic array is 4x4, then ACC_WIDTH = 4)
 ) (
@@ -7,12 +9,13 @@ module acc_output #(
     // Input Flags
     input logic acc_valid_i,
 
-    // Data
+    // Streaming Input Data
     input logic [15:0] acc_data_in,
     
     // Output Flags
     output logic acc_valid_o,
 
+    // Batch Output Data
     output logic [15:0] acc_mem_out [0:ACC_WIDTH-1]
 );
 
@@ -38,6 +41,12 @@ always @(posedge clk) begin
     else if (acc_valid_i && !acc_valid_o) begin
         acc_mem_reg[acc_mem_counter] <= acc_data_in;
         acc_mem_counter <= acc_mem_counter + 1;
+        
+        // Set outputs to 0
+        for (int i = 0; i < ACC_WIDTH; i++) begin
+            acc_mem_out[i] <= 0;
+        end
+
     end else begin
         if (acc_mem_counter > 0) begin                      // When everything is stored in the registers, automatically set load the registers to the output ports
             acc_valid_o <= 1'b1;
