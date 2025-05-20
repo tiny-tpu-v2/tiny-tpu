@@ -16,7 +16,7 @@ export PYTHONPATH := test:$(PYTHONPATH)
 
 #=============== MODIFY BELOW ======================
 # IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
-SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/layer1.sv src/bias.sv src/fixedpoint.sv
+SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/layer1.sv src/bias.sv src/fixedpoint.sv src/accumulator.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -48,6 +48,12 @@ test_layer1: $(SIM_BUILD_DIR)
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_layer1 $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 	mv layer1.vcd waveforms/ 2>/dev/null || true
+
+test_accumulator: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s accumulator -s dump -g2012 $(SOURCES) test/dump_accumulator.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_accumulator $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv accumulator.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
