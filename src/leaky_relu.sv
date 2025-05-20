@@ -5,11 +5,10 @@ module leaky_relu (
     input logic clk,
     input logic rst,
     input logic signed [15:0] input_in,
-    input logic signed[15:0] leak_factor,
+    input logic signed [15:0] leak_factor,
     output logic signed [15:0] out
 );
-
-    logic [15:0] mul_out;
+    logic signed[15:0] mul_out;
 
     fxp_mul mul_inst(
         .ina(input_in),

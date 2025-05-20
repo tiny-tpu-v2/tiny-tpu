@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon May 19 17:32:05 2025
+[*] Tue May 20 00:47:45 2025
 [*]
-[dumpfile] "/Users/suryasure/projects/apex/waveforms/layer1.vcd"
-[dumpfile_mtime] "Mon May 19 17:31:22 2025"
-[dumpfile_size] 7610
-[savefile] "/Users/suryasure/projects/apex/waveforms/layer1.gtkw"
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/layer1.vcd"
+[dumpfile_mtime] "Tue May 20 00:46:39 2025"
+[dumpfile_size] 4647
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/layer1.gtkw"
 [timestart] 0
 [size] 1344 600
 [pos] -1 -1
-*-15.300000 6400 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-15.300000 56800 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -37,30 +37,29 @@
 [markername] YY
 [markername] ZZ
 [sst_width] 255
-[signals_width] 185
+[signals_width] 216
 [sst_expanded] 1
 [sst_vpaned_height] 159
-@421
+@420
 layer1.clk
 layer1.input_11[15:0]
 layer1.input_21[15:0]
 layer1.load_weights
-layer1.out_31[15:0]
-layer1.out_31_preact[15:0]
-layer1.out_32[15:0]
-layer1.out_32_preact[15:0]
-layer1.out_33[15:0]
-layer1.out_33_preact[15:0]
 layer1.rst
 layer1.start
 layer1.weight_11[15:0]
 layer1.weight_12[15:0]
-layer1.weight_13[15:0]
 layer1.weight_21[15:0]
 layer1.weight_22[15:0]
-layer1.weight_23[15:0]
-layer1.weight_31[15:0]
-layer1.weight_32[15:0]
-layer1.weight_33[15:0]
+@22
+layer1.leak_factor[15:0]
+@420
+layer1.out_21[15:0]
+@24
+layer1.out_22[15:0]
+@420
+layer1.out1[15:0]
+@25
+layer1.out2[15:0]
 [pattern_trace] 1
 [pattern_trace] 0

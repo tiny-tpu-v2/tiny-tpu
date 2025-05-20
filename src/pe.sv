@@ -8,17 +8,16 @@ module pe #(
     input logic rst,
     input logic start,
     input logic load_weight,
-    input logic signed [DATA_WIDTH-1:0] input_in,
-    input logic signed [DATA_WIDTH-1:0] psum_in,
-    input logic signed [DATA_WIDTH-1:0] weight,
-    output logic signed [DATA_WIDTH-1:0] input_out,
-    output logic signed [DATA_WIDTH-1:0] psum_out,
-    output logic done
+    input logic signed [15:0] input_in,
+    input logic signed [15:0] psum_in,
+    input logic signed [15:0] weight,
+    output logic signed [15:0] input_out,
+    output logic signed [15:0] psum_out
     );
 
-    logic [DATA_WIDTH-1:0] weight_reg;
-    logic [DATA_WIDTH-1:0] psum_reg;
-    logic [DATA_WIDTH-1:0] mult_out;
+    logic signed [15:0] weight_reg;
+    logic signed [15:0] psum_reg;
+    logic signed [15:0] mult_out;
 
     fxp_mul mult (
         .ina(input_in),
@@ -27,14 +26,12 @@ module pe #(
         .overflow()
     );
 
-
     fxp_add adder (
         .ina(mult_out),
         .inb(psum_in),
         .out(psum_reg),
         .overflow()
     );
-
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             input_out <= 0;
