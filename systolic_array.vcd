@@ -1,0 +1,295 @@
+$date
+	Mon May 19 20:28:10 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module systolic_array $end
+$var wire 1 ! clk $end
+$var wire 32 " in0 [31:0] $end
+$var wire 32 # in1 [31:0] $end
+$var wire 1 $ load_weight $end
+$var wire 1 % reset $end
+$var wire 1 & start $end
+$var wire 32 ' w00 [31:0] $end
+$var wire 32 ( w01 [31:0] $end
+$var wire 32 ) w10 [31:0] $end
+$var wire 32 * w11 [31:0] $end
+$var wire 32 + pe10_to_pe11 [31:0] $end
+$var wire 32 , pe01_to_pe11 [31:0] $end
+$var wire 32 - pe00_to_pe10 [31:0] $end
+$var wire 32 . pe00_to_pe01 [31:0] $end
+$var wire 32 / out1 [31:0] $end
+$var wire 32 0 out0 [31:0] $end
+$scope module pe00 $end
+$var wire 1 ! clk $end
+$var wire 32 1 input_in [31:0] $end
+$var wire 1 $ load_weight $end
+$var wire 1 % reset $end
+$var wire 1 & start $end
+$var wire 32 2 sum_in [31:0] $end
+$var wire 32 3 weight_in [31:0] $end
+$var reg 32 4 input_out [31:0] $end
+$var reg 32 5 sum_out [31:0] $end
+$var reg 32 6 weight_reg [31:0] $end
+$upscope $end
+$scope module pe01 $end
+$var wire 1 ! clk $end
+$var wire 32 7 input_in [31:0] $end
+$var wire 1 $ load_weight $end
+$var wire 1 % reset $end
+$var wire 1 & start $end
+$var wire 32 8 sum_in [31:0] $end
+$var wire 32 9 weight_in [31:0] $end
+$var reg 32 : input_out [31:0] $end
+$var reg 32 ; sum_out [31:0] $end
+$var reg 32 < weight_reg [31:0] $end
+$upscope $end
+$scope module pe10 $end
+$var wire 1 ! clk $end
+$var wire 32 = input_in [31:0] $end
+$var wire 1 $ load_weight $end
+$var wire 1 % reset $end
+$var wire 1 & start $end
+$var wire 32 > sum_in [31:0] $end
+$var wire 32 ? weight_in [31:0] $end
+$var reg 32 @ input_out [31:0] $end
+$var reg 32 A sum_out [31:0] $end
+$var reg 32 B weight_reg [31:0] $end
+$upscope $end
+$scope module pe11 $end
+$var wire 1 ! clk $end
+$var wire 32 C input_in [31:0] $end
+$var wire 1 $ load_weight $end
+$var wire 1 % reset $end
+$var wire 1 & start $end
+$var wire 32 D sum_in [31:0] $end
+$var wire 32 E weight_in [31:0] $end
+$var reg 32 F input_out [31:0] $end
+$var reg 32 G sum_out [31:0] $end
+$var reg 32 H weight_reg [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b0 H
+b0 G
+b0 F
+b0 E
+b0 D
+b0 C
+b0 B
+b0 A
+b0 @
+b0 ?
+b0 >
+b0 =
+b0 <
+b0 ;
+b0 :
+b0 9
+b0 8
+b0 7
+b0 6
+b0 5
+b0 4
+b0 3
+b0 2
+b0 1
+b0 0
+b0 /
+b0 .
+b0 -
+b0 ,
+b0 +
+b0 *
+b0 )
+b0 (
+b0 '
+0&
+1%
+0$
+b0 #
+b0 "
+1!
+$end
+#500
+0!
+#1000
+1!
+#1500
+0!
+#2000
+1!
+#2500
+0!
+#3000
+1!
+#3500
+0!
+#4000
+b100 *
+b100 E
+b11 )
+b11 ?
+b10 (
+b10 9
+b1 '
+b1 3
+1$
+0%
+1!
+#4500
+0!
+#5000
+b0 *
+b0 E
+b0 )
+b0 ?
+b0 (
+b0 9
+b0 '
+b0 3
+0$
+b100 H
+b11 B
+b10 <
+b1 6
+1!
+#5500
+0!
+#6000
+1!
+#6500
+0!
+#7000
+1!
+#7500
+0!
+#8000
+1!
+#8500
+0!
+#9000
+1!
+#9500
+0!
+#10000
+b101 "
+b101 1
+1&
+1!
+#10500
+0!
+#11000
+b110 #
+b110 =
+b111 "
+b111 1
+b101 -
+b101 5
+b101 >
+b101 .
+b101 4
+b101 7
+1!
+#11500
+0!
+#12000
+b1000 #
+b1000 =
+b0 "
+b0 1
+b111 -
+b111 5
+b111 >
+b111 .
+b111 4
+b111 7
+b1010 ,
+b1010 ;
+b1010 D
+b101 :
+b10111 0
+b10111 A
+b110 +
+b110 @
+b110 C
+1!
+#12500
+0!
+#13000
+b100010 /
+b100010 G
+b110 F
+b11111 0
+b11111 A
+b1000 +
+b1000 @
+b1000 C
+b1110 ,
+b1110 ;
+b1110 D
+b111 :
+b0 -
+b0 5
+b0 >
+b0 .
+b0 4
+b0 7
+1!
+#13500
+0!
+#14000
+b0 ,
+b0 ;
+b0 D
+b0 :
+b11000 0
+b11000 A
+b101110 /
+b101110 G
+b1000 F
+1!
+#14500
+0!
+#15000
+b100000 /
+b100000 G
+1!
+#15500
+0!
+#16000
+1!
+#16500
+0!
+#17000
+1!
+#17500
+0!
+#18000
+1!
+#18500
+0!
+#19000
+1!
+#19500
+0!
+#20000
+1!
+#20500
+0!
+#21000
+1!
+#21500
+0!
+#22000
+1!
+#22001

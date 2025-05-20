@@ -6,7 +6,7 @@ from cocotb.binary import BinaryValue
 @cocotb.test()
 async def test_pe(dut):
     # Start the clock
-    cocotb.start_soon(Clock(dut.clk, 1, units="ps").start())
+    cocotb.start_soon(Clock(dut.clk, 1, units="ns").start())
     
     # Initialize all inputs
     dut.reset.value = 1
@@ -18,17 +18,15 @@ async def test_pe(dut):
     
     await ClockCycles(dut.clk, 5)
 
-
     dut.reset.value = 0
     dut.load_weight.value = 1
     dut.weight_in.value = 3
     await ClockCycles(dut.clk, 1)
 
-
     dut.weight_in.value = 0
     dut.load_weight.value = 0
     dut.reset.value = 0
     dut.start.value = 1
-    dut.input_in.value = 0b00111111111000000000000000000000
-    dut.sum_in.value = 0b01000001010110100000000000000000
+    dut.input_in.value = 3
+    dut.sum_in.value = 4
     await ClockCycles(dut.clk, 40)

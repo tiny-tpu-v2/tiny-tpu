@@ -17,7 +17,7 @@ SOURCES = src/pe.sv src/systolic_array.sv src/float32_adder.sv
 # Environment variables
 export COCOTB_REDUCED_LOG_FMT=1
 export LIBPYTHON_LOC=$(shell cocotb-config --libpython)
-export PYTHONPATH := test:$(PYTHONPATH)
+export PYTHONPATH := tests:$(PYTHONPATH)
 
 # Default target
 all: pe 
@@ -26,6 +26,11 @@ all: pe
 pe: $(SIM_BUILD_DIR)
 	$(IVERILOG) -o $(SIM_VVP) -s pe -s dump -g2012 $(SOURCES) tests/dump_pe.sv
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_pe $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+
+systolic_array: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s systolic_array -s dump -g2012 $(SOURCES) tests/dump_systolic_array.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=systolic_array_tb $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 
 

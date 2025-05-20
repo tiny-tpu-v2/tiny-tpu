@@ -1,0 +1,36 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Mon May 19 21:37:09 2025
+[*]
+[dumpfile] "/home/xander/verilog/apex-tpu/float32_adder.vcd"
+[dumpfile_mtime] "Mon May 19 21:32:11 2025"
+[dumpfile_size] 7071
+[savefile] "/home/xander/verilog/apex-tpu/float32_adder.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 590 -1506
+*-15.000000 1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 266
+[sst_expanded] 1
+[sst_vpaned_height] 157
+@28
+float32_adder.clk
+float32_adder.rst
+@22
+float32_adder.input_a[31:0]
+@28
+float32_adder.input_a_stb
+float32_adder.input_a_ack
+@22
+float32_adder.input_b[31:0]
+@28
+float32_adder.input_b_stb
+float32_adder.input_b_ack
+@22
+float32_adder.output_z[31:0]
+@28
+float32_adder.output_z_stb
+float32_adder.output_z_ack
+[pattern_trace] 1
+[pattern_trace] 0

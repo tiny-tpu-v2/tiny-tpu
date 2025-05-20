@@ -1,0 +1,330 @@
+$date
+	Mon May 19 17:57:24 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module float32_adder $end
+$var wire 1 ! clk $end
+$var wire 32 " input_a [31:0] $end
+$var wire 1 # input_a_ack $end
+$var wire 1 $ input_a_stb $end
+$var wire 32 % input_b [31:0] $end
+$var wire 1 & input_b_ack $end
+$var wire 1 ' input_b_stb $end
+$var wire 32 ( output_z [31:0] $end
+$var wire 1 ) output_z_ack $end
+$var wire 1 * output_z_stb $end
+$var wire 1 + rst $end
+$var parameter 4 , add_0 $end
+$var parameter 4 - add_1 $end
+$var parameter 4 . align $end
+$var parameter 4 / get_a $end
+$var parameter 4 0 get_b $end
+$var parameter 4 1 normalise_1 $end
+$var parameter 4 2 normalise_2 $end
+$var parameter 4 3 pack $end
+$var parameter 4 4 put_z $end
+$var parameter 4 5 round $end
+$var parameter 4 6 special_cases $end
+$var parameter 4 7 unpack $end
+$var reg 32 8 a [31:0] $end
+$var reg 10 9 a_e [9:0] $end
+$var reg 27 : a_m [26:0] $end
+$var reg 1 ; a_s $end
+$var reg 32 < b [31:0] $end
+$var reg 10 = b_e [9:0] $end
+$var reg 27 > b_m [26:0] $end
+$var reg 1 ? b_s $end
+$var reg 1 @ guard $end
+$var reg 1 A round_bit $end
+$var reg 1 B s_input_a_ack $end
+$var reg 1 C s_input_b_ack $end
+$var reg 32 D s_output_z [31:0] $end
+$var reg 1 E s_output_z_stb $end
+$var reg 4 F state [3:0] $end
+$var reg 1 G sticky $end
+$var reg 28 H sum [27:0] $end
+$var reg 32 I z [31:0] $end
+$var reg 10 J z_e [9:0] $end
+$var reg 24 K z_m [23:0] $end
+$var reg 1 L z_s $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b10 7
+b11 6
+b1001 5
+b1011 4
+b1010 3
+b1000 2
+b111 1
+b1 0
+b0 /
+b100 .
+b110 -
+b101 ,
+$end
+#0
+$dumpvars
+xL
+bx K
+bx J
+bx I
+bx H
+xG
+b0 F
+0E
+bx D
+0C
+0B
+xA
+x@
+x?
+bx >
+bx =
+bx <
+x;
+bx :
+bx 9
+bx 8
+1+
+0*
+0)
+bx (
+0'
+0&
+b0 %
+0$
+0#
+b0 "
+1!
+$end
+#500
+0!
+#1000
+0#
+0B
+1!
+#1500
+0!
+#2000
+0#
+0B
+1!
+#2500
+0!
+#3000
+0#
+0B
+1!
+#3500
+0!
+#4000
+0#
+0B
+1!
+#4500
+0!
+#5000
+0#
+0B
+1!
+#5500
+0!
+#6000
+0#
+0B
+1!
+#6500
+0!
+#7000
+0#
+0B
+1!
+#7500
+0!
+#8000
+0#
+0B
+1!
+#8500
+0!
+#9000
+0#
+0B
+1!
+#9500
+0!
+#10000
+0#
+0B
+1!
+#10500
+0!
+#11000
+0#
+0B
+1!
+#11500
+0!
+#12000
+0#
+0B
+1!
+#12500
+0!
+#13000
+0#
+0B
+1!
+#13500
+0!
+#14000
+0#
+0B
+1!
+#14500
+0!
+#15000
+0#
+0B
+1!
+#15500
+0!
+#16000
+0#
+0B
+1!
+#16500
+0!
+#17000
+0#
+0B
+1!
+#17500
+0!
+#18000
+0#
+0B
+1!
+#18500
+0!
+#19000
+1'
+1$
+b1000000000000000000000000000000 %
+b1000000111010011001100110011010 "
+0+
+0#
+0B
+1!
+#19500
+0!
+#20000
+1#
+1B
+1!
+#20500
+0!
+#21000
+b1 F
+0#
+0B
+b1000000111010011001100110011010 8
+1!
+#21500
+0!
+#22000
+1&
+1C
+1!
+#22500
+0!
+#23000
+b10 F
+0&
+0C
+b1000000000000000000000000000000 <
+1!
+#23500
+0!
+#24000
+b11 F
+0?
+0;
+b1 =
+b10 9
+b0 >
+b11010011001100110011010000 :
+1!
+#24500
+0!
+#25000
+b100 F
+b100000000000000000000000000 >
+b111010011001100110011010000 :
+1!
+#25500
+0!
+#26000
+b10000000000000000000000000 >
+b10 =
+1!
+#26500
+0!
+#27000
+b101 F
+1!
+#27500
+0!
+#28000
+b110 F
+0L
+b1001010011001100110011010000 H
+b10 J
+1!
+#28500
+0!
+#29000
+b111 F
+b11 J
+0G
+0A
+0@
+b100101001100110011001101 K
+1!
+#29500
+0!
+#30000
+b1000 F
+1!
+#30500
+0!
+#31000
+b1001 F
+1!
+#31500
+0!
+#32000
+b1010 F
+1!
+#32500
+0!
+#33000
+b1011 F
+b1000001000101001100110011001101 I
+1!
+#33500
+0!
+#34000
+b1000001000101001100110011001101 (
+b1000001000101001100110011001101 D
+1*
+1E
+1!
+#34001

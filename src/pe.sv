@@ -1,4 +1,5 @@
-`timescale 1ps / 1ps
+`default_nettype none
+`timescale 1ns / 1ns
 
 module pe(
     input logic clk,
@@ -13,9 +14,7 @@ module pe(
     output logic [31:0] input_out,
     output logic [31:0] sum_out
 );
-
     logic [31:0] weight_reg;
-    
 
     always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -29,6 +28,7 @@ module pe(
             end
             if (start) begin
                 input_out <= input_in;
+                sum_out <= input_in * weight_reg + sum_in;
             end
         end
     end

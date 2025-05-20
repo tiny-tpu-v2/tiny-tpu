@@ -1,0 +1,29 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Mon May 19 20:58:47 2025
+[*]
+[dumpfile] "/home/xander/verilog/apex-tpu/pe.vcd"
+[dumpfile_mtime] "Mon May 19 20:55:07 2025"
+[dumpfile_size] 1597
+[savefile] "/home/xander/verilog/apex-tpu/pe.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -503 -1159
+*-12.000000 14000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 244
+[sst_expanded] 1
+[sst_vpaned_height] 157
+@420
+pe.clk
+pe.reset
+pe.start
+pe.input_in[31:0]
+pe.sum_in[31:0]
+pe.load_weight
+pe.weight_in[31:0]
+pe.weight_reg[31:0]
+pe.input_out[31:0]
+pe.sum_out[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

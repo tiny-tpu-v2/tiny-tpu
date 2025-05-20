@@ -1,0 +1,35 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Tue May 20 00:28:07 2025
+[*]
+[dumpfile] "/home/xander/verilog/apex-tpu/systolic_array.vcd"
+[dumpfile_mtime] "Tue May 20 00:27:30 2025"
+[dumpfile_size] 3349
+[savefile] "/home/xander/verilog/apex-tpu/systolic_array.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-13.000000 4000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 174
+[sst_expanded] 1
+[sst_vpaned_height] 157
+@421
+systolic_array.clk
+systolic_array.in0[31:0]
+systolic_array.in1[31:0]
+systolic_array.load_weight
+systolic_array.out0[31:0]
+systolic_array.out1[31:0]
+systolic_array.pe00_to_pe01[31:0]
+systolic_array.pe00_to_pe10[31:0]
+systolic_array.pe01_to_pe11[31:0]
+systolic_array.pe10_to_pe11[31:0]
+systolic_array.reset
+systolic_array.start
+systolic_array.w00[31:0]
+systolic_array.w01[31:0]
+systolic_array.w10[31:0]
+systolic_array.w11[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
