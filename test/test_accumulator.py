@@ -33,11 +33,16 @@ async def test_pe_various_inputs(dut):
     await RisingEdge(dut.clk)
     dut.acc_data_in.value = 15
     await RisingEdge(dut.clk)
+
+    dut.acc_valid_i.value = 0   # Set acc_valid_i to 0 to stop storing values. It wont store anything after this
+
     dut.acc_data_in.value = 20
     await RisingEdge(dut.clk)
     dut.acc_valid_i.value = 0
     await RisingEdge(dut.clk)
 
+
     for i in range(4):
         val = dut.acc_mem[i].value
         print(f"acc_mem[{i}] = {val}")
+
