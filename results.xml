@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1747689564" />
-    <testcase name="test_leaky_relu" classname="test_leaky_relu" file="/Users/suryasure/projects/apex/test/test_leaky_relu.py" lineno="5" time="0.0009350776672363281" sim_time_ns="60.001" ratio_time="64166.8623926568" />
+    <property name="random_seed" value="1747700854" />
+    <testcase name="test_pe_fixed_point" classname="test_pe" file="/Users/suryasure/projects/apex/test/test_pe.py" lineno="13" time="0.0006608963012695312" sim_time_ns="40.001" ratio_time="60525.380340548334" />
   </testsuite>
 </testsuites>
