@@ -1,41 +1,62 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import Timer
+from cocotb.triggers import RisingEdge, Timer
+
+def to_fixed(val, frac_bits=8):
+    return int(round(val * (1 << frac_bits))) & 0xFFFF
+
+def from_fixed(val, frac_bits=8):
+    if val >= (1 << 15):
+        val -= (1 << 16)
+    return float(val) / (1 << frac_bits)
 
 @cocotb.test()
-async def test_leaky_relu(dut):
-    """Test the processing_element module."""
+async def test_leaky_relu_fixed_point(dut):
+    """Test the leaky_relu module with fixed-point numbers."""
 
-    # Create a clock
+    # Start the clock
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
 
-    await Timer(10, units="ns")
-
-    # rst the DUT (device under test)
+    # Reset
     dut.rst.value = 1
-    dut.input_in.value = 0
-    dut.leak_factor.value = 0
-
-    # deactivate rst to allow other functionality
-    await Timer(10, units="ns")
+    await RisingEdge(dut.clk)
     dut.rst.value = 0
+    await RisingEdge(dut.clk)
 
-    # load weight on to the PE
-    dut.input_in.value = 10
-    dut.leak_factor.value = 2
-    await Timer(10, units="ns")
+    # Test positive input
+    input_val = 2.5
+    leak_factor = 0.1
+    dut.input_in.value = to_fixed(input_val)
+    dut.leak_factor.value = to_fixed(leak_factor)
+    await RisingEdge(dut.clk)  # First clock: registers input
+    await RisingEdge(dut.clk)  # Second clock: output is valid
 
-    # set input_in and psum_in to arbitrary values  
-    dut.input_in.value = 5
+    result_fixed = dut.out.value.signed_integer
+    result_float = from_fixed(result_fixed)
+    assert abs(result_float - input_val) < 0.01, f"Expected {input_val}, got {result_float}"
 
-    await Timer(10, units="ns")
+    # Test negative input
+    input_val = -4.0
+    leak_factor = 0.2
+    dut.input_in.value = to_fixed(input_val)
+    dut.leak_factor.value = to_fixed(leak_factor)
+    await RisingEdge(dut.clk)  # First clock: registers input
+    await RisingEdge(dut.clk)  # Second clock: output is valid
 
-    # set input_in and psum_in to different values 
-    dut.input_in.value = -20
-    await Timer(10, units="ns")
-    # Deactivate the start signal
-    dut.input_in.value = 0
+    result_fixed = dut.out.value.signed_integer
+    result_float = from_fixed(result_fixed)
+    expected = input_val * leak_factor
+    assert abs(result_float - expected) < 0.01, f"Expected {expected}, got {result_float}"
 
+    # Test zero input
+    input_val = 0.0
+    leak_factor = 0.5
+    dut.input_in.value = to_fixed(input_val)
+    dut.leak_factor.value = to_fixed(leak_factor)
+    await RisingEdge(dut.clk)  # First clock: registers input
+    await RisingEdge(dut.clk)  # Second clock: output is valid
 
-    await Timer(10, units="ns")
+    result_fixed = dut.out.value.signed_integer
+    result_float = from_fixed(result_fixed)
+    assert abs(result_float - 0.0) < 0.01, f"Expected 0.0, got {result_float}"
