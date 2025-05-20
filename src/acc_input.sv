@@ -1,5 +1,5 @@
 module acc_input #(
-    parameter int ACC_WIDTH = 4
+    parameter int ACC_WIDTH = 1
 ) (
     input logic clk,
     input logic rst,

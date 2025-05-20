@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1747780395" />
-    <testcase name="test_acc_input" classname="test_acc_input" file="/home/xander/verilog/apex-tpu/test/test_acc_input.py" lineno="5" time="0.0055713653564453125" sim_time_ns="430.001" ratio_time="77180.54237863744" />
+    <property name="random_seed" value="1747782198" />
+    <testcase name="test_acc_input" classname="test_acc_input" file="/home/xander/verilog/apex-tpu/test/test_acc_input.py" lineno="5" time="0.0031490325927734375" sim_time_ns="310.001" ratio_time="98443.24911447607" />
   </testsuite>
 </testsuites>
