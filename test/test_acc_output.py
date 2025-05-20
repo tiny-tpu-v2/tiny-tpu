@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import RisingEdge, ClockCycles
 
 def to_fixed(val, frac_bits=8):
     return int(round(val * (1 << frac_bits))) & 0xFFFF
@@ -11,7 +11,7 @@ def from_fixed(val, frac_bits=8):
     return float(val) / (1 << frac_bits)
 
 @cocotb.test()
-async def test_pe_various_inputs(dut):
+async def test_acc_output(dut):
     """Test the PE module with a variety of fixed-point inputs."""
 
     clock = Clock(dut.clk, 10, units="ns")
@@ -41,8 +41,5 @@ async def test_pe_various_inputs(dut):
     dut.acc_valid_i.value = 0
     await RisingEdge(dut.clk)
 
-
-    for i in range(4):
-        val = dut.acc_mem[i].value
-        print(f"acc_mem[{i}] = {val}")
+    await ClockCycles(dut.clk, 10)
 
