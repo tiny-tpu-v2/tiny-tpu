@@ -39,7 +39,7 @@ module pe #(
             weight_reg <= 0;
         end else if (load_weight) begin
             weight_reg <= weight;
-        end else begin
+        end else if (start) begin
             input_out <= input_in;
             psum_out <= psum_reg;
         end
