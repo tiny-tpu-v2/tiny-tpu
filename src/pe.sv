@@ -52,8 +52,7 @@ module pe #(
             input_out <= input_in;
             psum_out <= psum_reg;
 
-            pe_valid_out <= 1; // ensure that in the testbench for this, we only assert pe_valid_in for one clock cycle
-            // so that valid pe_valid_out becomes zero after that. 
+            pe_valid_out <= 1;
         end else if (!pe_valid_in) begin
             pe_valid_out <= 0; // we can probably refactor this into a FSM 
             psum_out <= 0;
