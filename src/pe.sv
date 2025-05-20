@@ -6,14 +6,14 @@ module pe (
     input logic rst,
     input logic start,
     input logic load_weight,
-    input logic [15:0] input_in,
-    input logic [15:0] psum_in,
-    input logic [15:0] weight,
-    output logic [15:0] input_out,
-    output logic [15:0] psum_out
+    input logic signed [15:0] input_in,
+    input logic signed [15:0] psum_in,
+    input logic signed [15:0] weight,
+    output logic signed [15:0] input_out,
+    output logic signed [15:0] psum_out
     );
 
-    logic [15:0] weight_reg;
+    logic signed [15:0] weight_reg;
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin

@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1747699791" />
-    <testcase name="test_systolic_array" classname="test_systolic" file="/Users/evanlin/Desktop/tinytpuv2/test/test_systolic.py" lineno="7" time="0.003744840621948242" sim_time_ns="200.001" ratio_time="53407.07928337684" />
+    <property name="random_seed" value="1747703387" />
+    <testcase name="test_layer1" classname="test_layer1" file="/Users/evanlin/Desktop/tinytpuv2/test/test_layer1.py" lineno="7" time="0.004275798797607422" sim_time_ns="220.001" ratio_time="51452.608135608345" />
   </testsuite>
 </testsuites>
