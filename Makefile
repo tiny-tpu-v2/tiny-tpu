@@ -56,6 +56,13 @@ test_accumulator: $(SIM_BUILD_DIR)
 	mv accumulator.vcd waveforms/ 2>/dev/null || true
 
 
+test_accumulator: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s accumulator -s dump -g2012 $(SOURCES) test/dump_accumulator.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_accumulator $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv accumulator.vcd waveforms/ 2>/dev/null || true
+
+
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
 
 # Create simulation build directory and waveforms directory
