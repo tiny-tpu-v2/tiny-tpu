@@ -1,6 +1,8 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1747706233" />
-    <testcase name="test_layer1" classname="test_layer1" file="/Users/evanlin/Desktop/tinytpuv2/test/test_layer1.py" lineno="35" time="0.004940986633300781" sim_time_ns="220.001" ratio_time="44525.72255857942" />
+    <property name="random_seed" value="1747708957" />
+    <testcase name="test_layer1" classname="test_layer1" file="/Users/evanlin/Desktop/tinytpuv2/test/test_layer1.py" lineno="35" time="0.0027217864990234375" sim_time_ns="0.001" ratio_time="0.3674057463209531">
+      <failure message="Test failed with RANDOM_SEED=1747708957" />
+    </testcase>
   </testsuite>
 </testsuites>

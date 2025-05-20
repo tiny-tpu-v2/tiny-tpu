@@ -32,14 +32,15 @@ module pe #(
         .out(psum_reg),
         .overflow()
     );
+
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            input_out <= 0;
-            psum_out <= 0;
-            weight_reg <= 0;
+            input_out <= 16'b0;
+            psum_out <= 16'b0;
+            weight_reg <= 16'b0;
         end else if (load_weight) begin
             weight_reg <= weight;
-        end else begin
+        end else if (start) begin
             input_out <= input_in;
             psum_out <= psum_reg;
         end

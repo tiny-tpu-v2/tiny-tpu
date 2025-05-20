@@ -1,7 +1,7 @@
 # import cocotb
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, Timer
+from cocotb.triggers import RisingEdge
 
 
 def to_fixed(val, frac_bits=8):
@@ -50,10 +50,10 @@ async def test_layer1(dut):
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
     dut.start.value = 0
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
 
     dut.rst.value = 0
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
 
     dut.load_weights.value = 1
     dut.leak_factor.value = to_fixed(2.0)
@@ -65,49 +65,49 @@ async def test_layer1(dut):
     dut.weight_12.value = to_fixed(3.0)
     dut.weight_21.value = to_fixed(-2.0)
     dut.weight_22.value = to_fixed(4.0)
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
 
     dut.start.value = 1 
     dut.load_weights.value = 0
 
-    await Timer(10, units="ns") 
+    await RisingEdge(10, units="ns") 
     dut.input_11.value = to_fixed(5.0)
     dut.input_21.value = to_fixed(0.0)
 
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(6.0)
 
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
 
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
 
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
 
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
 
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
 
     result = dut.out1.value
     # result_float = from_fixed(result)
     
 
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
 
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
-    await Timer(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
+    await RisingEdge(10, units="ns")
