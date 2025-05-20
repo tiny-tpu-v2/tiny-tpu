@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1747700890" />
-    <testcase name="systolic_array_tb" classname="systolic_array_tb" file="/home/xander/verilog/apex-tpu/tests/systolic_array_tb.py" lineno="5" time="0.0031931400299072266" sim_time_ns="22.001" ratio_time="6890.083051146122" />
+    <property name="random_seed" value="1747708344" />
+    <testcase name="systolic_array_tb" classname="systolic_array_tb" file="/home/xander/verilog/apex-tpu/tests/systolic_array_tb.py" lineno="5" time="0.004682064056396484" sim_time_ns="42.001" ratio_time="8970.61626968123" />
   </testsuite>
 </testsuites>
