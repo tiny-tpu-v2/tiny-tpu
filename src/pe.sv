@@ -6,11 +6,19 @@ module pe #(
 ) (
     input logic clk,
     input logic rst,
-    input logic start,
+
+
+    input logic pe_valid_in, // valid in signal for the PE
+    output logic pe_valid_out, // valid out sig... 
+
+
     input logic load_weight,
+
     input logic signed [15:0] input_in,
     input logic signed [15:0] psum_in,
     input logic signed [15:0] weight,
+
+    
     output logic signed [15:0] input_out,
     output logic signed [15:0] psum_out
     );
@@ -40,9 +48,14 @@ module pe #(
             weight_reg <= 16'b0;
         end else if (load_weight) begin
             weight_reg <= weight;
-        end else if (start) begin
+        end else if (pe_valid_in) begin
             input_out <= input_in;
             psum_out <= psum_reg;
+
+            pe_valid_out <= 1; // ensure that in the testbench for this, we only assert pe_valid_in for one clock cycle
+            // so that valid pe_valid_out becomes zero after that. 
+        end else if (!pe_valid_in) begin
+            pe_valid_out <= 0; // we can probably refactor this into a FSM 
         end
     end
 

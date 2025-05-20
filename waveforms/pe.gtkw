@@ -1,30 +1,44 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Sun May 18 14:59:04 2025
+[*] Tue May 20 17:21:09 2025
 [*]
-[dumpfile] "/Users/suryasure/projects/apex/waveforms/pe.vcd"
-[dumpfile_mtime] "Sat May 17 13:24:36 2025"
-[dumpfile_size] 894
-[savefile] "/Users/suryasure/projects/apex/waveforms/pe.gtkw"
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/pe.vcd"
+[dumpfile_mtime] "Tue May 20 17:21:03 2025"
+[dumpfile_size] 3418
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/pe.gtkw"
 [timestart] 0
 [size] 1336 600
 [pos] -1 -1
-*-14.100000 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-14.100000 20630 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] pe.
 [sst_width] 255
-[signals_width] 169
+[signals_width] 252
 [sst_expanded] 1
 [sst_vpaned_height] 159
-@421
+@40000420
+[fpshift_count] 8
 pe.clk
-pe.done
+@28
+pe.pe_valid_in
+pe.pe_valid_out
+@40000420
+[fpshift_count] 8
 pe.input_in[15:0]
+[fpshift_count] 8
 pe.input_out[15:0]
-pe.load_weight[15:0]
+[fpshift_count] 8
 pe.psum_in[15:0]
-pe.psum_out[15:0]
+[fpshift_count] 8
 pe.rst
-pe.start
+[fpshift_count] 8
 pe.weight[15:0]
+[fpshift_count] 8
 pe.weight_reg[15:0]
+[fpshift_count] 8
+pe.mult_out[15:0]
+[fpshift_count] 8
+pe.psum_reg[15:0]
+@420
+pe.psum_out[15:0]
 [pattern_trace] 1
 [pattern_trace] 0

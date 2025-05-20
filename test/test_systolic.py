@@ -39,20 +39,25 @@ async def test_systolic_array(dut):
     dut.weight_22.value = to_fixed(4.0)
     await RisingEdge(dut.clk)
 
-    dut.start.value = 1 
     dut.load_weights.value = 0
-
     await RisingEdge(dut.clk) 
+
+    # dut.start.value = 0 
     dut.input_11.value = to_fixed(5.0)
     dut.input_21.value = to_fixed(0.0)
     await RisingEdge(dut.clk)
+
+
+    dut.start.value = 1 
     await RisingEdge(dut.clk)
 
-    await RisingEdge(dut.clk)
+    dut.start.value = 1 
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(6.0)
 
     await RisingEdge(dut.clk)
+
+    dut.start.value = 0 
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
 

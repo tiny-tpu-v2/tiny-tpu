@@ -6,7 +6,7 @@
 module systolic (
     input logic clk,
     input logic rst,
-    input logic start,
+    input logic start, // this only needs to be high for one clock cycle -- goes into the first top left PE
     input logic load_weights,
     
     input logic [15:0] input_11,
@@ -20,7 +20,9 @@ module systolic (
 
     output logic [15:0] out_21,
     output logic [15:0] out_22,
-    output logic done
+
+    output wire valid_out_21, 
+    output wire valid_out_22
 );
     // Zero signals
     wire [15:0] zero_wire_inputs;
@@ -37,13 +39,22 @@ module systolic (
     logic [15:0] psum_11;
     logic [15:0] psum_12;
 
-    // Done signal logic
-    assign done = 1'b0; // You'll need to implement proper done logic based on your requirements
+    wire pe_valid_out_11; // this wire will connect the valid signal from pe11 to pe12 and pe21
+    wire pe_valid_out_12;// this wire will connect the valid signal from pe12 to pe22
+
+    wire pe_valid_out_21; // this wire will connect the valid signal from pe21 to the first OUTPUT
+    wire pe_valid_out_22; // this wire will connect the valid signal from pe22 to the second OUTPUT
+
+    assign valid_out_21 = pe_valid_out_21; 
+    assign valid_out_22 = pe_valid_out_22; 
 
     pe pe11 (
         .clk(clk),
         .rst(rst),
-        .start(start),
+
+        .pe_valid_in(start),
+        .pe_valid_out(pe_valid_out_11), // valid out signal is now dispatched onto pe_valid_out_11
+
         .input_in(input_11),
         .psum_in(zero_wire_inputs),
         .weight(weight_11),
@@ -55,7 +66,11 @@ module systolic (
     pe pe12 (
         .clk(clk),
         .rst(rst),
-        .start(start),
+
+        .pe_valid_in(pe_valid_out_11), // connect this to pe_valid out of pe11?
+        .pe_valid_out(pe_valid_out_12), // now connect this to pe_valid in of pe22
+
+
         .input_in(input_11_out),
         .psum_in(zero_wire_inputs),
         .weight(weight_12),
@@ -64,10 +79,14 @@ module systolic (
         .psum_out(psum_12)
     );
 
-    pe pe21 (
+    pe pe21 ( // connect this to pe_valid out of pe11?
         .clk(clk),
         .rst(rst),
-        .start(start),
+
+        .pe_valid_in(pe_valid_out_11),
+        .pe_valid_out(pe_valid_out_21),
+
+
         .input_in(input_21),
         .psum_in(psum_11),
         .weight(weight_21),
@@ -76,10 +95,14 @@ module systolic (
         .psum_out(out_21)
     );
 
-    pe pe22 (
+    pe pe22 ( // connect this to pe_valid out of pe 21? 
         .clk(clk),
         .rst(rst),
-        .start(start),
+
+        .pe_valid_in(pe_valid_out_12),
+        .pe_valid_out(pe_valid_out_22),
+
+
         .input_in(input_21_out),
         .psum_in(psum_12),
         .weight(weight_22),
