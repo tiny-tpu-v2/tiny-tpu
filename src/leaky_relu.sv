@@ -4,9 +4,11 @@
 module leaky_relu (
     input logic clk,
     input logic rst,
+    input logic lr_valid_in,
     input logic signed [15:0] input_in,
     input logic signed [15:0] leak_factor,
-    output logic signed [15:0] out
+    output logic signed [15:0] out,
+    output logic lr_valid_out
 );
     logic signed[15:0] mul_out;
 
@@ -19,10 +21,16 @@ module leaky_relu (
     always @(posedge clk) begin
         if (rst) begin
             out <= 16'b0;
-        end else if (input_in > 0) begin
-            out <= input_in;
+            lr_valid_out <= 0;
+        end else if (lr_valid_in && lr_valid_out == 0) begin
+            if (input_in > 0) begin
+                out <= input_in;
+            end else begin
+                out <= mul_out;
+            end
+            lr_valid_out <= 1;
         end else begin
-            out <= mul_out;
+            lr_valid_out <= 0;
         end
     end
 
