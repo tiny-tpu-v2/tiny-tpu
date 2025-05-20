@@ -198,5 +198,4 @@ module systolic_array(
             endcase
         end
     end
-
 endmodule
