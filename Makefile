@@ -49,6 +49,12 @@ test_layer1: $(SIM_BUILD_DIR)
 	! grep failure results.xml
 	mv layer1.vcd waveforms/ 2>/dev/null || true
 
+test_bias: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s bias -s dump -g2012 $(SOURCES) test/dump_bias.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_bias $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv bias.vcd waveforms/ 2>/dev/null || true
+
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
 

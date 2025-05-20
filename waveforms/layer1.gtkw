@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Tue May 20 03:12:11 2025
+[*] Tue May 20 19:49:48 2025
 [*]
 [dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/layer1.vcd"
-[dumpfile_mtime] "Tue May 20 03:10:25 2025"
-[dumpfile_size] 18299
+[dumpfile_mtime] "Tue May 20 19:43:06 2025"
+[dumpfile_size] 19577
 [savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/layer1.gtkw"
 [timestart] 0
 [size] 1344 600
 [pos] -1 -1
-*-15.300000 63300 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-15.300000 65100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -36,6 +36,8 @@
 [markername] XX
 [markername] YY
 [markername] ZZ
+[treeopen] layer1.
+[treeopen] layer1.leaky_relu_22.
 [sst_width] 255
 [signals_width] 216
 [sst_expanded] 1
@@ -72,9 +74,19 @@ layer1.out_21[15:0]
 layer1.out_22[15:0]
 @40000420
 [fpshift_count] 8
+layer1.out_21_bias[15:0]
+[fpshift_count] 8
+layer1.out_22_bias[15:0]
+@40000421
+[fpshift_count] 8
 layer1.out1[15:0]
 @40000024
 [fpshift_count] 8
 layer1.out2[15:0]
+@28
+layer1.lr_valid_out_21
+@40000420
+[fpshift_count] 8
+layer1.lr_valid_out_22
 [pattern_trace] 1
 [pattern_trace] 0

@@ -27,6 +27,16 @@ module layer1 (
     logic signed [15:0] out_21_bias;
     logic signed [15:0] out_22_bias; 
 
+    // below are wires which connect the valid signals from systolic array to bias and leaky relu modules
+    logic valid_out_21;
+    logic valid_out_22;
+
+    logic bias_valid_out_21;
+    logic bias_valid_out_22;
+
+    logic lr_valid_out_21; // Xander you will need to connect this to your accumulator module
+    logic lr_valid_out_22; // Xander you will need to connect this to your accumulator module
+
     systolic systolic_inst (
         .clk(clk),
         .rst(rst),
@@ -41,7 +51,10 @@ module layer1 (
         .weight_21(weight_21),
         .weight_22(weight_22),
         .out_21(out_21),
-        .out_22(out_22)
+        .out_22(out_22),
+
+        .valid_out_21(valid_out_21),
+        .valid_out_22(valid_out_22)
     );
 
     bias bias_21 (
@@ -49,7 +62,12 @@ module layer1 (
         .rst(rst),
         .input_in(out_21),
         .bias_in(in_bias_21), 
-        .output_out(out_21_bias) 
+        .output_out(out_21_bias),
+
+        .bias_valid_in(valid_out_21),
+        .bias_valid_out(bias_valid_out_21)
+
+        
     );
 
     bias bias_22 (
@@ -57,7 +75,10 @@ module layer1 (
         .rst(rst),
         .input_in(out_22),
         .bias_in(in_bias_22),
-        .output_out(out_22_bias)
+        .output_out(out_22_bias),
+
+        .bias_valid_in(valid_out_22),
+        .bias_valid_out(bias_valid_out_22)
     );
 
     leaky_relu leaky_relu_21 (
@@ -65,7 +86,10 @@ module layer1 (
         .rst(rst),
         .input_in(out_21_bias),
         .leak_factor(leak_factor),
-        .out(out1)
+        .out(out1),
+
+        .lr_valid_in(bias_valid_out_21),
+        .lr_valid_out(lr_valid_out_21)
     );
 
     leaky_relu leaky_relu_22 (
@@ -73,7 +97,10 @@ module layer1 (
         .rst(rst),
         .input_in(out_22_bias),
         .leak_factor(leak_factor),
-        .out(out2)
+        .out(out2),
+
+        .lr_valid_in(bias_valid_out_22),
+        .lr_valid_out(lr_valid_out_22)
     );
 
 endmodule

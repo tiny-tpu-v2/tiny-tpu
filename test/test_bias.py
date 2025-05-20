@@ -23,19 +23,20 @@ async def test_pe(dut):
 
     await RisingEdge(dut.clk)
     dut.rst.value = 0
-    await RisingEdge(dut.clk)
 
+    await RisingEdge(dut.clk)
     dut.input_in.value = to_fixed(10.0)
     dut.bias_in.value = to_fixed(5.0)
     dut.bias_valid_in.value = 1
 
     await RisingEdge(dut.clk)
-    dut.input_in.value = to_fixed(12.0)
-    dut.bias_in.value = to_fixed(9.0)
+    dut.bias_valid_in.value = 0 # i set this to 0 to make sure the bias doesnt get updated to 3
+    # dut.input_in.value = to_fixed(12.0)
+    # dut.bias_in.value = to_fixed(9.0)
 
     await RisingEdge(dut.clk)
-    dut.input_in.value = to_fixed(9.0)
-    dut.bias_in.value = to_fixed(3.0)
+    # dut.input_in.value = to_fixed(9.0)
+    # dut.bias_in.value = to_fixed(3.0)
     dut.bias_valid_in.value = 0
     
     await RisingEdge(dut.clk)

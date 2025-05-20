@@ -45,7 +45,7 @@ async def test_leaky_relu_fixed_point(dut):
     await RisingEdge(dut.clk)
 
     dut.input_in.value = to_fixed(10.0)
-    dut.leak_factor.value = to_fixed(0.1)
+    dut.leak_factor.value = to_fixed(0.2)
     dut.lr_valid_in.value = 1
     await RisingEdge(dut.clk)
     dut.input_in.value = to_fixed(8.0)

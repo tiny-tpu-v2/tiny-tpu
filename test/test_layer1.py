@@ -67,22 +67,27 @@ async def test_layer1(dut):
     dut.weight_22.value = to_fixed(4.0)
     await RisingEdge(dut.clk)
 
-    dut.start.value = 1 
     dut.load_weights.value = 0
-
     await RisingEdge(dut.clk) 
+
+    # Stage the inputs to the systolic array
     dut.input_11.value = to_fixed(5.0)
     dut.input_21.value = to_fixed(0.0)
-
     await RisingEdge(dut.clk)
+
+    dut.start.value = 1 # Now systolic array will start processing
+    await RisingEdge(dut.clk)
+
+    dut.start.value = 1
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(6.0)
-
     await RisingEdge(dut.clk)
+
+    dut.start.value = 0 # now top left PE is off -- that signal will propagate through the array
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
-
     await RisingEdge(dut.clk)
+
     dut.input_11.value = to_fixed(0.0)
     dut.input_21.value = to_fixed(0.0)
 
