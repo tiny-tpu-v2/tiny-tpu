@@ -63,7 +63,7 @@ async def test_layer1(dut):
     dut.acc_valid_data_nn_in1.value = 1
     dut.acc_data_nn_in1.value = to_fixed(1.0)       # INPUT TO NN (X1)
     dut.acc_valid_data_nn_in2.value = 1
-    dut.acc_data_nn_in2.value = to_fixed(1.0)       # INPUT TO NN (X2)
+    dut.acc_data_nn_in2.value = to_fixed(0.0)       # INPUT TO NN (X2)
     await RisingEdge(dut.clk)
     dut.acc_valid_data_nn_in1.value = 0
     dut.acc_valid_data_nn_in2.value = 0
