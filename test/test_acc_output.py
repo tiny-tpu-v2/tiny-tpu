@@ -26,13 +26,13 @@ async def test_acc_output(dut):
     dut.rst.value = 0
     await RisingEdge(dut.clk)
 
+    test_data = [5]
+
     dut.acc_valid_i.value = 1
-    dut.acc_data_in.value = 5
-    await RisingEdge(dut.clk)
-    dut.acc_data_in.value = 10
-    await RisingEdge(dut.clk)
-    dut.acc_data_in.value = 15
-    await RisingEdge(dut.clk)
+
+    for data in test_data:
+        dut.acc_data_in.value = data
+        await RisingEdge(dut.clk)
 
     dut.acc_valid_i.value = 0   # Set acc_valid_i to 0 to stop storing values. It wont store anything after this
 

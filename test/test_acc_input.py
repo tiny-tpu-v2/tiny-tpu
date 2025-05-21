@@ -9,7 +9,7 @@ async def test_acc_input(dut):
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
 
-    test_load_in = [12]
+    test_load_in = [12, 3, 5, 9]
 
     # Reset
     dut.rst.value = 1

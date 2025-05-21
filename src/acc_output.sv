@@ -1,7 +1,7 @@
 // TODO: Add streaming output functionality to the acc_output module
 
 module acc_output #(
-    parameter int ACC_WIDTH = 4 // This equals the size of the systolic array that we decide to use (if the systolic array is 4x4, then ACC_WIDTH = 4)
+    parameter int ACC_WIDTH = 1 // This equals the size of the systolic array that we decide to use (if the systolic array is 4x4, then ACC_WIDTH = 4)
 ) (
     input logic clk,
     input logic rst,
