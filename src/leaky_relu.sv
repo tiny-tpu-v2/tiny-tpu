@@ -18,6 +18,7 @@ module leaky_relu (
         .out(mul_out)
     );
 
+
     always @(posedge clk) begin
         if (rst) begin
             out <= 16'b0;

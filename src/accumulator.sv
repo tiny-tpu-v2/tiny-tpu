@@ -1,22 +1,25 @@
 module accumulator#(
     parameter int ACC_WIDTH = 1
+    // parameter int INIT_VAL = 0
 )(
     input logic clk,
     input logic rst,
     
-
     input logic acc_valid_in,
     input logic acc_valid_data_in,
 
-    input logic [15:0] acc_data_in,
+    input logic signed [15:0] acc_data_nn_in,
+    input logic acc_valid_data_nn_in,
+
+    input logic signed [15:0] acc_data_in,
 
     output logic acc_valid_out,
-    output logic [15:0] acc_data_out
+    output logic signed [15:0] acc_data_out
 );
 
     // logic [15:0] acc_data_out;
     logic [7:0] counter;
-    logic [15:0] acc_mem_reg [0:ACC_WIDTH-1];
+    logic signed [15:0] acc_mem_reg [0:ACC_WIDTH-1];
 
     always @(posedge clk) begin
         for (int i = 0; i < ACC_WIDTH; i++) begin
@@ -30,6 +33,12 @@ module accumulator#(
             acc_data_out <= 0;
             acc_valid_out <= 0;
             counter <= 0;
+
+            // acc_mem_reg[0] <= INIT_VAL;     // TODO: Remove this later
+        end
+        else if (acc_valid_data_nn_in) begin
+            acc_mem_reg[0] <= acc_data_nn_in;
+            counter <= counter+1;
         end
         else if (acc_valid_data_in) begin    // Enqueue 
             acc_mem_reg[counter] <= acc_data_in;
@@ -41,12 +50,15 @@ module accumulator#(
                 counter <= counter - 1;
                 acc_data_out <= acc_mem_reg[ACC_WIDTH-counter];
                 
-            end
-            else if (!acc_valid_in) begin
+            end else begin
                 acc_valid_out <= 0;
                 acc_data_out <= 0;
                 counter <= 0;
             end
+        end else if(!acc_valid_in && counter == 0) begin
+            acc_valid_out <= 0;
+            acc_data_out <= 0;
+            counter <= 0;
         end
         
     end

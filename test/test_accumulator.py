@@ -30,6 +30,8 @@ async def test_accumulator(dut):
 
 
     dut.acc_valid_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.acc_valid_in.value = 0
     await ClockCycles(dut.clk, 20)
 
 

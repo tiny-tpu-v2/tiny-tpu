@@ -1,7 +1,7 @@
 # import cocotb
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import RisingEdge, ClockCycles
 
 
 def to_fixed(val, frac_bits=8):
@@ -37,24 +37,38 @@ async def test_layer1(dut):
 
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
+
+    await ClockCycles(dut.clk, 1)
     
     # rst the DUT (device under test)
     dut.rst.value = 1
     dut.load_weights.value = 0
+    dut.acc_valid_data_nn_in1.value = 0
+    dut.acc_data_nn_in1.value = to_fixed(0.0)
+    dut.acc_valid_data_nn_in2.value = 0
+    dut.acc_data_nn_in2.value = to_fixed(0.0)
     dut.weight_11.value = to_fixed(0.0)
     dut.weight_12.value = to_fixed(0.0)
 
     dut.weight_21.value = to_fixed(0.0)
     dut.weight_22.value = to_fixed(0.0)
 
-    dut.input_11.value = to_fixed(0.0)
-    dut.input_21.value = to_fixed(0.0)
     dut.start.value = 0
     await RisingEdge(dut.clk)
 
     # rst is off now
     dut.rst.value = 0
     await RisingEdge(dut.clk)
+
+    dut.acc_valid_data_nn_in1.value = 1
+    dut.acc_data_nn_in1.value = to_fixed(5.0)
+    dut.acc_valid_data_nn_in2.value = 1
+    dut.acc_data_nn_in2.value = to_fixed(6.0)
+    await RisingEdge(dut.clk)
+    dut.acc_valid_data_nn_in1.value = 0
+    dut.acc_valid_data_nn_in2.value = 0
+    # dut.acc_data_nn_in1.value = to_fixed(0.0)
+    # dut.acc_data_nn_in2.value = to_fixed(0.0)
 
     dut.load_weights.value = 1
     dut.leak_factor.value = to_fixed(2.0)
@@ -74,14 +88,11 @@ async def test_layer1(dut):
     dut.weight_12.value = to_fixed(0.0)
     dut.weight_21.value = to_fixed(0.0)
     dut.weight_22.value = to_fixed(0.0)
-    # load weight flag is off now
-    dut.load_weights.value = 0
+    dut.load_weights.value = 0                  # load weight flag is off now
     await RisingEdge(dut.clk) 
 
     # Inputs are ALREADY staged to systolic array (dut.input_xx.value directly connects to systolic array)
     dut.start.value = 1 # Now systolic array will start processing
-    dut.input_11.value = to_fixed(5.0)
-    dut.input_21.value = to_fixed(0.0)
     await RisingEdge(dut.clk)
 
     # Now, we turn off the start signal and "already" staged inputs will propagate through the systolic array.
@@ -89,27 +100,6 @@ async def test_layer1(dut):
     # but in reality, the inputs are already staged to the systolic array....
     # These values below (0.0, 6.0) would have to be inputted in the PREVIOUS clock cycle.
     dut.start.value = 0
-    dut.input_11.value = to_fixed(0.0)
-    dut.input_21.value = to_fixed(6.0)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 50)
 
     # Start flag will now STAY off for the rest of the testbench. We will not change this value anymore. 
-    dut.start.value = 0 # now top left PE is off -- that signal will propagate through the array.
-    dut.input_11.value = to_fixed(0.0)
-    dut.input_21.value = to_fixed(0.0)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-
-    result = dut.out1.value
-    # result_float = from_fixed(result)
-    
-
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
