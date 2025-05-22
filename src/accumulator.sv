@@ -1,6 +1,5 @@
 module accumulator#(
     parameter int ACC_WIDTH = 1
-    // parameter int INIT_VAL = 0
 )(
     input logic clk,
     input logic rst,

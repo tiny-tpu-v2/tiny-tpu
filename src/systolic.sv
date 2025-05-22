@@ -6,23 +6,23 @@
 module systolic (
     input logic clk,
     input logic rst,
-    input logic start, // this only needs to be high for one clock cycle -- goes into the first top left PE
-    input logic load_weights,
+    input logic sys_start, // this only needs to be high for one clock cycle -- goes into the first top left PE
+    input logic sys_valid_load_weights,
     
-    input logic [15:0] input_11,
-    input logic [15:0] input_21,
+    input logic [15:0] sys_data_in_11,
+    input logic [15:0] sys_data_in_12,
 
-    input logic [15:0] weight_11,
-    input logic [15:0] weight_12,
-    input logic [15:0] weight_21,
-    input logic [15:0] weight_22,
+    input logic [15:0] sys_temp_weight_11,
+    input logic [15:0] sys_temp_weight_12,
+    input logic [15:0] sys_temp_weight_21,
+    input logic [15:0] sys_temp_weight_22,
 
 
-    output logic [15:0] out_21,
-    output logic [15:0] out_22,
+    output logic [15:0] sys_data_out_21,
+    output logic [15:0] sys_data_out_22,
 
-    output wire valid_out_21, 
-    output wire valid_out_22
+    output wire sys_valid_out_21, 
+    output wire sys_valid_out_22
 );
     // Zero signals
     wire [15:0] zero_wire_inputs;
@@ -45,20 +45,20 @@ module systolic (
     wire pe_valid_out_21; // this wire will connect the valid signal from pe21 to the first OUTPUT
     wire pe_valid_out_22; // this wire will connect the valid signal from pe22 to the second OUTPUT
 
-    assign valid_out_21 = pe_valid_out_21; 
-    assign valid_out_22 = pe_valid_out_22; 
+    assign sys_valid_out_21 = pe_valid_out_21; 
+    assign sys_valid_out_22 = pe_valid_out_22; 
 
     pe pe11 (
         .clk(clk),
         .rst(rst),
 
-        .pe_valid_in(start),
+        .pe_valid_in(sys_start),
         .pe_valid_out(pe_valid_out_11), // valid out signal is now dispatched onto pe_valid_out_11
 
-        .input_in(input_11),
+        .input_in(sys_data_in_11),
         .psum_in(zero_wire_inputs),
-        .weight(weight_11),
-        .load_weight(load_weights),
+        .weight(sys_temp_weight_11),
+        .load_weight(sys_valid_load_weights),
         .input_out(input_11_out),
         .psum_out(psum_11)
     );
@@ -73,8 +73,8 @@ module systolic (
 
         .input_in(input_11_out),
         .psum_in(zero_wire_inputs),
-        .weight(weight_12),
-        .load_weight(load_weights),
+        .weight(sys_temp_weight_12),
+        .load_weight(sys_valid_load_weights),
         .input_out(zero_wire_outputs),
         .psum_out(psum_12)
     );
@@ -87,12 +87,12 @@ module systolic (
         .pe_valid_out(pe_valid_out_21),
 
 
-        .input_in(input_21),
+        .input_in(sys_data_in_12),
         .psum_in(psum_11),
-        .weight(weight_21),
-        .load_weight(load_weights),
+        .weight(sys_temp_weight_21),
+        .load_weight(sys_valid_load_weights),
         .input_out(input_21_out),
-        .psum_out(out_21)
+        .psum_out(sys_data_out_21)
     );
 
     pe pe22 ( // connect this to pe_valid out of pe 21? 
@@ -105,10 +105,10 @@ module systolic (
 
         .input_in(input_21_out),
         .psum_in(psum_12),
-        .weight(weight_22),
-        .load_weight(load_weights),
+        .weight(sys_temp_weight_22),
+        .load_weight(sys_valid_load_weights),
         .input_out(zero_wire_outputs),
-        .psum_out(out_22)
+        .psum_out(sys_data_out_22)
     );
 
 endmodule
