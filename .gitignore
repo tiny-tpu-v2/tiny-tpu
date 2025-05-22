@@ -15,7 +15,7 @@ build/
 *.egg-info/
 
 # Simulation and waveform files
-sim_build/
+**/sim_build/
 waveforms/
 *.vcd
 
