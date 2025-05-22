@@ -1,4 +1,4 @@
-module layer1 (
+module nn (
     input logic clk,
     input logic rst,
 
@@ -38,8 +38,8 @@ module layer1 (
     logic signed [15:0] out_22_bias;        // Connections from bias 2 to leaky relu 2
 
     // Below are wires which connect the valid signals from systolic array to bias and leaky relu modules
-    logic valid_out_21;        // Valid signal from systolic array pe21 to bias 1
-    logic valid_out_22;        // Valid signal from systolic array pe22 to bias 2
+    logic sys_valid_out_21;        // Valid signal from systolic array pe21 to bias 1
+    logic sys_valid_out_22;        // Valid signal from systolic array pe22 to bias 2
 
     logic bias_valid_out_21;        // Valid signal from bias 1 to leaky relu 1
     logic bias_valid_out_22;        // Valid signal from bias 2 to leaky relu 2
@@ -92,8 +92,8 @@ module layer1 (
         .sys_data_out_21(sys_data_out_21),
         .sys_data_out_22(sys_data_out_22),
 
-        .sys_valid_out_21(valid_out_21),
-        .sys_valid_out_22(valid_out_22)
+        .sys_valid_out_21(sys_valid_out_21),
+        .sys_valid_out_22(sys_valid_out_22)
     );
 
     bias bias_21 (
@@ -103,7 +103,7 @@ module layer1 (
         .bias_temp_bias(nn_temp_bias_1), 
         .bias_data_out(out_21_bias),
 
-        .bias_valid_in(valid_out_21),
+        .bias_valid_in(sys_valid_out_21),
         .bias_valid_out(bias_valid_out_21)
     );
 
@@ -114,7 +114,7 @@ module layer1 (
         .bias_temp_bias(nn_temp_bias_2),
         .bias_data_out(out_22_bias),
 
-        .bias_valid_in(valid_out_22),
+        .bias_valid_in(sys_valid_out_22),
         .bias_valid_out(bias_valid_out_22)
     );
 

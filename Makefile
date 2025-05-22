@@ -16,7 +16,7 @@ export PYTHONPATH := test:$(PYTHONPATH)
 
 #=============== MODIFY BELOW ======================
 # IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
-SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/layer1.sv src/bias.sv src/fixedpoint.sv src/accumulator.sv
+SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/nn.sv src/bias.sv src/fixedpoint.sv src/accumulator.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -43,11 +43,11 @@ test_systolic: $(SIM_BUILD_DIR)
 	! grep failure results.xml
 	mv systolic.vcd waveforms/ 2>/dev/null || true
 
-test_layer1: $(SIM_BUILD_DIR)
-	$(IVERILOG) -o $(SIM_VVP) -s layer1 -s dump -g2012 $(SOURCES) test/dump_layer1.sv
-	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_layer1 $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+test_nn: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s nn -s dump -g2012 $(SOURCES) test/dump_nn.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_nn $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
-	mv layer1.vcd waveforms/ 2>/dev/null || true
+	mv nn.vcd waveforms/ 2>/dev/null || true
 
 test_bias: $(SIM_BUILD_DIR)
 	$(IVERILOG) -o $(SIM_VVP) -s bias -s dump -g2012 $(SOURCES) test/dump_bias.sv
