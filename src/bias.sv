@@ -11,15 +11,23 @@ module bias (
     output logic bias_valid_out
 );
 
+    logic signed [15:0] add_out;
+
+    fxp_add add_inst(
+        .ina(input_in),
+        .inb(bias_in),
+        .out(add_out)
+    );
+
     always @(posedge clk) begin
         if (rst) begin
             output_out <= 0;
             bias_valid_out <= 0;
         end else if (bias_valid_in) begin
-                output_out <= input_in + bias_in;
-                bias_valid_out <= 1;
+            output_out <= add_out;
+            bias_valid_out <= 1;
         end else begin
-                bias_valid_out <= 0;
+            bias_valid_out <= 0;
                 output_out <= 0;
         end
     end

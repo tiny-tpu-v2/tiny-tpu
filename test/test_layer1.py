@@ -73,13 +73,13 @@ async def test_layer1(dut):
     dut.load_weights.value = 1
     dut.leak_factor.value = to_fixed(0.01)
 
-    dut.in_bias_21.value = to_fixed(-7.271759986877441)
-    dut.in_bias_22.value = to_fixed(-0.001315317815169692)
+    dut.in_bias_21.value = to_fixed(0.25080394744873047)
+    dut.in_bias_22.value = to_fixed(-0.00012433409574441612)
     
-    dut.weight_11.value = to_fixed(-7.5453877449035645)
-    dut.weight_12.value = to_fixed(-1.2938556671142578)
-    dut.weight_21.value = to_fixed(7.261751651763916)
-    dut.weight_22.value = to_fixed(1.281524658203125)
+    dut.weight_11.value = to_fixed(0.8821601271629333)
+    dut.weight_12.value = to_fixed(-1.0646932125091553)
+    dut.weight_21.value = to_fixed(-0.8821614980697632)
+    dut.weight_22.value = to_fixed(1.0648175477981567)
     await RisingEdge(dut.clk)
     
     # weights from prev clock cycle are latched due to load_weights flag being on. 
@@ -103,11 +103,11 @@ async def test_layer1(dut):
     await ClockCycles(dut.clk, 20)
 
     dut.load_weights.value = 1
-    dut.weight_11.value = to_fixed(-12.73682689666748)
+    dut.weight_11.value = to_fixed(1.1482632160186768)
     dut.weight_12.value = to_fixed(0)
-    dut.weight_21.value = to_fixed(1.4969583749771118)
+    dut.weight_21.value = to_fixed(1.216535210609436)
     dut.weight_22.value = to_fixed(0)
-    dut.in_bias_21.value = to_fixed(-0.9182648658752441)
+    dut.in_bias_21.value = to_fixed(-0.28798729181289673)
     dut.in_bias_22.value = to_fixed(0)
 
     await ClockCycles(dut.clk, 1)
