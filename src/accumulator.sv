@@ -32,8 +32,6 @@ module accumulator#(
             acc_data_out <= 0;
             acc_valid_out <= 0;
             counter <= 0;
-
-            // acc_mem_reg[0] <= INIT_VAL;     // TODO: Remove this later
         end
         else if (acc_valid_data_nn_in) begin
             acc_mem_reg[0] <= acc_data_nn_in;
@@ -44,22 +42,14 @@ module accumulator#(
             counter <= counter + 1;
         end
         else if (acc_valid_in) begin        // Dequeue
-            if(counter > 0) begin
-                acc_valid_out <= 1'b1;
-                counter <= counter - 1;
-                acc_data_out <= acc_mem_reg[ACC_WIDTH-counter];
-                
-            end else begin
-                acc_valid_out <= 0;
-                acc_data_out <= 0;
-                counter <= 0;
-            end
-        end else if(!acc_valid_in && counter == 0) begin
+            acc_valid_out <= 1'b1;
+            counter <= counter - 1;
+            acc_data_out <= acc_mem_reg[ACC_WIDTH-counter];
+        end else if(counter == 0) begin 
             acc_valid_out <= 0;
             acc_data_out <= 0;
             counter <= 0;
         end
-        
     end
 endmodule
 
