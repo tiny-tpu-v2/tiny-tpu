@@ -1,5 +1,5 @@
 module accumulator#(
-    parameter int ACC_WIDTH = 1
+    parameter int ACC_WIDTH = 4
 )(
     input logic clk,
     input logic rst,
@@ -15,9 +15,8 @@ module accumulator#(
     output logic acc_valid_out,
     output logic signed [15:0] acc_data_out
 );
-
-    // logic [15:0] acc_data_out;
     logic [7:0] counter;
+    logic [7:0] counter_reg;
     logic signed [15:0] acc_mem_reg [0:ACC_WIDTH-1];
 
     always @(posedge clk) begin
@@ -32,19 +31,22 @@ module accumulator#(
             acc_data_out <= 0;
             acc_valid_out <= 0;
             counter <= 0;
+            counter_reg <= 0;
         end
         else if (acc_valid_data_nn_in) begin
-            acc_mem_reg[0] <= acc_data_nn_in;
+            acc_mem_reg[counter] <= acc_data_nn_in;
             counter <= counter+1;
+            counter_reg <= counter;
         end
         else if (acc_valid_data_in) begin    // Enqueue 
             acc_mem_reg[counter] <= acc_data_in;
             counter <= counter + 1;
+            counter_reg <= counter;
         end
         else if (acc_valid_in) begin        // Dequeue
             acc_valid_out <= 1'b1;
             counter <= counter - 1;
-            acc_data_out <= acc_mem_reg[ACC_WIDTH-counter];
+            acc_data_out <= acc_mem_reg[counter_reg+1-counter];
         end else if(counter == 0) begin 
             acc_valid_out <= 0;
             acc_data_out <= 0;

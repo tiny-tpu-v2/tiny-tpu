@@ -23,7 +23,7 @@ module leaky_relu (
         if (rst) begin
             lr_data_out <= 16'b0;
             lr_valid_out <= 0;
-        end else if (lr_valid_in && lr_valid_out == 0) begin
+        end else if (lr_valid_in) begin     // removed lr_valid_in && lr_valid_out == 0 to allow for batching
             if (lr_data_in > 0) begin
                 lr_data_out <= lr_data_in;
             end else begin

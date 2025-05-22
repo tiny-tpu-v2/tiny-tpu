@@ -51,9 +51,7 @@ module layer1 (
     logic acc_valid_out_2; // Valid signal from accumulator 2 to systolic array pe21
 
 
-    accumulator #(
-        .ACC_WIDTH(1)
-    ) acc_1 (
+    accumulator acc_1 (
         .clk(clk),
         .rst(rst),
         .acc_valid_in(nn_start),
@@ -65,9 +63,7 @@ module layer1 (
         .acc_data_out(input_11)
     );
 
-    accumulator #(
-        .ACC_WIDTH(1)
-    ) acc_2 (
+    accumulator acc_2 (
         .clk(clk),
         .rst(rst),
         .acc_valid_in(acc_valid_out_1),

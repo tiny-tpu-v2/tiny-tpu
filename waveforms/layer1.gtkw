@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Wed May 21 04:54:28 2025
+[*] Thu May 22 22:14:35 2025
 [*]
 [dumpfile] "/home/xander/verilog/apex-tpu/waveforms/layer1.vcd"
-[dumpfile_mtime] "Wed May 21 04:51:15 2025"
-[dumpfile_size] 30703
+[dumpfile_mtime] "Thu May 22 22:13:52 2025"
+[dumpfile_size] 44087
 [savefile] "/home/xander/verilog/apex-tpu/waveforms/layer1.gtkw"
 [timestart] 0
 [size] 1344 600
@@ -47,67 +47,28 @@
 [fpshift_count] 8
 layer1.clk
 [fpshift_count] 8
-layer1.input_11[15:0]
-[fpshift_count] 8
-layer1.acc_1.\acc_mem_reg[0][15:0]
-@40800420
-[fpshift_count] 8
-layer1.acc_2.\acc_mem_reg[0][15:0]
-@28
-layer1.start
-(11)layer1.acc_2.\acc_mem_reg[0][15:0]
-(12)layer1.acc_2.\acc_mem_reg[0][15:0]
-(13)layer1.acc_2.\acc_mem_reg[0][15:0]
-(14)layer1.acc_2.\acc_mem_reg[0][15:0]
-@29
-(15)layer1.acc_2.\acc_mem_reg[0][15:0]
-@41001600
--group_end
-@40000420
-[fpshift_count] 8
-layer1.input_21[15:0]
-[fpshift_count] 8
-layer1.load_weights
-[fpshift_count] 8
 layer1.rst
 [fpshift_count] 8
-layer1.weight_11[15:0]
-[fpshift_count] 8
-layer1.weight_12[15:0]
-[fpshift_count] 8
-layer1.weight_21[15:0]
-[fpshift_count] 8
-layer1.weight_22[15:0]
-[fpshift_count] 8
-layer1.leak_factor[15:0]
-[fpshift_count] 8
-layer1.out_21_bias[15:0]
-[fpshift_count] 8
-layer1.out_22_bias[15:0]
-[fpshift_count] 8
-layer1.start
-@28
-layer1.acc_1.acc_valid_in
-@22
 layer1.acc_1.\acc_mem_reg[0][15:0]
-layer1.acc_1.counter[7:0]
-@28
-layer1.acc_1.acc_valid_out
-layer1.systolic_inst.pe_valid_out_11
-layer1.systolic_inst.pe_valid_out_12
-layer1.systolic_inst.pe_valid_out_21
-layer1.systolic_inst.pe_valid_out_22
-layer1.systolic_inst.pe11.pe_valid_in
-layer1.acc_valid_out_1
-layer1.acc_valid_out_2
-layer1.acc_1.acc_valid_data_in
-layer1.valid_out_21
-layer1.valid_out_22
-layer1.bias_valid_out_21
-layer1.bias_valid_out_22
-layer1.lr_valid_out_21
-@40000420
 [fpshift_count] 8
+layer1.acc_2.\acc_mem_reg[0][15:0]
+[fpshift_count] 8
+layer1.acc_1.\acc_mem_reg[1][15:0]
+[fpshift_count] 8
+layer1.acc_2.\acc_mem_reg[1][15:0]
+@28
+layer1.nn_start
+layer1.acc_valid_out_1
+layer1.valid_out_21
+layer1.bias_valid_out_21
+layer1.lr_valid_out_21
+@200
+-
+@28
+layer1.nn_start
+layer1.acc_valid_out_2
+layer1.valid_out_22
+layer1.bias_valid_out_22
 layer1.lr_valid_out_22
 [pattern_trace] 1
 [pattern_trace] 0
