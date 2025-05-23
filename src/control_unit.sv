@@ -12,50 +12,21 @@ module control_unit (
 );
 
 always @(*) begin
-        activation_datapath = instruction[1:0];
+    activation_datapath = instruction[1:0];
 
-        case (instruction[4:2])
-            3'b000: begin
-                nn_start = 0;
-                load_inputs = 0;
-                load_weights = 0;
-            end
-            3'b001: begin
-                nn_start = 1;
-                load_inputs = 0;
-                load_weights = 0;
-            end
-            3'b010: begin
-                nn_start = 0;
-                load_inputs = 1;
-                load_weights = 0;
-            end
-            3'b011: begin
-                nn_start = 1;
-                load_inputs = 1;
-                load_weights = 0;
-            end
-            3'b100: begin
-                nn_start = 0;
-                load_inputs = 0;
-                load_weights = 1;
-            end
-            3'b101: begin
-                nn_start = 1;
-                load_inputs = 0;
-                load_weights = 1;
-            end
-            3'b110: begin
-                nn_start = 0;
-                load_inputs = 1;
-                load_weights = 1;
-            end
-            3'b111: begin
-                nn_start = 1;
-                load_inputs = 1;
-                load_weights = 1;
-        end
-    endcase
+    nn_start = 0;
+    load_inputs = 0;
+    load_weights = 0;
+
+    if(instruction[2]) begin
+        nn_start = 1;
+    end
+    if(instruction[3]) begin
+        load_inputs = 1;
+    end
+    if(instruction[4]) begin
+        load_weights = 1;
+    end
 end
 
 
