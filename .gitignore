@@ -1,0 +1,33 @@
+# Python virtual environment
+my-env/
+venv/
+env/
+.env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Simulation and waveform files
+**/sim_build/
+waveforms/
+*.vcd
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Results XML
+results.xml

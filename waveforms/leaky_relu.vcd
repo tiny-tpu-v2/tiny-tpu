@@ -1,0 +1,130 @@
+$date
+	Tue May 20 16:33:30 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module leaky_relu $end
+$var wire 1 ! clk $end
+$var wire 16 " input_in [15:0] $end
+$var wire 16 # leak_factor [15:0] $end
+$var wire 1 $ lr_valid_in $end
+$var wire 1 % rst $end
+$var wire 16 & mul_out [15:0] $end
+$var reg 1 ' lr_valid_out $end
+$var reg 16 ( out [15:0] $end
+$scope module mul_inst $end
+$var wire 16 ) ina [15:0] $end
+$var wire 16 * inb [15:0] $end
+$var wire 32 + res [31:0] $end
+$var wire 1 , overflow $end
+$var wire 16 - out [15:0] $end
+$scope module res_zoom $end
+$var wire 32 . in [31:0] $end
+$var wire 16 / out [15:0] $end
+$var reg 16 0 ini [15:0] $end
+$var reg 24 1 inr [23:0] $end
+$var reg 8 2 outf [7:0] $end
+$var reg 8 3 outi [7:0] $end
+$var reg 1 , overflow $end
+$scope begin genblk4 $end
+$upscope $end
+$scope begin genblk9 $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 3
+b0 2
+b0 1
+b0 0
+b0 /
+bx .
+b0 -
+0,
+bx +
+bz *
+bz )
+b0 (
+0'
+b0 &
+0%
+0$
+bz #
+bz "
+1!
+$end
+#5000
+0!
+#10000
+b1 3
+b1 0
+b111111110 &
+b111111110 -
+b111111110 /
+b11111110 2
+b111111110 1
+1$
+b11111111000000000 +
+b11111111000000000 .
+b110011 #
+b110011 *
+b101000000000 "
+b101000000000 )
+1!
+#15000
+0!
+#20000
+b110011000 &
+b110011000 -
+b110011000 /
+b10011000 2
+b110011000 1
+0$
+b11001100000000000 +
+b11001100000000000 .
+b100000000000 "
+b100000000000 )
+1'
+b101000000000 (
+1!
+#25000
+0!
+#30000
+b11111110 3
+b1111111111111110 0
+b1111111011111100 &
+b1111111011111100 -
+b1111111011111100 /
+b11111100 2
+b111111111111111011111100 1
+1$
+b11010 #
+b11010 *
+b11111111111111101111110000000000 +
+b11111111111111101111110000000000 .
+b1111011000000000 "
+b1111011000000000 )
+b0 (
+0'
+1!
+#35000
+0!
+#40000
+0$
+1'
+b1111111011111100 (
+1!
+#45000
+0!
+#50000
+b0 (
+0'
+1!
+#50001

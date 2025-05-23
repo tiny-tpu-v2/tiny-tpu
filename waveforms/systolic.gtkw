@@ -1,0 +1,58 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue May 20 18:08:32 2025
+[*]
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/systolic.vcd"
+[dumpfile_mtime] "Tue May 20 18:05:21 2025"
+[dumpfile_size] 12880
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/systolic.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-15.600000 59100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] systolic.
+[treeopen] systolic.pe22.
+[sst_width] 255
+[signals_width] 255
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@40000420
+[fpshift_count] 8
+systolic.clk
+[fpshift_count] 8
+systolic.input_11[15:0]
+[fpshift_count] 8
+systolic.input_11_out[15:0]
+[fpshift_count] 8
+systolic.input_21[15:0]
+[fpshift_count] 8
+systolic.input_21_out[15:0]
+[fpshift_count] 8
+systolic.load_weights
+[fpshift_count] 8
+systolic.psum_11[15:0]
+[fpshift_count] 8
+systolic.psum_12[15:0]
+[fpshift_count] 8
+systolic.rst
+[fpshift_count] 8
+systolic.start
+[fpshift_count] 8
+systolic.weight_11[15:0]
+[fpshift_count] 8
+systolic.weight_12[15:0]
+[fpshift_count] 8
+systolic.weight_21[15:0]
+[fpshift_count] 8
+systolic.weight_22[15:0]
+[fpshift_count] 8
+systolic.out_21[15:0]
+[fpshift_count] 8
+systolic.out_22[15:0]
+@28
+systolic.pe11.pe_valid_in
+systolic.pe11.pe_valid_out
+systolic.valid_out_21
+systolic.valid_out_22
+[pattern_trace] 1
+[pattern_trace] 0

@@ -1,0 +1,32 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue May 20 19:29:43 2025
+[*]
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/leaky_relu.vcd"
+[dumpfile_mtime] "Tue May 20 19:27:00 2025"
+[dumpfile_size] 1760
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/leaky_relu.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-14.700000 17900 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[sst_width] 255
+[signals_width] 275
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@40000420
+[fpshift_count] 8
+leaky_relu.clk
+[fpshift_count] 8
+leaky_relu.input_in[15:0]
+[fpshift_count] 8
+leaky_relu.leak_factor[15:0]
+[fpshift_count] 8
+leaky_relu.out[15:0]
+[fpshift_count] 8
+leaky_relu.rst
+@28
+leaky_relu.lr_valid_in
+leaky_relu.lr_valid_out
+[pattern_trace] 1
+[pattern_trace] 0
