@@ -163,27 +163,16 @@ module nn (
         .load_weights(load_weights)
     );
 
+    // Accumulator input control
     always_comb begin
-        case (activation_datapath)
-            2'b00: begin
-                acc_data_in_1 = 0;
-                acc_data_in_2 = 0;
-            end
-            2'b01: begin
-                acc_data_in_1 = lr_data_out_1;
-                acc_data_in_2 = lr_data_out_2;
-            end
-            2'b10: begin
-                nn_data_out_1 = lr_data_out_1;
-                nn_data_out_2 = lr_data_out_2;
-            end
-            2'b11: begin
-                nn_data_out_1 = lr_data_out_1;
-                nn_data_out_2 = lr_data_out_2;
-                acc_data_in_1 = lr_data_out_1;
-                acc_data_in_2 = lr_data_out_2;
-            end
-        endcase
+        acc_data_in_1 = activation_datapath[0] ? lr_data_out_1 : 16'b0;
+        acc_data_in_2 = activation_datapath[0] ? lr_data_out_2 : 16'b0;
+    end
+
+    // Neural network output control
+    always_comb begin
+        nn_data_out_1 = activation_datapath[1] ? lr_data_out_1 : 16'b0;
+        nn_data_out_2 = activation_datapath[1] ? lr_data_out_2 : 16'b0;
     end
 
 endmodule
