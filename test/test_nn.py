@@ -61,7 +61,7 @@ async def test_layer1(dut):
     await RisingEdge(dut.clk)
     dut.instruction.value = 0b01000
     dut.nn_data_in_1.value = to_fixed(1.0)       # INPUT TO NN (X1)
-    dut.nn_data_in_2.value = to_fixed(0.0)       # INPUT TO NN (X2)
+    dut.nn_data_in_2.value = to_fixed(1.0)       # INPUT TO NN (X2)
     await RisingEdge(dut.clk)
 
 

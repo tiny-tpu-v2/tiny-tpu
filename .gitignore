@@ -3,6 +3,8 @@ my-env/
 venv/
 env/
 .env/
+waveforms/*.vcd
+
 
 # Python bytecode
 __pycache__/
