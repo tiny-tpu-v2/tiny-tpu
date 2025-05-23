@@ -12,20 +12,7 @@ module control_unit (
 );
 
 always @(*) begin
-        case (instruction[1:0])
-            2'b00: begin
-                activation_datapath = 2'b00;
-            end
-            2'b01: begin
-                activation_datapath = 2'b01;
-            end
-            2'b10: begin
-                activation_datapath = 2'b10;
-            end
-            2'b11: begin
-                activation_datapath = 2'b11;
-            end
-        endcase
+        activation_datapath = instruction[1:0];
 
         case (instruction[4:2])
             3'b000: begin
