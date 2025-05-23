@@ -41,10 +41,8 @@ async def test_layer1(dut):
     
     # rst the DUT (device under test)
     dut.rst.value = 1
-    dut.nn_valid_load_weights.value = 0
-    dut.nn_valid_in_1.value = 0 # TODO: rename
+    dut.instruction.value = 0b00000
     dut.nn_data_in_1.value = to_fixed(0.0)
-    dut.nn_valid_in_2.value = 0 # TODO: rename
     dut.nn_data_in_2.value = to_fixed(0.0)
     # Initialize weights to zero
     dut.nn_temp_weight_11.value = to_fixed(0.0)
@@ -52,33 +50,23 @@ async def test_layer1(dut):
     dut.nn_temp_weight_21.value = to_fixed(0.0)
     dut.nn_temp_weight_22.value = to_fixed(0.0)
     # Initialize start signal to 0
-    dut.nn_start.value = 0
-    await ClockCycles(dut.clk, 1)
+    await RisingEdge(dut.clk)
 
     # rst is off now
     dut.rst.value = 0
-    await ClockCycles(dut.clk, 1)
+    
+    await RisingEdge(dut.clk)
 
-    test_inputs = [
-        [0.0, 0.0],
-        [0.0, 1.0],
-        [1.0, 0.0],
-        [1.0, 1.0],
-    ]
+    
+    await RisingEdge(dut.clk)
+    dut.instruction.value = 0b01000
+    dut.nn_data_in_1.value = to_fixed(1.0)       # INPUT TO NN (X1)
+    dut.nn_data_in_2.value = to_fixed(0.0)       # INPUT TO NN (X2)
+    await RisingEdge(dut.clk)
 
-    for input in test_inputs:
-        # Prepare inputs by accumulating them in the accumulators
-        dut.nn_valid_in_1.value = 1
-        dut.nn_valid_in_2.value = 1
-        dut.nn_data_in_1.value = to_fixed(input[0])       # INPUT TO NN (X1)
-        dut.nn_data_in_2.value = to_fixed(input[1])       # INPUT TO NN (X2)
-        await ClockCycles(dut.clk, 1)
 
-    # Input valid flags switch off and data is set to 0
-    dut.nn_valid_in_1.value = 0
-    dut.nn_valid_in_2.value = 0
-    dut.nn_data_in_1.value = 0
-    dut.nn_data_in_2.value = 0
+    # Input valid flags switch off and load weights flag is on
+    dut.instruction.value = 0b10000
     # Initialize leak factor
     dut.nn_temp_leak_factor.value = to_fixed(0.01)
     # Initializing bias values
@@ -100,20 +88,21 @@ async def test_layer1(dut):
     dut.nn_temp_weight_12.value = to_fixed(0.0)
     dut.nn_temp_weight_21.value = to_fixed(0.0)
     dut.nn_temp_weight_22.value = to_fixed(0.0)
-    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b00000                  # load weight flag is off now
+    await ClockCycles(dut.clk, 1) 
 
     # Inputs are ALREADY staged to systolic array (dut.input_xx.value directly connects to systolic array)
-    dut.nn_start.value = 1 # Now systolic array will start processing
-    await ClockCycles(dut.clk, len(test_inputs))
+    dut.instruction.value = 0b00101 # Now systolic array will start processing
+    await ClockCycles(dut.clk, 1)
 
     # Now, we turn off the start signal and "already" staged inputs will propagate through the systolic array.
     # In this testbench, it looks like we input dut.input_11.value and dut.input_21.value ...
     # but in reality, the inputs are already staged to the systolic array....
     # These values below (0.0, 6.0) would have to be inputted in the PREVIOUS clock cycle.
-    dut.nn_start.value = 0
-    await ClockCycles(dut.clk, 6)       # Wait for a minimum of 4 clock cycles before computing next layer
+    dut.instruction.value = 0b00001
+    await ClockCycles(dut.clk, 20)
 
-    dut.nn_valid_load_weights.value = 1
+    dut.instruction.value = 0b10000
     dut.nn_temp_weight_11.value = to_fixed(1.1482632160186768)
     dut.nn_temp_weight_12.value = to_fixed(0)
     dut.nn_temp_weight_21.value = to_fixed(1.216535210609436)
@@ -121,11 +110,9 @@ async def test_layer1(dut):
     dut.nn_temp_bias_1.value = to_fixed(-0.28798729181289673)
     dut.nn_temp_bias_2.value = to_fixed(0)
     await ClockCycles(dut.clk, 1)
-
-    dut.nn_valid_load_weights.value = 0
-    dut.nn_start.value = 1
-    await ClockCycles(dut.clk, len(test_inputs))
-    dut.nn_start.value = 0
+    dut.instruction.value = 0b00110 # sending inputs to the output pins
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b00010 # sending inputs to the output pins
 
     await ClockCycles(dut.clk, 30)
 

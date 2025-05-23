@@ -1,10 +1,13 @@
+`timescale 1ns/1ps
+`default_nettype none
+
 module nn (
     input logic clk,
     input logic rst,
 
     // MODULE FLAGS
-    input logic nn_start,
-    input logic nn_valid_load_weights,
+    // input logic nn_start,
+    // input logic nn_valid_load_weights,
 
     // START OF TEMPORARY CONSTANTS
     input logic signed [15:0] nn_temp_weight_11,
@@ -22,20 +25,29 @@ module nn (
     input logic signed [15:0] nn_data_in_2,
 
     input logic nn_valid_in_1,
-    input logic nn_valid_in_2
+    input logic nn_valid_in_2,
+
+    input logic [4:0] instruction,
+
+    output logic signed [15:0] nn_data_out_1,
+    output logic signed [15:0] nn_data_out_2
+    
 );
 
     logic signed [15:0] input_11;   // Connections from accumulator 1 to systolic array pe11
     logic signed [15:0] input_21;   // Connections from accumulator 2 to systolic array pe21
 
-    logic signed[15:0] lr_data_out1;    // Connections from leaky relu 1 to accumulator 1
-    logic signed[15:0] lr_data_out2;    // Connections from leaky relu 2 to accumulator 2
+    logic signed[15:0] lr_data_out_1;    // Connections from leaky relu 1 to accumulator 1
+    logic signed[15:0] lr_data_out_2;    // Connections from leaky relu 2 to accumulator 2
 
     logic signed [15:0] sys_data_out_21;        // Connections from systolic array pe21 to bias 1
     logic signed [15:0] sys_data_out_22;        // Connections from systolic array pe22 to bias 2
 
     logic signed [15:0] out_21_bias;        // Connections from bias 1 to leaky relu 1
     logic signed [15:0] out_22_bias;        // Connections from bias 2 to leaky relu 2
+
+    logic signed [15:0] acc_data_in_1;
+    logic signed [15:0] acc_data_in_2;
 
     // Below are wires which connect the valid signals from systolic array to bias and leaky relu modules
     logic sys_valid_out_21;        // Valid signal from systolic array pe21 to bias 1
@@ -50,15 +62,19 @@ module nn (
     logic acc_valid_out_1; // Valid signal from accumulator 1 to systolic array pe11
     logic acc_valid_out_2; // Valid signal from accumulator 2 to systolic array pe21
 
+    logic load_inputs;
+    logic load_weights;
+    logic nn_start;
+    logic [1:0] activation_datapath;
 
     accumulator acc_1 (
         .clk(clk),
         .rst(rst),
         .acc_valid_in(nn_start),
         .acc_valid_data_in(lr_valid_out_21),
-        .acc_data_in(lr_data_out1),
+        .acc_data_in(acc_data_in_1),
         .acc_data_nn_in(nn_data_in_1),
-        .acc_valid_data_nn_in(nn_valid_in_1),
+        .acc_valid_data_nn_in(load_inputs),
         .acc_valid_out(acc_valid_out_1),
         .acc_data_out(input_11)
     );
@@ -68,9 +84,9 @@ module nn (
         .rst(rst),
         .acc_valid_in(acc_valid_out_1),
         .acc_valid_data_in(lr_valid_out_22),
-        .acc_data_in(lr_data_out2),
+        .acc_data_in(lr_data_out_2),
         .acc_data_nn_in(nn_data_in_2),
-        .acc_valid_data_nn_in(nn_valid_in_2),
+        .acc_valid_data_nn_in(load_inputs),
         .acc_valid_out(acc_valid_out_2),
         .acc_data_out(input_21)
     );
@@ -79,8 +95,7 @@ module nn (
         .clk(clk),
         .rst(rst),
         .sys_start(acc_valid_out_1),
-        .sys_valid_load_weights(nn_valid_load_weights),
-
+        .sys_valid_load_weights(load_weights),
         .sys_data_in_11(input_11),
         .sys_data_in_12(input_21),
 
@@ -123,7 +138,7 @@ module nn (
         .rst(rst),
         .lr_data_in(out_21_bias),
         .lr_temp_leak_factor(nn_temp_leak_factor),
-        .lr_data_out(lr_data_out1),
+        .lr_data_out(lr_data_out_1),
 
         .lr_valid_in(bias_valid_out_21),
         .lr_valid_out(lr_valid_out_21)
@@ -134,11 +149,42 @@ module nn (
         .rst(rst),
         .lr_data_in(out_22_bias),
         .lr_temp_leak_factor(nn_temp_leak_factor),
-        .lr_data_out(lr_data_out2),
+        .lr_data_out(lr_data_out_2),
 
         .lr_valid_in(bias_valid_out_22),
         .lr_valid_out(lr_valid_out_22)
     );
+
+    control_unit control_unit_inst (
+        .instruction(instruction),
+        .activation_datapath(activation_datapath),
+        .nn_start(nn_start),
+        .load_inputs(load_inputs),
+        .load_weights(load_weights)
+    );
+
+    always_comb begin
+        case (activation_datapath)
+            2'b00: begin
+                acc_data_in_1 = 0;
+                acc_data_in_2 = 0;
+            end
+            2'b01: begin
+                acc_data_in_1 = lr_data_out_1;
+                acc_data_in_2 = lr_data_out_2;
+            end
+            2'b10: begin
+                nn_data_out_1 = lr_data_out_1;
+                nn_data_out_2 = lr_data_out_2;
+            end
+            2'b11: begin
+                nn_data_out_1 = lr_data_out_1;
+                nn_data_out_2 = lr_data_out_2;
+                acc_data_in_1 = lr_data_out_1;
+                acc_data_in_2 = lr_data_out_2;
+            end
+        endcase
+    end
 
 endmodule
 
