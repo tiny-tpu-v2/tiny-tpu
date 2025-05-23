@@ -16,7 +16,7 @@ export PYTHONPATH := test:$(PYTHONPATH)
 
 #=============== MODIFY BELOW ======================
 # IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
-SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/nn.sv src/bias.sv src/fixedpoint.sv src/accumulator.sv
+SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/nn.sv src/bias.sv src/fixedpoint.sv src/accumulator.sv src/control_unit.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)

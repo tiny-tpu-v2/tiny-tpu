@@ -74,7 +74,6 @@ async def test_layer1(dut):
     dut.nn_temp_bias_2.value = to_fixed(-0.00012433409574441612)
     # Initializing weight values
     # Load weights flag is on
-    dut.nn_valid_load_weights.value = 1
     dut.nn_temp_weight_11.value = to_fixed(0.8821601271629333)
     dut.nn_temp_weight_12.value = to_fixed(-1.0646932125091553)
     dut.nn_temp_weight_21.value = to_fixed(-0.8821614980697632)
@@ -82,8 +81,7 @@ async def test_layer1(dut):
     await ClockCycles(dut.clk, 1)
     
     # weights from prev clock cycle are latched due to load_weights flag being on. 
-    # now we dont have any more weight inputs, and we turn it off. 
-    dut.nn_valid_load_weights.value = 0                  # load weight flag is off now
+    # now we dont have any more weight inputs, and we turn it off.                 # load weight flag is off now
     dut.nn_temp_weight_11.value = to_fixed(0.0)
     dut.nn_temp_weight_12.value = to_fixed(0.0)
     dut.nn_temp_weight_21.value = to_fixed(0.0)
