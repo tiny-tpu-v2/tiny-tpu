@@ -11,24 +11,15 @@ module control_unit (
     output logic load_weights
 );
 
-always @(*) begin
+always_comb begin
     activation_datapath = instruction[1:0];
 
     nn_start = 0;
     load_inputs = 0;
     load_weights = 0;
-
-    if(instruction[2]) begin
-        nn_start = 1;
-    end
-    if(instruction[3]) begin
-        load_inputs = 1;
-    end
-    if(instruction[4]) begin
-        load_weights = 1;
-    end
+    
+    nn_start = instruction[2];
+    load_inputs = instruction[3];
+    load_weights = instruction[4];
 end
-
-
-
 endmodule
