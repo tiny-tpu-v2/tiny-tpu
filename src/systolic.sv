@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-
-// 3x3 systolic array
+//TODO: add a signal to turn off columns and rows of the systolic array when not in use. this signal will be decided by the compiler
+// 2x2 systolic array
 module systolic (
     input logic clk,
     input logic rst,
@@ -69,7 +69,6 @@ module systolic (
 
         .pe_valid_in(pe_valid_out_11), // connect this to pe_valid out of pe11?
         .pe_valid_out(pe_valid_out_12), // now connect this to pe_valid in of pe22
-
 
         .input_in(input_11_out),
         .psum_in(zero_wire_inputs),

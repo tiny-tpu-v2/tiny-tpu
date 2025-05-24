@@ -21,15 +21,14 @@ module bias (
     );
 
     always @(posedge clk) begin
+        bias_valid_out <= bias_valid_in;
         if (rst) begin
             bias_data_out <= 0;
             bias_valid_out <= 0;
         end else if (bias_valid_in) begin
             bias_data_out <= add_out;
-            bias_valid_out <= 1;
         end else begin
-            bias_valid_out <= 0;
-                bias_data_out <= 0;
+            bias_data_out <= 0;
         end
     end
 

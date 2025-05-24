@@ -20,6 +20,7 @@ module leaky_relu (
 
 
     always @(posedge clk) begin
+        lr_valid_out <= lr_valid_in;
         if (rst) begin
             lr_data_out <= 16'b0;
             lr_valid_out <= 0;
@@ -29,9 +30,7 @@ module leaky_relu (
             end else begin
                 lr_data_out <= mul_out;
             end
-            lr_valid_out <= 1;
         end else begin
-            lr_valid_out <= 0;
             lr_data_out <= 0;
         end
     end
