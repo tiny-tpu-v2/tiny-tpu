@@ -65,7 +65,7 @@ test_cu: $(SIM_BUILD_DIR)
 	$(IVERILOG) -o $(SIM_VVP) -s control_unit -s dump -g2012 $(SOURCES) test/dump_cu.sv
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_cu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
-	mv control_unit.vcd waveforms/ 2>/dev/null || true
+	mv cu.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============

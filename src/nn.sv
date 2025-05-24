@@ -5,10 +5,6 @@ module nn (
     input logic clk,
     input logic rst,
 
-    // MODULE FLAGS
-    // input logic nn_start,
-    // input logic nn_valid_load_weights,
-
     // START OF TEMPORARY CONSTANTS
     input logic signed [15:0] nn_temp_weight_11,
     input logic signed [15:0] nn_temp_weight_12,
@@ -27,7 +23,7 @@ module nn (
     input logic nn_valid_in_1,
     input logic nn_valid_in_2,
 
-    input logic [5:0] instruction,
+    input logic [37:0] instruction,
 
     output logic signed [15:0] nn_data_out_1,
     output logic signed [15:0] nn_data_out_2
@@ -62,20 +58,25 @@ module nn (
     logic acc_valid_out_1; // Valid signal from accumulator 1 to systolic array pe11
     logic acc_valid_out_2; // Valid signal from accumulator 2 to systolic array pe21
 
+    logic input_acc_vaid_data_nn_in_1;
+    logic input_acc_vaid_data_nn_in_2;
+
     logic load_inputs;
     logic load_weights;
     logic load_bias;
     logic nn_start;
-    logic [1:0] activation_datapath;
-
+    logic [1:0] activation_datapath;  // routing the activation output to either the accumulator or the output wire
+    logic [1:0] address; // address of the accumulator to which the input/weight/bias data is routed
+    logic signed [15:0] input_data_in; // input data to the accumulator
+    
     accumulator acc_1 (
         .clk(clk),
         .rst(rst),
         .acc_valid_in(nn_start),
         .acc_valid_data_in(lr_valid_out_21),
         .acc_data_in(acc_data_in_1),
-        .acc_data_nn_in(nn_data_in_1),
-        .acc_valid_data_nn_in(load_inputs),
+        .acc_data_nn_in(input_data_in),
+        .acc_valid_data_nn_in(input_acc_vaid_data_nn_in_1),
         .acc_valid_out(acc_valid_out_1),
         .acc_data_out(input_11)
     );
@@ -86,8 +87,8 @@ module nn (
         .acc_valid_in(acc_valid_out_1),
         .acc_valid_data_in(lr_valid_out_22),
         .acc_data_in(lr_data_out_2),
-        .acc_data_nn_in(nn_data_in_2),
-        .acc_valid_data_nn_in(load_inputs),
+        .acc_data_nn_in(input_data_in),
+        .acc_valid_data_nn_in(input_acc_vaid_data_nn_in_2),
         .acc_valid_out(acc_valid_out_2),
         .acc_data_out(input_21)
     );
@@ -164,11 +165,14 @@ module nn (
         .nn_start(nn_start),
         .load_inputs(load_inputs),
         .load_weights(load_weights),
-        .load_bias(load_bias)
+        .load_bias(load_bias),
+        .address(address),
+        .input_data_in(input_data_in)
     );
 
     // Accumulator input control
     always_comb begin
+    
         acc_data_in_1 = activation_datapath[0] ? lr_data_out_1 : 16'b0;
         acc_data_in_2 = activation_datapath[0] ? lr_data_out_2 : 16'b0;
     end
@@ -177,6 +181,30 @@ module nn (
     always_comb begin
         nn_data_out_1 = activation_datapath[1] ? lr_data_out_1 : 16'b0;
         nn_data_out_2 = activation_datapath[1] ? lr_data_out_2 : 16'b0;
+    end
+
+    always_comb begin
+
+        // routing input data to specific accumulators based on address and load_inputs flag
+        input_acc_vaid_data_nn_in_1 = 0;
+        input_acc_vaid_data_nn_in_2 = 0;
+        if (load_inputs) begin
+            case (address)
+                2'b00: begin
+                    input_acc_vaid_data_nn_in_1 = 0;
+                    input_acc_vaid_data_nn_in_2 = 0;
+                end
+                2'b01: begin
+                    input_acc_vaid_data_nn_in_1 = 1;
+                end
+                2'b10: begin
+                    input_acc_vaid_data_nn_in_2 = 1;
+                end
+            endcase
+        end
+
+        // ADD SIMILAR LOGIC AS INPUTS FOR WEIGHTS AND BIAS ONCE ACCUMULATORS ARE DONE
+
     end
 
 endmodule
