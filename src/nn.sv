@@ -27,7 +27,7 @@ module nn (
     input logic nn_valid_in_1,
     input logic nn_valid_in_2,
 
-    input logic [4:0] instruction,
+    input logic [5:0] instruction,
 
     output logic signed [15:0] nn_data_out_1,
     output logic signed [15:0] nn_data_out_2
@@ -64,6 +64,7 @@ module nn (
 
     logic load_inputs;
     logic load_weights;
+    logic load_bias;
     logic nn_start;
     logic [1:0] activation_datapath;
 
@@ -114,6 +115,7 @@ module nn (
     bias bias_21 (
         .clk(clk),
         .rst(rst),
+        .load_bias(load_bias),
         .bias_data_in(sys_data_out_21),
         .bias_temp_bias(nn_temp_bias_1), 
         .bias_data_out(out_21_bias),
@@ -125,6 +127,7 @@ module nn (
     bias bias_22 (
         .clk(clk),
         .rst(rst),
+        .load_bias(load_bias),
         .bias_data_in(sys_data_out_22),
         .bias_temp_bias(nn_temp_bias_2),
         .bias_data_out(out_22_bias),
@@ -160,7 +163,8 @@ module nn (
         .activation_datapath(activation_datapath),
         .nn_start(nn_start),
         .load_inputs(load_inputs),
-        .load_weights(load_weights)
+        .load_weights(load_weights),
+        .load_bias(load_bias)
     );
 
     // Accumulator input control
