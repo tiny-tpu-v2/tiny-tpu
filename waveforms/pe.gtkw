@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon May 26 03:39:00 2025
+[*] Mon May 26 04:07:05 2025
 [*]
 [dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/pe.vcd"
-[dumpfile_mtime] "Mon May 26 03:38:47 2025"
-[dumpfile_size] 3786
+[dumpfile_mtime] "Mon May 26 04:06:40 2025"
+[dumpfile_size] 3831
 [savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/pe.gtkw"
 [timestart] 1430
 [size] 1336 600
@@ -29,8 +29,6 @@ pe.pe_valid_out
 [fpshift_count] 8
 pe.pe_switch_out
 [fpshift_count] 8
-pe.pe_accept_w
-[fpshift_count] 8
 pe.pe_input_in[15:0]
 [fpshift_count] 8
 pe.pe_input_out[15:0]
@@ -48,5 +46,8 @@ pe.weight_reg_inactive[15:0]
 pe.weight_reg_active[15:0]
 [fpshift_count] 8
 pe.pe_psum_out[15:0]
+@28
+pe.pe_accept_in
+pe.pe_accept_out
 [pattern_trace] 1
 [pattern_trace] 0
