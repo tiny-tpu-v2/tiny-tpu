@@ -8,15 +8,18 @@ module pe #(
     input logic rst,
 
 
+
+
+
     input logic pe_valid_in, // valid in signal for the PE
     output logic pe_valid_out, // valid out sig... 
 
 
-    input logic load_weight,
+    input logic pe_accept_w,
 
     input logic signed [15:0] input_in,
-    input logic signed [15:0] psum_in,
-    input logic signed [15:0] weight,
+    input logic signed [15:0] pe_psum_in,
+    input logic signed [15:0] pe_weight_in,
 
     
     output logic signed [15:0] input_out,
@@ -36,7 +39,7 @@ module pe #(
 
     fxp_add adder (
         .ina(mult_out),
-        .inb(psum_in),
+        .inb(pe_psum_in),
         .out(psum_reg),
         .overflow()
     );
@@ -46,8 +49,9 @@ module pe #(
             input_out <= 16'b0;
             psum_out <= 16'b0;
             weight_reg <= 16'b0;
-        end else if (load_weight) begin
-            weight_reg <= weight;
+        end else if (pe_accept_w) begin
+            weight_reg <= pe_weight_in;
+            
         end else if (pe_valid_in) begin
             input_out <= input_in;
             psum_out <= psum_reg;

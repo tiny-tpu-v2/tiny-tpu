@@ -10,7 +10,7 @@ module systolic (
     input logic sys_valid_load_weights,
     
     input logic [15:0] sys_data_in_11,
-    input logic [15:0] sys_data_in_12,
+    input logic [15:0] sys_data_in_12, // RENAME TO sys_data_in_21
 
     input logic [15:0] sys_temp_weight_11,
     input logic [15:0] sys_temp_weight_12,

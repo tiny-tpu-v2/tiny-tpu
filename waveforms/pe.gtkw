@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Fri May 23 23:01:57 2025
+[*] Mon May 26 00:42:33 2025
 [*]
 [dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/pe.vcd"
-[dumpfile_mtime] "Fri May 23 23:01:43 2025"
-[dumpfile_size] 3423
+[dumpfile_mtime] "Mon May 26 00:40:51 2025"
+[dumpfile_size] 3560
 [savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/pe.gtkw"
 [timestart] 0
 [size] 1336 600
 [pos] -1 -1
-*-14.100000 20630 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-15.100000 27500 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [treeopen] pe.
 [sst_width] 255
 [signals_width] 252
@@ -18,29 +18,31 @@
 @40000420
 [fpshift_count] 8
 pe.clk
+[fpshift_count] 8
+pe.rst
 @40000028
 [fpshift_count] 8
 pe.pe_valid_in
 [fpshift_count] 8
 pe.pe_valid_out
+@29
+pe.pe_accept_w
 @40000420
+[fpshift_count] 8
+pe.psum_out[15:0]
+[fpshift_count] 8
+pe.pe_weight_in[15:0]
+[fpshift_count] 8
+pe.weight_reg[15:0]
 [fpshift_count] 8
 pe.input_in[15:0]
 [fpshift_count] 8
 pe.input_out[15:0]
 [fpshift_count] 8
-pe.psum_in[15:0]
-[fpshift_count] 8
-pe.rst
-[fpshift_count] 8
-pe.weight[15:0]
-[fpshift_count] 8
-pe.weight_reg[15:0]
-[fpshift_count] 8
 pe.mult_out[15:0]
 [fpshift_count] 8
-pe.psum_reg[15:0]
+pe.pe_psum_in[15:0]
 [fpshift_count] 8
-pe.psum_out[15:0]
+pe.psum_reg[15:0]
 [pattern_trace] 1
 [pattern_trace] 0
