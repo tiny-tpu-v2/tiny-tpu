@@ -10,7 +10,8 @@ module pe #(
     // North wires of PE
     input logic signed [15:0] pe_psum_in, 
     input logic signed [15:0] pe_weight_in,
-    input logic pe_accept_w, 
+    input logic pe_accept_in, 
+    
 
     // West wires of PE
     input logic signed [15:0] pe_input_in, 
@@ -24,7 +25,8 @@ module pe #(
     // East wires of the PE
     output logic signed [15:0] pe_input_out,
     output logic pe_valid_out,
-    output logic pe_switch_out
+    output logic pe_switch_out,
+    output logic pe_accept_out
 );
 
     logic signed [15:0] mult_out;
@@ -57,6 +59,9 @@ module pe #(
             pe_weight_out <= 16'b0;
         end else begin
 
+            pe_accept_out <= pe_accept_in;
+            pe_valid_out <= pe_valid_in;
+
             // pe_switch_in will be used to switch between the inactive weight register and active weight register
             if (pe_switch_in) begin
                 // bring weight from background register (inactive) to foreground register (active)
@@ -66,7 +71,7 @@ module pe #(
                 pe_switch_out <= 0; // moving CE
             end
         
-            if (pe_accept_w) begin // by default, weights should be loaded into the background register
+            if (pe_accept_in) begin // by default, weights should be loaded into the background register
                 weight_reg_inactive <= pe_weight_in;
                 pe_weight_out <= pe_weight_in; 
             end else begin 
@@ -75,7 +80,6 @@ module pe #(
             
             if (pe_valid_in) begin
                 pe_input_out <= pe_input_in;
-                pe_valid_out <= 1;
             end else begin
                 pe_valid_out <= 0;
             end

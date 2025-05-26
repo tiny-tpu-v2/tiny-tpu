@@ -21,7 +21,7 @@ async def test_pe(dut):
     dut.rst.value = 1
     dut.pe_valid_in.value = 0 # this would enable the PE to start processing the inputs. but it doesnt here
 
-    dut.pe_accept_w.value = 0
+    dut.pe_accept_in.value = 0
     dut.pe_input_in.value = to_fixed(0.0)
     dut.pe_weight_in.value = to_fixed(0.0)
     dut.pe_psum_in.value = to_fixed(0.0)
@@ -32,18 +32,18 @@ async def test_pe(dut):
     await RisingEdge(dut.clk)
 
     # t = 0: Stage the weights
-    dut.pe_accept_w.value = 1; # THIS IS THE "A" in xander's drawing!
+    dut.pe_accept_in.value = 1; # THIS IS THE "A" in xander's drawing!
     dut.pe_weight_in.value = to_fixed(69.0) # in next cycle, gets latched in background buffer of pe11!
     await RisingEdge(dut.clk)
 
 
     # t = 1: Weight should now be loaded in background buffer
-    dut.pe_accept_w.value = 1 # on next clock cycle 10 should be latched in background buffer of pe21, 20 should be latched in background buffer of pe 11!
+    dut.pe_accept_in.value = 1 # on next clock cycle 10 should be latched in background buffer of pe21, 20 should be latched in background buffer of pe 11!
     dut.pe_weight_in.value = to_fixed(10.0)
     await RisingEdge(dut.clk)
 
     # t = 2: Assert the pe_switch_out signal to bring weight from bb to fb (foreground buffer) in next cycle
-    dut.pe_accept_w.value = 0 # stop loading weights into background buffer. 
+    dut.pe_accept_in.value = 0 # stop loading weights into background buffer. 
     dut.pe_switch_in.value = 1 # bring weight from bb to fb in next cc
     dut.pe_valid_in.value = 1 # we want inputs to start moving in next cc, so we assert this flag here. 
     dut.pe_input_in.value = to_fixed(2.0)
