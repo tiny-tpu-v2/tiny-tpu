@@ -11,7 +11,7 @@ module systolic (
     input logic sys_accept_w_in,
     
     input logic [15:0] sys_data_in_11,
-    input logic [15:0] sys_data_in_12,
+    input logic [15:0] sys_data_in_21,
 
     input logic [15:0] sys_weight_in_11,
     input logic [15:0] sys_weight_in_12,
@@ -109,7 +109,7 @@ module systolic (
         .pe_accept_w_in(sys_accept_w_in),
         .pe_switch_in(pe_switch_out_11),
 
-        .pe_input_in(sys_data_in_12),
+        .pe_input_in(sys_data_in_21),
         .pe_psum_in(pe_psum_out_11),
         .pe_weight_in(pe_weight_out_11),
         .pe_input_out(pe_input_out_21),

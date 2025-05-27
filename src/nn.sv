@@ -132,7 +132,7 @@ module nn (
         .sys_accept_w_in(weight_acc_valid_out_1),
         .sys_switch_in(switch),
         .sys_data_in_11(input_11),
-        .sys_data_in_12(input_21),
+        .sys_data_in_21(input_21),
         .sys_weight_in_11(weight_11),
         .sys_weight_in_12(weight_12),
 
@@ -175,7 +175,7 @@ module nn (
     leaky_relu leaky_relu_21 (
         .clk(clk),
         .rst(rst),
-        .lr_data_in(out_21_bias),
+        .lr_data_in(bias_data_out_1),
         .lr_temp_leak_factor(16'b00000000_00000011),
         .lr_data_out(lr_data_out_1),
 
@@ -186,7 +186,7 @@ module nn (
     leaky_relu leaky_relu_22 (
         .clk(clk),
         .rst(rst),
-        .lr_data_in(out_22_bias),
+        .lr_data_in(bias_data_out_2),
         .lr_temp_leak_factor(16'b00000000_00000011),
         .lr_data_out(lr_data_out_2),
 

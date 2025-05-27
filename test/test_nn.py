@@ -74,9 +74,9 @@ async def test_nn(dut):
     # dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(4.0) # 1 to acc 2
     # await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(5.0) # 1 to acc 1
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(1.0) # 1 to acc 1
     await ClockCycles(dut.clk, 1)
-    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(6.0) # 1 to acc 2
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(2.0) # 1 to acc 2
     await ClockCycles(dut.clk, 1)
 
     ##########################################################
@@ -125,26 +125,28 @@ async def test_nn(dut):
     await ClockCycles(dut.clk, 1)
 
     # # t=21
-    dut.instruction.value = 0b0_1_0_10_11_0_00000000_00000000 | to_fixed(0.0) # 0 to acc 2
+    dut.instruction.value = 0b0_1_0_01_11_0_00000000_00000000 | to_fixed(0.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
     # # t=22
-    dut.instruction.value = 0b0_0_1_10_11_0_00000000_00000000  | to_fixed(3.0) # 0 to acc 2
+    dut.instruction.value = 0b0_0_1_01_11_0_00000000_00000000  | to_fixed(3.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
     # t=23
-    dut.instruction.value = 0b1_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # await ClockCycles(dut.clk, 30)
+
+    # t=24
+    dut.instruction.value = 0b0_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=25
+    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
     await ClockCycles(dut.clk, 30)
-
-    # # t=24
-    # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
-    # await ClockCycles(dut.clk, 1)
-
-    # # t=25
-    # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
-    # await ClockCycles(dut.clk, 1)
 
     # # t=26
     # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
