@@ -51,6 +51,12 @@ module pe #(
     // decides the final psum output of the PE 
     // assign pe_psum_out = pe_valid_out ? mac_out : 16'b0; 
 
+    always_comb begin
+        if(pe_switch_in) begin
+            weight_reg_active = weight_reg_inactive; 
+        end
+    end
+
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             pe_input_out <= 16'b0;
@@ -62,15 +68,6 @@ module pe #(
         end else begin
             pe_accept_w_out <= pe_accept_w_in;
             pe_valid_out <= pe_valid_in;
-
-            // pe_switch_in will be used to switch between the inactive weight register and active weight register
-            if (pe_switch_in) begin
-                // bring weight from background register (inactive) to foreground register (active)
-                weight_reg_active <= weight_reg_inactive;
-                pe_switch_out <= 1; 
-            end else begin
-                pe_switch_out <= 0; // moving CE
-            end
         
             if (pe_accept_w_in) begin // by default, weights should be loaded into the background register
                 weight_reg_inactive <= pe_weight_in;
