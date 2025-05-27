@@ -129,7 +129,7 @@ module nn (
         .clk(clk),
         .rst(rst),
         .sys_start(input_acc_valid_out_1),
-        .sys_accept_w_in(accept_w),
+        .sys_accept_w_in(weight_acc_valid_out_1),
         .sys_switch_in(switch),
         .sys_data_in_11(input_11),
         .sys_data_in_12(input_21),

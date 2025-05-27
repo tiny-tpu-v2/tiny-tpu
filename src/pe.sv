@@ -68,6 +68,7 @@ module pe #(
         end else begin
             pe_accept_w_out <= pe_accept_w_in;
             pe_valid_out <= pe_valid_in;
+            pe_switch_out <= pe_switch_in;
         
             if (pe_accept_w_in) begin // by default, weights should be loaded into the background register
                 weight_reg_inactive <= pe_weight_in;
