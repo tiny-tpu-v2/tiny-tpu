@@ -1,5 +1,5 @@
 $date
-	Mon May 26 00:17:31 2025
+	Mon May 26 20:53:50 2025
 $end
 $version
 	Icarus Verilog
@@ -19,55 +19,56 @@ $var wire 1 ( rst $end
 $var wire 16 ) pe_psum_out [15:0] $end
 $var wire 16 * mult_out [15:0] $end
 $var wire 16 + mac_out [15:0] $end
-$var reg 1 , pe_accept_w_out $end
-$var reg 16 - pe_input_out [15:0] $end
-$var reg 1 . pe_switch_out $end
-$var reg 1 / pe_valid_out $end
-$var reg 16 0 pe_weight_out [15:0] $end
-$var reg 16 1 weight_reg_active [15:0] $end
-$var reg 16 2 weight_reg_inactive [15:0] $end
+$var reg 16 , goes_into_mac [15:0] $end
+$var reg 1 - pe_accept_w_out $end
+$var reg 16 . pe_input_out [15:0] $end
+$var reg 1 / pe_switch_out $end
+$var reg 1 0 pe_valid_out $end
+$var reg 16 1 pe_weight_out [15:0] $end
+$var reg 16 2 weight_reg_active [15:0] $end
+$var reg 16 3 weight_reg_inactive [15:0] $end
 $scope module adder $end
-$var wire 16 3 inb [15:0] $end
-$var wire 17 4 res [16:0] $end
-$var wire 1 5 overflow $end
-$var wire 16 6 out [15:0] $end
-$var wire 16 7 inbz [15:0] $end
-$var wire 16 8 inaz [15:0] $end
-$var wire 16 9 ina [15:0] $end
+$var wire 16 4 inb [15:0] $end
+$var wire 17 5 res [16:0] $end
+$var wire 1 6 overflow $end
+$var wire 16 7 out [15:0] $end
+$var wire 16 8 inbz [15:0] $end
+$var wire 16 9 inaz [15:0] $end
+$var wire 16 : ina [15:0] $end
 $scope module ina_zoom $end
-$var wire 16 : out [15:0] $end
-$var wire 16 ; in [15:0] $end
-$var reg 8 < ini [7:0] $end
-$var reg 16 = inr [15:0] $end
-$var reg 8 > outf [7:0] $end
-$var reg 8 ? outi [7:0] $end
-$var reg 1 @ overflow $end
+$var wire 16 ; out [15:0] $end
+$var wire 16 < in [15:0] $end
+$var reg 8 = ini [7:0] $end
+$var reg 16 > inr [15:0] $end
+$var reg 8 ? outf [7:0] $end
+$var reg 8 @ outi [7:0] $end
+$var reg 1 A overflow $end
 $scope begin genblk10 $end
 $upscope $end
 $scope begin genblk7 $end
 $upscope $end
 $upscope $end
 $scope module inb_zoom $end
-$var wire 16 A in [15:0] $end
-$var wire 16 B out [15:0] $end
-$var reg 8 C ini [7:0] $end
-$var reg 16 D inr [15:0] $end
-$var reg 8 E outf [7:0] $end
-$var reg 8 F outi [7:0] $end
-$var reg 1 G overflow $end
+$var wire 16 B in [15:0] $end
+$var wire 16 C out [15:0] $end
+$var reg 8 D ini [7:0] $end
+$var reg 16 E inr [15:0] $end
+$var reg 8 F outf [7:0] $end
+$var reg 8 G outi [7:0] $end
+$var reg 1 H overflow $end
 $scope begin genblk10 $end
 $upscope $end
 $scope begin genblk7 $end
 $upscope $end
 $upscope $end
 $scope module res_zoom $end
-$var wire 17 H in [16:0] $end
-$var wire 16 I out [15:0] $end
-$var reg 9 J ini [8:0] $end
-$var reg 17 K inr [16:0] $end
-$var reg 8 L outf [7:0] $end
-$var reg 8 M outi [7:0] $end
-$var reg 1 5 overflow $end
+$var wire 17 I in [16:0] $end
+$var wire 16 J out [15:0] $end
+$var reg 9 K ini [8:0] $end
+$var reg 17 L inr [16:0] $end
+$var reg 8 M outf [7:0] $end
+$var reg 8 N outi [7:0] $end
+$var reg 1 6 overflow $end
 $scope begin genblk7 $end
 $upscope $end
 $scope begin genblk9 $end
@@ -75,19 +76,19 @@ $upscope $end
 $upscope $end
 $upscope $end
 $scope module mult $end
-$var wire 16 N ina [15:0] $end
-$var wire 16 O inb [15:0] $end
-$var wire 32 P res [31:0] $end
-$var wire 1 Q overflow $end
-$var wire 16 R out [15:0] $end
+$var wire 16 O ina [15:0] $end
+$var wire 16 P inb [15:0] $end
+$var wire 32 Q res [31:0] $end
+$var wire 1 R overflow $end
+$var wire 16 S out [15:0] $end
 $scope module res_zoom $end
-$var wire 32 S in [31:0] $end
-$var wire 16 T out [15:0] $end
-$var reg 16 U ini [15:0] $end
-$var reg 24 V inr [23:0] $end
-$var reg 8 W outf [7:0] $end
-$var reg 8 X outi [7:0] $end
-$var reg 1 Q overflow $end
+$var wire 32 T in [31:0] $end
+$var wire 16 U out [15:0] $end
+$var reg 16 V ini [15:0] $end
+$var reg 24 W inr [23:0] $end
+$var reg 8 X outf [7:0] $end
+$var reg 8 Y outi [7:0] $end
+$var reg 1 R overflow $end
 $scope begin genblk4 $end
 $upscope $end
 $scope begin genblk9 $end
@@ -98,31 +99,32 @@ $upscope $end
 $enddefinitions $end
 #0
 $dumpvars
+b0 Y
 b0 X
 b0 W
 b0 V
 b0 U
-b0 T
+bx T
 b0 S
-b0 R
-0Q
+0R
+bx Q
 b0 P
-b0 O
+bx O
 b0 N
 b0 M
 b0 L
 b0 K
 b0 J
 b0 I
-b0 H
-0G
+0H
+b0 G
 b0 F
 b0 E
 b0 D
 b0 C
 b0 B
-b0 A
-0@
+0A
+b0 @
 b0 ?
 b0 >
 b0 =
@@ -132,17 +134,17 @@ b0 :
 b0 9
 b0 8
 b0 7
-b0 6
-05
+06
+b0 5
 b0 4
 b0 3
 b0 2
 b0 1
-b0 0
+00
 0/
-0.
-b0 -
-x,
+b0 .
+x-
+bx ,
 b0 +
 b0 *
 b0 )
@@ -158,88 +160,74 @@ $end
 #5000
 0!
 #10000
-b100010100000000 '
+b1000000000 '
 1"
-0,
+0-
 1!
 #15000
 0!
 #20000
-b101000000000 '
-b100010100000000 0
-b100010100000000 2
-1,
+b100000000 '
+b1000000000 1
+b1000000000 3
+1-
 1!
 #25000
 0!
 #30000
-b11001000000000 +
-b11001000000000 6
-b11001000000000 I
-b110010 M
-b110010 J
-b11001000000000 K
-b11001000000000 4
-b11001000000000 H
-b11001000000000 7
-b11001000000000 B
-b110010 F
-b110010 C
-b11001000000000 D
-b11001000000000 $
-b11001000000000 3
-b11001000000000 A
-b1000000000 #
-b1000000000 N
+b10100000000 #
 1&
 1%
 0"
-b101000000000 0
-b101000000000 2
+b100000000 1
+b100000000 3
 1!
 #35000
 0!
 #40000
 0&
 0%
-b100011000000000 +
-b100011000000000 6
-b100011000000000 I
-b1000110 M
-b1000110 J
-b100011000000000 K
-b100011000000000 4
-b100011000000000 H
-b1010000000000 8
-b1010000000000 :
-b10100 ?
-b10100 <
-b1010000000000 =
-b1010000000000 *
-b1010000000000 9
-b1010000000000 ;
-b1010000000000 R
-b1010000000000 T
-b10100 X
-b10100 U
-b1010000000000 V
-b100011000000000 )
-b1000000000 -
-b0 0
-1.
-b101000000000000000000 P
-b101000000000000000000 S
-b101000000000 1
-b101000000000 O
+b0 #
+b10100000000 )
+b10100000000 +
+b10100000000 7
+b10100000000 J
+b101 N
+b101 K
+b10100000000 L
+b10100000000 5
+b10100000000 I
+b10100000000 9
+b10100000000 ;
+b101 @
+b101 =
+b10100000000 >
+b10100000000 *
+b10100000000 :
+b10100000000 <
+b10100000000 S
+b10100000000 U
+b101 Y
+b101 V
+b10100000000 W
+b1010000000000000000 Q
+b1010000000000000000 T
+b10100000000 ,
+b10100000000 O
+b10100000000 .
+b0 1
 1/
-0,
+b100000000 2
+b100000000 P
+10
+0-
 1!
 #45000
 0!
 #50000
 b0 )
-0.
 0/
+00
 1!
 #55000
 0!

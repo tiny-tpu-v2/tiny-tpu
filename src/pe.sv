@@ -28,14 +28,19 @@ module pe #(
     output logic pe_switch_out,
     output logic pe_accept_w_out // TODO: draw this in the systolic array diagram 
 );
+    // make a register for the input?? 
+    logic signed [15:0] goes_into_mult;
+    logic signed [15:0] goes_into_adder;
 
     logic signed [15:0] mult_out;
     wire signed [15:0] mac_out; // just a wire
     logic signed [15:0] weight_reg_active; // foreground register
     logic signed[15:0] weight_reg_inactive; // background register
 
+
+
     fxp_mul mult (
-        .ina(pe_input_in),
+        .ina(goes_into_mult),
         .inb(weight_reg_active),
         .out(mult_out),
         .overflow()
@@ -43,7 +48,7 @@ module pe #(
 
     fxp_add adder (
         .ina(mult_out),
-        .inb(pe_psum_in),
+        .inb(goes_into_adder), 
         .out(mac_out),
         .overflow()
     );
@@ -81,6 +86,8 @@ module pe #(
             
             if (pe_valid_in) begin
                 pe_input_out <= pe_input_in;
+                goes_into_mult <= pe_input_in; 
+                goes_into_adder <= pe_psum_in; 
             end else begin
                 pe_valid_out <= 0;
             end
