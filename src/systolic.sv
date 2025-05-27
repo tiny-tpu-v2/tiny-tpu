@@ -23,7 +23,10 @@ module systolic (
     output logic [15:0] sys_data_out_22,
 
     output wire sys_valid_out_21, 
-    output wire sys_valid_out_22
+    output wire sys_valid_out_22,
+
+    output wire sys_switch_out_21,
+    output wire sys_switch_out_22
 );
     // Zero signals
     wire [15:0] zero_wire_inputs;
@@ -102,7 +105,7 @@ module systolic (
         .rst(rst),
 
         .pe_valid_in(pe_valid_out_11),
-        .pe_valid_out(sys_valid_out_21),
+        .pe_valid_out(pe_valid_out_21),
 
         .pe_accept_w_in(sys_accept_w_in),
         .pe_switch_in(pe_switch_out_11),
@@ -113,7 +116,7 @@ module systolic (
         .pe_input_out(pe_input_out_21),
         .pe_psum_out(sys_data_out_21),
         .pe_weight_out(),
-        .pe_switch_out(),
+        .pe_switch_out(sys_switch_out_21),
         .pe_accept_w_out()
     );
 
@@ -122,7 +125,7 @@ module systolic (
         .rst(rst),
 
         .pe_valid_in(pe_valid_out_12),
-        .pe_valid_out(sys_valid_out_22),
+        .pe_valid_out(pe_valid_out_22),
 
         .pe_accept_w_in(sys_accept_w_out_1),
         .pe_switch_in(pe_switch_out_12),
@@ -133,7 +136,7 @@ module systolic (
         .pe_input_out(),
         .pe_psum_out(sys_data_out_22),
         .pe_weight_out(),
-        .pe_switch_out(),
+        .pe_switch_out(sys_switch_out_22),
         .pe_accept_w_out()
     );
 

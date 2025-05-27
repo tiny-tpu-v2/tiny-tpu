@@ -7,7 +7,7 @@ async def test_weight_acc(dut):
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
 
-    test_weight = [2, 4, 6]
+    test_weight = [2, 4, 6, 8]
 
     # Reset
     dut.rst.value = 1
@@ -31,6 +31,7 @@ async def test_weight_acc(dut):
 
 
     dut.weight_acc_valid_in.value = 1
+    await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)

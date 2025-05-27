@@ -5,25 +5,7 @@ module nn (
     input logic clk,
     input logic rst,
 
-    // START OF TEMPORARY CONSTANTS
-    input logic signed [15:0] nn_temp_weight_11,
-    input logic signed [15:0] nn_temp_weight_12,
-    input logic signed [15:0] nn_temp_weight_21,
-    input logic signed [15:0] nn_temp_weight_22,
-
-    input logic signed [15:0] nn_temp_bias_1,
-    input logic signed [15:0] nn_temp_bias_2,
-
-    input logic signed [15:0] nn_temp_leak_factor,
-    // END OF TEMPORARY CONSTANTS
-
-    input logic signed [15:0] nn_data_in_1,
-    input logic signed [15:0] nn_data_in_2,
-
-    input logic nn_valid_in_1,
-    input logic nn_valid_in_2,
-
-    input logic [37:0] instruction,
+    input logic [23:0] instruction,
 
     output logic signed [15:0] nn_data_out_1,
     output logic signed [15:0] nn_data_out_2
@@ -39,11 +21,38 @@ module nn (
     logic signed [15:0] sys_data_out_21;        // Connections from systolic array pe21 to bias 1
     logic signed [15:0] sys_data_out_22;        // Connections from systolic array pe22 to bias 2
 
+    logic sys_switch_out_21;
+    logic sys_switch_out_22;
+
     logic signed [15:0] out_21_bias;        // Connections from bias 1 to leaky relu 1
     logic signed [15:0] out_22_bias;        // Connections from bias 2 to leaky relu 2
 
-    logic signed [15:0] acc_data_in_1;
-    logic signed [15:0] acc_data_in_2;
+    logic signed [15:0] nn_data_in_1;
+    logic signed [15:0] nn_data_in_2;
+
+    logic signed [15:0] weight_acc_data_in_1;
+    logic signed [15:0] weight_acc_data_in_2;
+    logic signed [15:0] bias_temp_bias_in;
+
+    logic signed [15:0] bias_temp_bias_out_1;
+
+    logic signed [15:0] weight_11;
+    logic signed [15:0] weight_12;
+
+    logic signed [15:0] input_acc_data_in_1;
+    logic signed [15:0] input_acc_data_in_2;
+
+    logic signed [15:0] bias_data_out_1;
+    logic signed [15:0] bias_data_out_2;
+
+
+    logic input_acc_valid_out_1;
+    logic input_acc_valid_out_2;
+    logic weight_acc_valid_out_1;
+    logic weight_acc_valid_out_2;
+    logic bias_valid_out_1;
+    logic bias_valid_out_2;
+    
 
     // Below are wires which connect the valid signals from systolic array to bias and leaky relu modules
     logic sys_valid_out_21;        // Valid signal from systolic array pe21 to bias 1
@@ -58,69 +67,100 @@ module nn (
     logic acc_valid_out_1; // Valid signal from accumulator 1 to systolic array pe11
     logic acc_valid_out_2; // Valid signal from accumulator 2 to systolic array pe21
 
-    logic input_acc_vaid_data_nn_in_1;
-    logic input_acc_vaid_data_nn_in_2;
+    logic nn_valid_in_1;
+    logic nn_valid_in_2;
 
+    logic load_inputs_1;
+    logic load_inputs_2;
+    logic load_weights_1;
+    logic load_weights_2;
+    logic load_bias;
+
+    logic nn_start;
+    logic accept_w;
     logic load_inputs;
     logic load_weights;
-    logic load_bias;
-    logic nn_start;
+    logic switch;
     logic [1:0] activation_datapath;  // routing the activation output to either the accumulator or the output wire
-    logic [1:0] address; // address of the accumulator to which the input/weight/bias data is routed
-    logic signed [15:0] input_data_in; // input data to the accumulator
+    logic address; // address of the accumulator to which the input/weight/bias data is routed
+    logic signed [15:0] data_in; // input data to the accumulator
+
     
-    accumulator acc_1 (
+    
+    input_acc input_acc_1 (
         .clk(clk),
         .rst(rst),
-        .acc_valid_in(nn_start),
-        .acc_valid_data_in(lr_valid_out_21),
-        .acc_data_in(acc_data_in_1),
-        .acc_data_nn_in(input_data_in),
-        .acc_valid_data_nn_in(input_acc_vaid_data_nn_in_1),
-        .acc_valid_out(acc_valid_out_1),
-        .acc_data_out(input_11)
+        .input_acc_valid_in(nn_start),
+        .input_acc_valid_data_in(lr_valid_out_21),
+        .input_acc_data_in(input_acc_data_in_1),
+        .input_acc_data_nn_in(nn_data_in_1),
+        .input_acc_valid_data_nn_in(load_inputs_1),
+        .input_acc_valid_out(input_acc_valid_out_1),
+        .input_acc_data_out(input_11)
     );
 
-    accumulator acc_2 (
+    input_acc input_acc_2 (
         .clk(clk),
         .rst(rst),
-        .acc_valid_in(acc_valid_out_1),
-        .acc_valid_data_in(lr_valid_out_22),
-        .acc_data_in(lr_data_out_2),
-        .acc_data_nn_in(input_data_in),
-        .acc_valid_data_nn_in(input_acc_vaid_data_nn_in_2),
-        .acc_valid_out(acc_valid_out_2),
-        .acc_data_out(input_21)
+        .input_acc_valid_in(input_acc_valid_out_1),
+        .input_acc_valid_data_in(lr_valid_out_22),
+        .input_acc_data_in(input_acc_data_in_2),
+        .input_acc_data_nn_in(nn_data_in_2),
+        .input_acc_valid_data_nn_in(load_inputs_2),
+        .input_acc_valid_out(acc_valid_out_2),
+        .input_acc_data_out(input_21)
     );
+
+    weight_acc weight_acc_1 (
+        .clk(clk),
+        .rst(rst),
+        .weight_acc_valid_in(accept_w),
+        .weight_acc_valid_data_in(load_weights_1),
+        .weight_acc_data_in(weight_acc_data_in_1),
+        .weight_acc_valid_out(weight_acc_valid_out_1),
+        .weight_acc_data_out(weight_11)
+    );  
+    
+    weight_acc weight_acc_2 (
+        .clk(clk),
+        .rst(rst),
+        .weight_acc_valid_in(weight_acc_valid_out_1),
+        .weight_acc_valid_data_in(load_weights_2),
+        .weight_acc_data_in(weight_acc_data_in_2),
+        .weight_acc_valid_out(weight_acc_valid_out_2),
+        .weight_acc_data_out(weight_12)
+    );  
 
     systolic systolic_inst (
         .clk(clk),
         .rst(rst),
-        .sys_start(acc_valid_out_1),
-        .sys_valid_load_weights(load_weights),
+        .sys_start(input_acc_valid_out_1),
+        .sys_accept_w_in(accept_w),
+        .sys_switch_in(switch),
         .sys_data_in_11(input_11),
         .sys_data_in_12(input_21),
-
-        .sys_temp_weight_11(nn_temp_weight_11),
-        .sys_temp_weight_12(nn_temp_weight_12),
-        .sys_temp_weight_21(nn_temp_weight_21),
-        .sys_temp_weight_22(nn_temp_weight_22),
+        .sys_weight_in_11(weight_11),
+        .sys_weight_in_12(weight_12),
 
         .sys_data_out_21(sys_data_out_21),
         .sys_data_out_22(sys_data_out_22),
 
         .sys_valid_out_21(sys_valid_out_21),
-        .sys_valid_out_22(sys_valid_out_22)
+        .sys_valid_out_22(sys_valid_out_22),
+
+        .sys_switch_out_21(sys_switch_out_21),
+        .sys_switch_out_22(sys_switch_out_22)
     );
 
     bias bias_21 (
         .clk(clk),
         .rst(rst),
-        .load_bias(load_bias),
-        .bias_data_in(sys_data_out_21),
-        .bias_temp_bias(nn_temp_bias_1), 
-        .bias_data_out(out_21_bias),
-
+        .load_bias_in(load_bias),  
+        .bias_sys_data_in(sys_data_out_21),
+        .bias_switch_in(sys_switch_out_21),
+        .bias_scalar_in(bias_temp_bias_in), 
+        .bias_data_out(bias_data_out_1),
+        .bias_scalar_out(bias_temp_bias_out_1),
         .bias_valid_in(sys_valid_out_21),
         .bias_valid_out(bias_valid_out_21)
     );
@@ -128,11 +168,12 @@ module nn (
     bias bias_22 (
         .clk(clk),
         .rst(rst),
-        .load_bias(load_bias),
-        .bias_data_in(sys_data_out_22),
-        .bias_temp_bias(nn_temp_bias_2),
-        .bias_data_out(out_22_bias),
-
+        .load_bias_in(load_bias),
+        .bias_sys_data_in(sys_data_out_22),
+        .bias_switch_in(sys_switch_out_22),
+        .bias_scalar_in(bias_temp_bias_out_1),
+        .bias_data_out(bias_data_out_2),
+        .bias_scalar_out(),
         .bias_valid_in(sys_valid_out_22),
         .bias_valid_out(bias_valid_out_22)
     );
@@ -141,7 +182,7 @@ module nn (
         .clk(clk),
         .rst(rst),
         .lr_data_in(out_21_bias),
-        .lr_temp_leak_factor(nn_temp_leak_factor),
+        .lr_temp_leak_factor(16'b00000000_00000011),
         .lr_data_out(lr_data_out_1),
 
         .lr_valid_in(bias_valid_out_21),
@@ -152,7 +193,7 @@ module nn (
         .clk(clk),
         .rst(rst),
         .lr_data_in(out_22_bias),
-        .lr_temp_leak_factor(nn_temp_leak_factor),
+        .lr_temp_leak_factor(16'b00000000_00000011),
         .lr_data_out(lr_data_out_2),
 
         .lr_valid_in(bias_valid_out_22),
@@ -163,49 +204,69 @@ module nn (
         .instruction(instruction),
         .activation_datapath(activation_datapath),
         .nn_start(nn_start),
+        .accept_w(accept_w),
+        .switch(switch),
         .load_inputs(load_inputs),
         .load_weights(load_weights),
         .load_bias(load_bias),
         .address(address),
-        .input_data_in(input_data_in)
+        .data_in(data_in)
     );
 
     // Accumulator input control
-    always_comb begin
-    
-        acc_data_in_1 = activation_datapath[0] ? lr_data_out_1 : 16'b0;
-        acc_data_in_2 = activation_datapath[0] ? lr_data_out_2 : 16'b0;
+    always @(*) begin
+        input_acc_data_in_1 = activation_datapath[0] ? lr_data_out_1 : 16'b0;
+        input_acc_data_in_2 = activation_datapath[0] ? lr_data_out_2 : 16'b0;
+    end
+
+    // Load control for weights, bias, and inputs
+    always @(*) begin
+        // Default assignments for all signals driven by this block
+        nn_data_in_1 = 16'b0;
+        load_inputs_1 = 1'b0;
+        load_weights_1 = 1'b0;
+        weight_acc_data_in_1 = 16'b0;
+
+        nn_data_in_2 = 16'b0;
+        load_inputs_2 = 1'b0;
+        load_weights_2 = 1'b0;
+        weight_acc_data_in_2 = 16'b0;
+
+        bias_temp_bias_in = 16'b0; // Default for the input to the first bias unit
+
+        // Main logic based on control signals
+        if (!address) begin // address == 1, for acc1/weight_acc1 path
+            if (load_inputs) begin
+                nn_data_in_1 = data_in;
+                load_inputs_1 = 1'b1;
+            end else if (load_weights) begin
+                weight_acc_data_in_1 = data_in;
+                load_weights_1 = 1'b1;
+            end
+            // Note: load_bias handling for bias_temp_bias_in is common below
+        end else begin // address == 0, for acc2/weight_acc2 path
+            if (load_inputs) begin
+                nn_data_in_2 = data_in;
+                load_inputs_2 = 1'b1;
+            end else if (load_weights) begin
+                weight_acc_data_in_2 = data_in;
+                load_weights_2 = 1'b1;
+            end
+            // Note: load_bias handling for bias_temp_bias_in is common below
+        end
+
+        // Common handling for bias loading:
+        if (load_bias) begin
+            bias_temp_bias_in = data_in;
+        end
     end
 
     // Neural network output control
-    always_comb begin
+    always @(*) begin
         nn_data_out_1 = activation_datapath[1] ? lr_data_out_1 : 16'b0;
         nn_data_out_2 = activation_datapath[1] ? lr_data_out_2 : 16'b0;
     end
 
-    always_comb begin
-
-        // routing input data to specific accumulators based on address and load_inputs flag
-        input_acc_vaid_data_nn_in_1 = 0;
-        input_acc_vaid_data_nn_in_2 = 0;
-        if (load_inputs) begin
-            case (address)
-                2'b00: begin
-                    input_acc_vaid_data_nn_in_1 = 0;
-                    input_acc_vaid_data_nn_in_2 = 0;
-                end
-                2'b01: begin
-                    input_acc_vaid_data_nn_in_1 = 1;
-                end
-                2'b10: begin
-                    input_acc_vaid_data_nn_in_2 = 1;
-                end
-            endcase
-        end
-
-        // ADD SIMILAR LOGIC AS INPUTS FOR WEIGHTS AND BIAS ONCE ACCUMULATORS ARE DONE
-
-    end
 
 endmodule
 

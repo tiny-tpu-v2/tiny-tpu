@@ -40,7 +40,7 @@ def from_fixed(val, frac_bits=8):
 # 1:0 - activation_datapath
 
 @cocotb.test()
-async def test_layer1(dut): 
+async def test_nn(dut): 
 
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
@@ -48,86 +48,129 @@ async def test_layer1(dut):
     
     # rst the DUT (device under test)
     dut.rst.value = 1
-    dut.instruction.value = 0b00000000000000000000000 
-    dut.nn_data_in_1.value = to_fixed(0.0)
-    dut.nn_data_in_2.value = to_fixed(0.0)
-    # Initialize weights to zero
-    dut.nn_temp_weight_11.value = to_fixed(0.0)
-    dut.nn_temp_weight_12.value = to_fixed(0.0)
-    dut.nn_temp_weight_21.value = to_fixed(0.0)
-    dut.nn_temp_weight_22.value = to_fixed(0.0)
-    # Initialize start signal to 0
+    dut.instruction.value = 0b0_0_0_00_00_0_0000000000000000 
     await ClockCycles(dut.clk, 1)
 
     # rst is off now
     dut.rst.value = 0
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b00100000001000000001100 # load_inputs flag is on and feeding in input of 1
-    dut.nn_data_in_1.value = to_fixed(1.0)       # INPUT TO NN (X1)
+    #########################################################
+
+    # LOADING INPUTS (passing in the inputs as such: [(0,0), (1,1), (0,1), (1,0)])
+    dut.instruction.value = 0b0_0_0_01_01_0_00000000_00000000 # 0 to acc 1
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b01000000000000000001100 # load_inputs flag is on and feeding in input of 0
-    dut.nn_data_in_2.value = to_fixed(0.0)       # INPUT TO NN (X2)
+    dut.instruction.value = 0b0_0_0_01_01_0_00000001_00000000 # 1 to acc 1
     await ClockCycles(dut.clk, 1)
 
-    # load_inputs flag is off and load_bias flag is on
-    dut.instruction.value = 0b00000000000000000001000 
-    # Initialize leak factor
-    dut.nn_temp_leak_factor.value = to_fixed(0.01)
-    # Initializing bias values
-    # loading biases in manually still because bias accumulators are not done yet
-    dut.nn_temp_bias_1.value = to_fixed(0.25080394744873047)
-    dut.nn_temp_bias_2.value = to_fixed(-0.00012433409574441612)
+    dut.instruction.value = 0b0_0_0_01_01_0_00000000_00000000 # 0 to acc 1
     await ClockCycles(dut.clk, 1)
 
-    # Initializing weight values
-    dut.instruction.value = 0b00000000000000000000100 # load weights flag is on
-    # loading weights manually still because weight accumulators are not done yet
-    dut.nn_temp_weight_11.value = to_fixed(0.8821601271629333)
-    dut.nn_temp_weight_12.value = to_fixed(-1.0646932125091553)
-    dut.nn_temp_weight_21.value = to_fixed(-0.8821614980697632)
-    dut.nn_temp_weight_22.value = to_fixed(1.0648175477981567)
+    dut.instruction.value = 0b0_0_0_01_01_0_00000001_00000000 # 1 to acc 1
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_01_1_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_01_1_00000001_00000000 # 1 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_01_1_00000001_00000000 # 1 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_01_1_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    ##########################################################
+
+    # LOADING WEIGHTS
+    dut.instruction.value = 0b0_0_0_01_11_0_00000010_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_11_0_00000001_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_11_0_00000101_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_11_1_00000100_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    dut.instruction.value = 0b0_0_0_01_11_0_00000110_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
     
-    # weights from prev clock cycle are latched due to load_weights flag being on. 
-    # now we dont have any more weight inputs, and we turn it off.
-    dut.instruction.value = 0b00000000000000000000000 # load weight flag is off now
-    dut.nn_temp_weight_11.value = to_fixed(0.0)
-    dut.nn_temp_weight_12.value = to_fixed(0.0)
-    dut.nn_temp_weight_21.value = to_fixed(0.0)
-    dut.nn_temp_weight_22.value = to_fixed(0.0)
-    await ClockCycles(dut.clk, 1) 
-
-    # Inputs are ALREADY staged to systolic array (dut.input_xx.value directly connects to systolic array)
-    dut.instruction.value = 0b10000000000000000000001 # start signal on and routing outputs to systolic array
+    dut.instruction.value = 0b0_0_0_01_11_0_00000011_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    # Now, we turn off the start signal and "already" staged inputs will propagate through the systolic array.
-    # In this testbench, it looks like we input dut.input_11.value and dut.input_21.value ...
-    # but in reality, the inputs are already staged to the systolic array....
-    # These values below (0.0, 6.0) would have to be inputted in the PREVIOUS clock cycle.
-    dut.instruction.value = 0b00000000000000000000001 # start signal off and routing outputs to systolic array
-    await ClockCycles(dut.clk, 20)
+    ##########################################################
 
-    # load_weights flag is on and feeding in weights
-    dut.instruction.value = 0b00000000000000000000101 
-    dut.nn_temp_weight_11.value = to_fixed(1.1482632160186768)
-    dut.nn_temp_weight_12.value = to_fixed(0)
-    dut.nn_temp_weight_21.value = to_fixed(1.216535210609436)
-    dut.nn_temp_weight_22.value = to_fixed(0)
+    # t=16 -- ASSERTING ACCEPT FLAG (LOADING WEIGHTS INTO FIRST PE)
+    dut.instruction.value = 0b0_1_0_01_10_0_00000001_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    # load_bias flag is on and feeding in biases
-    dut.instruction.value = 0b00000000000000000001001
-    dut.nn_temp_bias_1.value = to_fixed(-0.28798729181289673)
-    dut.nn_temp_bias_2.value = to_fixed(0)
+    # t=17 -- ASSERTING ACCEPT FLAG (LOADING FIRST BIAS)
+    dut.instruction.value = 0b0_1_0_01_10_0_00000001_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b10000000000000000000010 # start signal on and routing outputs to output wire
+    # t=18 -- ASSERTING START FLAG (LOADING SECOND BIAS)
+    dut.instruction.value = 0b1_1_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+    
+    # t=19
+    dut.instruction.value = 0b1_1_1_01_00_0_00000000_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b00000000000000000000010 # start signal off and routing outputs to output wire
-    await ClockCycles(dut.clk, 30)
+    # t=20
+    dut.instruction.value = 0b1_1_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
 
-    # Start flag will now STAY off for the rest of the testbench. We will not change this value anymore. 
+    # t=21
+    dut.instruction.value = 0b1_0_0_01_10_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=22
+    dut.instruction.value = 0b0_0_1_01_10_0_00000001_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=23
+    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=24
+    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=25
+    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=26
+    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=27
+    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=28
+    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=29
+    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=30
+    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+    # t=31
+    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    await ClockCycles(dut.clk, 1)
+
+
+
+    ##########################################################
+
+
