@@ -68,6 +68,12 @@ module nn (
     logic [1:0] activation_datapath;  // routing the activation output to either the accumulator or the output wire
     logic [1:0] address; // address of the accumulator to which the input/weight/bias data is routed
     logic signed [15:0] input_data_in; // input data to the accumulator
+
+
+    wire sys_switch_out_21; // need to route this to bias unit
+    wire sys_switch_out_22; // need to route this to bias unit
+
+
     
     accumulator acc_1 (
         .clk(clk),
@@ -110,12 +116,15 @@ module nn (
         .sys_data_out_22(sys_data_out_22),
 
         .sys_valid_out_21(sys_valid_out_21),
-        .sys_valid_out_22(sys_valid_out_22)
+        .sys_valid_out_22(sys_valid_out_22),
+        .switch_out_21(sys_switch_out_21), 
+        .switch_out_22(sys_switch_out_22)
     );
 
     bias bias_21 (
         .clk(clk),
         .rst(rst),
+        .bias_switch_in(sys_switch_out_21),
         .load_bias(load_bias),
         .bias_data_in(sys_data_out_21),
         .bias_temp_bias(nn_temp_bias_1), 
@@ -128,6 +137,7 @@ module nn (
     bias bias_22 (
         .clk(clk),
         .rst(rst),
+        .bias_switch_in(sys_switch_out_22),
         .load_bias(load_bias),
         .bias_data_in(sys_data_out_22),
         .bias_temp_bias(nn_temp_bias_2),
