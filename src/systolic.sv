@@ -18,7 +18,6 @@ module systolic (
     // input logic [15:0] sys_temp_weight_21,
     // input logic [15:0] sys_temp_weight_22,
 
-
     output logic [15:0] sys_data_out_21,
     output logic [15:0] sys_data_out_22,
 
