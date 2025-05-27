@@ -2,20 +2,21 @@
 `default_nettype none
 
 
-// 3x3 systolic array
+// 2x2 systolic array
 module systolic (
     input logic clk,
     input logic rst,
     input logic sys_start, // this only needs to be high for one clock cycle -- goes into the first top left PE
-    input logic sys_valid_load_weights,
+    input logic sys_switch_in,
+    input logic sys_accept_w_in,
     
     input logic [15:0] sys_data_in_11,
     input logic [15:0] sys_data_in_12,
 
-    input logic [15:0] sys_temp_weight_11,
-    input logic [15:0] sys_temp_weight_12,
-    input logic [15:0] sys_temp_weight_21,
-    input logic [15:0] sys_temp_weight_22,
+    input logic [15:0] sys_weight_in_11,
+    input logic [15:0] sys_weight_in_12,
+    // input logic [15:0] sys_temp_weight_21,
+    // input logic [15:0] sys_temp_weight_22,
 
 
     output logic [15:0] sys_data_out_21,
@@ -32,12 +33,18 @@ module systolic (
     assign zero_wire_outputs = 16'b0;
 
     // input_out for each PE
-    logic [15:0] input_11_out;
-    logic [15:0] input_21_out;
+    logic [15:0] pe_input_out_11;
+    logic [15:0] pe_input_out_21;
 
     // psum_out for each PE
-    logic [15:0] psum_11;
-    logic [15:0] psum_12;
+    logic [15:0] pe_psum_out_11;
+    logic [15:0] pe_psum_out_12;
+
+    logic [15:0] pe_weight_out_11;
+    logic [15:0] pe_weight_out_12;
+
+    logic pe_switch_out_11;
+    logic pe_switch_out_12;
 
     wire pe_valid_out_11; // this wire will connect the valid signal from pe11 to pe12 and pe21
     wire pe_valid_out_12;// this wire will connect the valid signal from pe12 to pe22
@@ -48,6 +55,8 @@ module systolic (
     assign sys_valid_out_21 = pe_valid_out_21; 
     assign sys_valid_out_22 = pe_valid_out_22; 
 
+    logic sys_accept_w_out_1;
+
     pe pe11 (
         .clk(clk),
         .rst(rst),
@@ -55,12 +64,17 @@ module systolic (
         .pe_valid_in(sys_start),
         .pe_valid_out(pe_valid_out_11), // valid out signal is now dispatched onto pe_valid_out_11
 
-        .input_in(sys_data_in_11),
-        .psum_in(zero_wire_inputs),
-        .weight(sys_temp_weight_11),
-        .load_weight(sys_valid_load_weights),
-        .input_out(input_11_out),
-        .psum_out(psum_11)
+        .pe_accept_w_in(sys_accept_w_in),
+        .pe_switch_in(sys_switch_in),
+
+        .pe_input_in(sys_data_in_11),
+        .pe_psum_in(zero_wire_inputs),
+        .pe_weight_in(sys_weight_in_11),
+        .pe_input_out(pe_input_out_11),
+        .pe_psum_out(pe_psum_out_11),
+        .pe_weight_out(pe_weight_out_11),
+        .pe_switch_out(pe_switch_out_11),
+        .pe_accept_w_out(sys_accept_w_out_1)
     );
 
     pe pe12 (
@@ -70,13 +84,17 @@ module systolic (
         .pe_valid_in(pe_valid_out_11), // connect this to pe_valid out of pe11?
         .pe_valid_out(pe_valid_out_12), // now connect this to pe_valid in of pe22
 
+        .pe_accept_w_in(sys_accept_w_out_1),
+        .pe_switch_in(pe_switch_out_11),
 
-        .input_in(input_11_out),
-        .psum_in(zero_wire_inputs),
-        .weight(sys_temp_weight_12),
-        .load_weight(sys_valid_load_weights),
-        .input_out(zero_wire_outputs),
-        .psum_out(psum_12)
+        .pe_input_in(pe_input_out_11),
+        .pe_psum_in(zero_wire_inputs),
+        .pe_weight_in(sys_weight_in_12),
+        .pe_input_out(),
+        .pe_psum_out(pe_psum_out_12),
+        .pe_weight_out(pe_weight_out_12),
+        .pe_switch_out(pe_switch_out_12),
+        .pe_accept_w_out()
     );
 
     pe pe21 ( // connect this to pe_valid out of pe11?
@@ -84,15 +102,19 @@ module systolic (
         .rst(rst),
 
         .pe_valid_in(pe_valid_out_11),
-        .pe_valid_out(pe_valid_out_21),
+        .pe_valid_out(sys_valid_out_21),
 
+        .pe_accept_w_in(sys_accept_w_in),
+        .pe_switch_in(pe_switch_out_11),
 
-        .input_in(sys_data_in_12),
-        .psum_in(psum_11),
-        .weight(sys_temp_weight_21),
-        .load_weight(sys_valid_load_weights),
-        .input_out(input_21_out),
-        .psum_out(sys_data_out_21)
+        .pe_input_in(sys_data_in_12),
+        .pe_psum_in(pe_psum_out_11),
+        .pe_weight_in(pe_weight_out_11),
+        .pe_input_out(pe_input_out_21),
+        .pe_psum_out(sys_data_out_21),
+        .pe_weight_out(),
+        .pe_switch_out(),
+        .pe_accept_w_out()
     );
 
     pe pe22 ( // connect this to pe_valid out of pe 21? 
@@ -100,15 +122,19 @@ module systolic (
         .rst(rst),
 
         .pe_valid_in(pe_valid_out_12),
-        .pe_valid_out(pe_valid_out_22),
+        .pe_valid_out(sys_valid_out_22),
 
+        .pe_accept_w_in(sys_accept_w_out_1),
+        .pe_switch_in(pe_switch_out_12),
 
-        .input_in(input_21_out),
-        .psum_in(psum_12),
-        .weight(sys_temp_weight_22),
-        .load_weight(sys_valid_load_weights),
-        .input_out(zero_wire_outputs),
-        .psum_out(sys_data_out_22)
+        .pe_input_in(pe_input_out_21),
+        .pe_psum_in(pe_psum_out_12),
+        .pe_weight_in(pe_weight_out_12),
+        .pe_input_out(),
+        .pe_psum_out(sys_data_out_22),
+        .pe_weight_out(),
+        .pe_switch_out(),
+        .pe_accept_w_out()
     );
 
 endmodule
