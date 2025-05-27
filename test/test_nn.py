@@ -32,13 +32,14 @@ def from_fixed(val, frac_bits=8):
     return float(val) / (1 << frac_bits)
 
 
-# INSTRUCTION FORMAT:
-# 22 - nn_start
-# 21:20 - address
-# 19:4 - weight_data_in
-# 3:2 - load_weights, load_bias, load_inputs
-# 1:0 - activation_datapath
-
+# INSTRUCTION FORMAT (24 bits):
+# [23] - nn_start flag
+# [22] - accept flag
+# [21] - switch flag
+# [19:20] - activation_datapath
+# [17:18] - load_weights, load_bias, load_inputs
+# [16] - address
+# [15:0] - weight_data_in
 @cocotb.test()
 async def test_nn(dut): 
 
@@ -58,116 +59,116 @@ async def test_nn(dut):
     #########################################################
 
     # LOADING INPUTS (passing in the inputs as such: [(0,0), (1,1), (0,1), (1,0)])
-    dut.instruction.value = 0b0_0_0_01_01_0_00000000_00000000 # 0 to acc 1
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(1.2) # 0 to acc 1
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(2.3) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_01_0_00000001_00000000 # 1 to acc 1
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000100000000 | to_fixed(3.431) # 1 to acc 1
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(4.08) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_01_0_00000000_00000000 # 0 to acc 1
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(5.94) # 0 to acc 1
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000100000000 | to_fixed(6.83) # 1 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_01_0_00000001_00000000 # 1 to acc 1
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000100000000 | to_fixed(7.43) # 1 to acc 1
     await ClockCycles(dut.clk, 1)
-
-    dut.instruction.value = 0b0_0_0_01_01_1_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
-
-    dut.instruction.value = 0b0_0_0_01_01_1_00000001_00000000 # 1 to acc 2
-    await ClockCycles(dut.clk, 1)
-
-    dut.instruction.value = 0b0_0_0_01_01_1_00000001_00000000 # 1 to acc 2
-    await ClockCycles(dut.clk, 1)
-
-    dut.instruction.value = 0b0_0_0_01_01_1_00000000_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000100000000 | to_fixed(8.29) # 1 to acc 2
     await ClockCycles(dut.clk, 1)
 
     ##########################################################
 
     # LOADING WEIGHTS
-    dut.instruction.value = 0b0_0_0_01_11_0_00000010_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_10_0_0000000000000000 | to_fixed(1.0)    # w12 to acc 1
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b0_0_0_01_10_1_0000000000000000 | to_fixed(2.0)   # w22 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_11_0_00000001_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_10_0_0000000000000000 | to_fixed(3.0)   # w11 to acc 1
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b0_0_0_01_10_1_0000000000000000 | to_fixed(4.0)   # w12 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_11_0_00000101_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_10_0_0000000000000000 | to_fixed(5.0) # 0 to acc 1
+    await ClockCycles(dut.clk, 1)
+    dut.instruction.value = 0b0_0_0_01_10_1_0000000000000000 | to_fixed(6.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_11_1_00000100_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_10_0_0000000000000000 | to_fixed(7.0) # 0 to acc 1
     await ClockCycles(dut.clk, 1)
-
-    dut.instruction.value = 0b0_0_0_01_11_0_00000110_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
-    
-    dut.instruction.value = 0b0_0_0_01_11_0_00000011_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_10_1_0000000000000000 | to_fixed(8.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
     ##########################################################
 
-    # t=16 -- ASSERTING ACCEPT FLAG (LOADING WEIGHTS INTO FIRST PE)
-    dut.instruction.value = 0b0_1_0_01_10_0_00000001_00000000 # 0 to acc 2
+    # t=16 -- ASSERTING ACCEPT FLAG (LOADING WEIGHTS INTO FIRST PE) (LOADING FIRST BIAS)
+    dut.instruction.value = 0b0_1_0_01_11_0_0000000000000000 | to_fixed(9.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    # t=17 -- ASSERTING ACCEPT FLAG (LOADING FIRST BIAS)
-    dut.instruction.value = 0b0_1_0_01_10_0_00000001_00000000 # 0 to acc 2
+    # t=17 -- ASSERTING ACCEPT FLAG (LOADING SECOND BIAS)
+    dut.instruction.value = 0b1_1_0_01_11_0_0000000000000000 | to_fixed(6.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    # t=18 -- ASSERTING START FLAG (LOADING SECOND BIAS)
-    dut.instruction.value = 0b1_1_0_01_00_0_00000000_00000000 # 0 to acc 2
+    # t=18 -- ASSERTING START FLAG 
+    dut.instruction.value = 0b0_0_1_01_00_0_00000000_00000000
     await ClockCycles(dut.clk, 1)
     
     # t=19
-    dut.instruction.value = 0b1_1_1_01_00_0_00000000_00000000 # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_00_0_00000000_00000000 # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    # t=20
-    dut.instruction.value = 0b1_1_0_01_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 30)
 
-    # t=21
-    dut.instruction.value = 0b1_0_0_01_10_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=20
+    # dut.instruction.value = 0b1_1_0_01_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=22
-    dut.instruction.value = 0b0_0_1_01_10_0_00000001_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=21
+    # dut.instruction.value = 0b1_0_0_01_10_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=23
-    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=22
+    # dut.instruction.value = 0b0_0_1_01_10_0_00000001_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=24
-    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=23
+    # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=25
-    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=24
+    # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=26
-    dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=25
+    # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=27
-    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=26
+    # dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=28
-    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=27
+    # dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=29
-    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=28
+    # dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=30
-    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=29
+    # dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
-    # t=31
-    dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
-    await ClockCycles(dut.clk, 1)
+    # # t=30
+    # dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
+
+    # # t=31
+    # dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 # 0 to acc 2
+    # await ClockCycles(dut.clk, 1)
 
 
 

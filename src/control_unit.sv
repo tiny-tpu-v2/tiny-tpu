@@ -46,10 +46,10 @@ always @(*)begin
             load_inputs = 1'b1;
         end
         2'b10: begin
-            load_bias = 1'b1;
+            load_weights = 1'b1;
         end
         2'b11: begin
-            load_weights = 1'b1;
+            load_bias = 1'b1;
         end
     endcase
 end

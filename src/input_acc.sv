@@ -32,22 +32,24 @@ module input_acc#(
             input_acc_valid_out <= 0;
             counter <= 0;
             counter_reg <= 0;
-        end else if (input_acc_valid_data_nn_in) begin
-            input_acc_mem_reg[counter] <= input_acc_data_nn_in;
-            counter <= counter+1;
-            counter_reg <= counter;
-        end else if (input_acc_valid_data_in) begin    // Enqueue 
-            input_acc_mem_reg[counter] <= input_acc_data_in;
-            counter <= counter + 1;
-            counter_reg <= counter;
-        end else if (input_acc_valid_in) begin        // Dequeue
-            input_acc_valid_out <= 1'b1;
-            counter <= counter - 1;
-            input_acc_data_out <= input_acc_mem_reg[counter_reg+1-counter];
-        end else if(counter == 0) begin 
-            input_acc_valid_out <= 0;
-            input_acc_data_out <= 0;
-            counter <= 0;
+        end else begin
+            input_acc_valid_out <= input_acc_valid_in;
+            if (input_acc_valid_data_nn_in) begin
+                input_acc_mem_reg[counter] <= input_acc_data_nn_in;
+                counter <= counter+1;
+                counter_reg <= counter;
+            end else if (input_acc_valid_data_in) begin    // Enqueue 
+                input_acc_mem_reg[counter] <= input_acc_data_in;
+                counter <= counter + 1;
+                counter_reg <= counter;
+            end else if (input_acc_valid_in) begin        // Dequeue
+                counter <= counter - 1;
+                input_acc_data_out <= input_acc_mem_reg[counter_reg+1-counter];
+            end else if(counter == 0) begin 
+                input_acc_valid_out <= 0;
+                input_acc_data_out <= 0;
+                counter <= 0;
+            end
         end
     end
 endmodule

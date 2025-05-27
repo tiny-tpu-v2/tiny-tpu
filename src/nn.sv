@@ -46,8 +46,8 @@ module nn (
     logic signed [15:0] bias_data_out_2;
 
 
-    logic input_acc_valid_out_1;
-    logic input_acc_valid_out_2;
+    logic input_acc_valid_out_1;    // Valid signal from accumulator 1 to systolic array pe11 and accumulator 2
+    logic input_acc_valid_out_2;    // Valid signal from accumulator 2 to systolic array pe21
     logic weight_acc_valid_out_1;
     logic weight_acc_valid_out_2;
     logic bias_valid_out_1;
@@ -63,12 +63,6 @@ module nn (
 
     logic lr_valid_out_21; // Valid signal from leaky relu 1 to accumulator 1
     logic lr_valid_out_22; // Valid signal from leaky relu 2 to accumulator 2
-    
-    logic acc_valid_out_1; // Valid signal from accumulator 1 to systolic array pe11
-    logic acc_valid_out_2; // Valid signal from accumulator 2 to systolic array pe21
-
-    logic nn_valid_in_1;
-    logic nn_valid_in_2;
 
     logic load_inputs_1;
     logic load_inputs_2;
@@ -107,7 +101,7 @@ module nn (
         .input_acc_data_in(input_acc_data_in_2),
         .input_acc_data_nn_in(nn_data_in_2),
         .input_acc_valid_data_nn_in(load_inputs_2),
-        .input_acc_valid_out(acc_valid_out_2),
+        .input_acc_valid_out(input_acc_valid_out_2),
         .input_acc_data_out(input_21)
     );
 
