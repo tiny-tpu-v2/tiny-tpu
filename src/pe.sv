@@ -51,16 +51,12 @@ module pe #(
     // decides the final psum output of the PE 
     // assign pe_psum_out = pe_valid_out ? mac_out : 16'b0; 
 
-    always_comb begin
-        if(pe_switch_in) begin
-            weight_reg_active = weight_reg_inactive; 
-        end
-
+    always_comb begin  
         if (pe_accept_w_in) begin // by default, weights should be loaded into the background register
             weight_reg_inactive = pe_weight_in; 
-            if (pe_switch_in) begin
-                weight_reg_active = weight_reg_inactive;
-            end
+        end
+        if (pe_switch_in) begin
+            weight_reg_active = weight_reg_inactive;
         end
     end
 
