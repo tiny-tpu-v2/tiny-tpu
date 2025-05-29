@@ -1,15 +1,41 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Tue May 20 18:08:32 2025
+[*] Tue May 27 00:49:45 2025
 [*]
-[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/systolic.vcd"
-[dumpfile_mtime] "Tue May 20 18:05:21 2025"
-[dumpfile_size] 12880
-[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/systolic.gtkw"
+[dumpfile] "/Users/suryasure/projects/apex/waveforms/systolic.vcd"
+[dumpfile_mtime] "Tue May 27 00:48:36 2025"
+[dumpfile_size] 21383
+[savefile] "/Users/suryasure/projects/apex/waveforms/systolic.gtkw"
 [timestart] 0
-[size] 1336 600
+[size] 1344 600
 [pos] -1 -1
-*-15.600000 59100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-15.900001 34800 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
 [treeopen] systolic.
 [treeopen] systolic.pe22.
 [sst_width] 255
@@ -20,39 +46,71 @@
 [fpshift_count] 8
 systolic.clk
 [fpshift_count] 8
-systolic.input_11[15:0]
-[fpshift_count] 8
-systolic.input_11_out[15:0]
-[fpshift_count] 8
-systolic.input_21[15:0]
-[fpshift_count] 8
-systolic.input_21_out[15:0]
-[fpshift_count] 8
-systolic.load_weights
-[fpshift_count] 8
-systolic.psum_11[15:0]
-[fpshift_count] 8
-systolic.psum_12[15:0]
-[fpshift_count] 8
 systolic.rst
 [fpshift_count] 8
-systolic.start
+systolic.sys_start
 [fpshift_count] 8
-systolic.weight_11[15:0]
+systolic.sys_data_in_11[15:0]
 [fpshift_count] 8
-systolic.weight_12[15:0]
+systolic.sys_data_in_12[15:0]
 [fpshift_count] 8
-systolic.weight_21[15:0]
+systolic.sys_data_out_21[15:0]
 [fpshift_count] 8
-systolic.weight_22[15:0]
+systolic.sys_data_out_22[15:0]
 [fpshift_count] 8
-systolic.out_21[15:0]
+systolic.sys_valid_out_21
 [fpshift_count] 8
-systolic.out_22[15:0]
+systolic.sys_valid_out_22
+@200
+-
+@23
+systolic.pe11.pe_input_in[15:0]
+@22
+systolic.pe11.weight_reg_inactive[15:0]
+systolic.pe11.weight_reg_active[15:0]
 @28
-systolic.pe11.pe_valid_in
 systolic.pe11.pe_valid_out
-systolic.valid_out_21
-systolic.valid_out_22
+systolic.pe12.pe_valid_out
+@40000420
+[fpshift_count] 8
+systolic.pe11.pe_psum_out[15:0]
+@22
+systolic.pe12.pe_input_in[15:0]
+@40000420
+[fpshift_count] 8
+systolic.pe12.pe_psum_out[15:0]
+[fpshift_count] 8
+systolic.pe21.pe_psum_out[15:0]
+[fpshift_count] 8
+systolic.pe22.pe_psum_out[15:0]
+@200
+-
+@40000420
+[fpshift_count] 8
+systolic.sys_weight_in_11[15:0]
+[fpshift_count] 8
+systolic.sys_weight_in_12[15:0]
+[fpshift_count] 8
+systolic.sys_accept_w_in
+[fpshift_count] 8
+systolic.sys_accept_w_out_1
+[fpshift_count] 8
+systolic.pe11.weight_reg_active[15:0]
+[fpshift_count] 8
+systolic.pe12.weight_reg_active[15:0]
+[fpshift_count] 8
+systolic.pe21.weight_reg_active[15:0]
+[fpshift_count] 8
+systolic.pe22.weight_reg_active[15:0]
+@28
+systolic.sys_switch_in
+systolic.pe_switch_out_11
+systolic.pe_switch_out_12
+systolic.pe11.pe_switch_in
+systolic.pe11.pe_switch_in
+systolic.pe11.pe_accept_w_in
+@22
+systolic.pe12.mult_out[15:0]
+systolic.pe12.mult_out[15:0]
 [pattern_trace] 1
 [pattern_trace] 0

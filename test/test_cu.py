@@ -8,77 +8,34 @@ async def test_cu(dut):
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00000
+    dut.instruction.value = 0b0000000000000000000000000
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00001
+    dut.instruction.value = 0b0000000000000000000000001
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00010
+    dut.instruction.value = 0b00000000000000000000110
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00011
+    dut.instruction.value = 0b00000000011000000001010
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00100
+    dut.instruction.value = 0b00000000001000000001110
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00101
+    dut.instruction.value = 0b10000000001000000001110
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00110
+    dut.instruction.value = 0b00000000001000000001111
 
     await Timer(10, units="ns")
 
-    dut.instruction.value = 0b00111
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01000
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01001
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01010
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01011
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01100
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01101
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01110
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b01111
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b10000
-
-    await Timer(10, units="ns")
-
-    dut.instruction.value = 0b10001
-
-    await Timer(10, units="ns")
     
 
     
