@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
+from cocotb.triggers import RisingEdge, ClockCycles
 
 def to_fixed(val, frac_bits=8):
     return int(round(val * (1 << frac_bits))) & 0xFFFF
@@ -21,51 +21,55 @@ async def test_pe(dut):
     dut.rst.value = 1
     dut.bias_valid_in.value = 0 # this would enable the PE to start processing the inputs. but it doesnt here
     dut.load_bias_in.value = 0
+    dut.bias_switch_in.value = 0
+    await ClockCycles(dut.clk, 1)
+
     # Load bias
-    await RisingEdge(dut.clk)
     dut.rst.value = 0
     dut.load_bias_in.value = 1
+    dut.bias_scalar_in.value = to_fixed(10.0)
+    await ClockCycles(dut.clk, 1)
 
-    await RisingEdge(dut.clk)
-    dut.bias_data_in.value = to_fixed(10.0)
-    dut.bias_temp_bias_in.value = to_fixed(5.0)
-    dut.bias_valid_in.value = 1
+    dut.load_bias_in.value = 1
+    dut.bias_scalar_in.value = to_fixed(8.0)
+    dut.bias_switch_in.value = 1
+    await ClockCycles(dut.clk, 1)
 
-    await RisingEdge(dut.clk)
-    dut.bias_data_in.value = to_fixed(6.0)
-    dut.bias_temp_bias_in.value = to_fixed(8.0)
-    dut.bias_valid_in.value = 1
-
-    await RisingEdge(dut.clk)
-    dut.bias_data_in.value = to_fixed(3.0)
-    dut.bias_temp_bias_in.value = to_fixed(5.0)
-    dut.bias_valid_in.value = 1
-    
-
-    await RisingEdge(dut.clk)
-    dut.bias_data_in.value = to_fixed(5.0)
-    dut.bias_temp_bias_in.value = to_fixed(8.0)
-    dut.bias_valid_in.value = 1
-
-    await RisingEdge(dut.clk)
-    dut.bias_temp_bias_in.value = to_fixed(12.0)
-    dut.bias_valid_in.value = 0 # i set this to 0 to make sure the bias doesnt get updated to 3
     dut.load_bias_in.value = 0
-    
-    # dut.bias_data_in.value = to_fixed(12.0)
-    # dut.bias_temp_bias_in.value = to_fixed(9.0)
-
-    await RisingEdge(dut.clk)
-    # dut.bias_data_in.value = to_fixed(9.0)
-    # dut.bias_in.value = to_fixed(3.0)
+    dut.bias_switch_in.value = 0
     dut.bias_valid_in.value = 0
-    
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 1)
+
+    dut.bias_backward.value = 1
+    dut.bias_sys_data_in.value = to_fixed(6.0)
+    await ClockCycles(dut.clk, 1)
+
+    dut.bias_sys_data_in.value = to_fixed(3.0)
+    dut.bias_valid_in.value = 1
+    await ClockCycles(dut.clk, 1)
+
+    # dut.bias_data_in.value = to_fixed(6.0)
+    # dut.bias_temp_bias_in.value = to_fixed(8.0)
+    # dut.bias_valid_in.value = 1
+    # await ClockCycles(dut.clk, 1)
+
+    # dut.bias_data_in.value = to_fixed(3.0)
+    # dut.bias_temp_bias_in.value = to_fixed(5.0)
+    # dut.bias_valid_in.value = 1
+    # await ClockCycles(dut.clk, 1)
+
+    # dut.bias_data_in.value = to_fixed(5.0)
+    # dut.bias_temp_bias_in.value = to_fixed(8.0)
+    # dut.bias_valid_in.value = 1
+    # await ClockCycles(dut.clk, 1)
+
+    # dut.bias_temp_bias_in.value = to_fixed(12.0)
+    # dut.bias_valid_in.value = 0 # i set this to 0 to make sure the bias doesnt get updated to 3
+    # dut.load_bias_in.value = 0
+    # await ClockCycles(dut.clk, 1)
+
+    # dut.bias_valid_in.value = 0
+    await ClockCycles(dut.clk, 10)
 
     # Check output
     

@@ -13,7 +13,9 @@ module bias (
     input wire signed [15:0] bias_sys_data_in, // THIS IS THE DATA COMING FROM THE SYS!!!
     
     output logic signed [15:0] bias_data_out,
-    output logic signed [15:0] bias_scalar_out
+    output logic signed [15:0] bias_scalar_out,
+
+    input logic bias_backward
 );
 
     logic signed [15:0] add_out;
@@ -31,23 +33,23 @@ module bias (
     always_comb begin
         if (bias_switch_in) begin
             bias_active = bias_inactive; 
-        end 
+        end
+        if(bias_backward) begin
+            bias_data_out = bias_sys_data_in;
+            bias_valid_out = bias_valid_in;
+        end
     end
 
     always @(posedge clk) begin
         if (rst) begin
             bias_data_out <= 0;
             bias_inactive <= 0; 
-        end else begin
+        end else if (!bias_backward) begin
             bias_valid_out <= bias_valid_in;
-
             if (load_bias_in) begin
                 bias_inactive <= bias_scalar_in;  
                 bias_scalar_out <= bias_scalar_in;
             end 
-            // if (bias_switch_in) begin
-            //     bias_active <= bias_inactive; 
-            // end 
             if (bias_valid_in) begin
                 bias_data_out <= add_out;
             end
