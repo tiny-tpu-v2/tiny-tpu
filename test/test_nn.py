@@ -60,22 +60,25 @@ async def test_nn(dut):
     #########################################################
 
     # LOADING INPUTS (passing in the inputs as such: [(0,0), (1,1), (0,1), (1,0)])
-    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(0.0) # 0 to acc 1
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(1.0) # 0 to acc 1
     await ClockCycles(dut.clk, 1)
     dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(0.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
     dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(0.0) # 1 to acc 1
     await ClockCycles(dut.clk, 1)
-    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(1.0) # 0 to acc 2
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(0.0) # 0 to acc 2
     await ClockCycles(dut.clk, 1)
 
     dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(1.0) # 0 to acc 1
     await ClockCycles(dut.clk, 1)
-    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(0.0) # 1 to acc 2
+    dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(1.0) # 1 to acc 2
     await ClockCycles(dut.clk, 1)
 
-    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(1.0) # 1 to acc 1
+    ## TODO: FIX why last output for this input is NOT showing up. 
+    ## figured out that lr valid bit is not beign asserted for last input despite start being 
+    ## ... NN START IS BEING ONLY HELD FOR 3 CLK CYCLES!!!
+    dut.instruction.value = 0b0_0_0_01_01_0_0000000000000000 | to_fixed(0.0) # 1 to acc 1
     await ClockCycles(dut.clk, 1)
     dut.instruction.value = 0b0_0_0_01_01_1_0000000000000000 | to_fixed(1.0) # 1 to acc 2
     await ClockCycles(dut.clk, 1)
@@ -135,6 +138,7 @@ async def test_nn(dut):
 
     # t=23
     dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 
+    await ClockCycles(dut.clk, 1)
 
     # t=24
     dut.instruction.value = 0b1_0_0_01_00_0_00000000_00000000 
@@ -170,6 +174,7 @@ async def test_nn(dut):
 
     # t=32
     dut.instruction.value = 0b0_0_0_10_00_0_00000000_00000000 
+    await ClockCycles(dut.clk, 1)
     await ClockCycles(dut.clk, 1)
 
 
