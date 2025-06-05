@@ -5,12 +5,18 @@ module nn (
     input logic clk,
     input logic rst,
 
-    input logic [23:0] instruction,
+    input logic [24:0] instruction,
 
     output logic signed [15:0] nn_data_out_1,
-    output logic signed [15:0] nn_data_out_2
+    output logic signed [15:0] nn_data_out_2,
+
+    output logic nn_valid_out_1,
+    output logic nn_valid_out_2
     
 );
+
+    assign nn_valid_out_1 = lr_valid_out_21;
+    assign nn_valid_out_2 = lr_valid_out_22;
 
     logic signed [15:0] input_11;   // Connections from accumulator 1 to systolic array pe11
     logic signed [15:0] input_21;   // Connections from accumulator 2 to systolic array pe21
@@ -78,6 +84,7 @@ module nn (
     logic [1:0] activation_datapath;  // routing the activation output to either the accumulator or the output wire
     logic address; // address of the accumulator to which the input/weight/bias data is routed
     logic signed [15:0] data_in; // input data to the accumulator
+    logic lr_is_backward; // IF 0 THEN BACKWARD MODE, IF 1 THEN FORWARD MDOE
 
     
     
@@ -180,7 +187,9 @@ module nn (
         .lr_data_out(lr_data_out_1),
 
         .lr_valid_in(bias_valid_out_21),
-        .lr_valid_out(lr_valid_out_21)
+        .lr_valid_out(lr_valid_out_21),
+        .h_store_valid(activation_datapath[0]), // tie sys flag 
+        .lr_is_backward(lr_is_backward)
     );
 
     leaky_relu leaky_relu_22 (
@@ -191,7 +200,9 @@ module nn (
         .lr_data_out(lr_data_out_2),
 
         .lr_valid_in(bias_valid_out_22),
-        .lr_valid_out(lr_valid_out_22)
+        .lr_valid_out(lr_valid_out_22),
+        .h_store_valid(activation_datapath[0]), // tie sys flag
+        .lr_is_backward(lr_is_backward)
     );
 
     control_unit control_unit_inst (
@@ -204,7 +215,8 @@ module nn (
         .load_weights(load_weights),
         .load_bias(load_bias),
         .address(address),
-        .data_in(data_in)
+        .data_in(data_in),
+        .lr_is_backward(lr_is_backward)
     );
 
     // Accumulator input control
