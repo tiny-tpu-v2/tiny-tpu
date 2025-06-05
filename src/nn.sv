@@ -163,7 +163,8 @@ module nn (
         .bias_data_out(bias_data_out_1),
         .bias_scalar_out(bias_temp_bias_out_1),
         .bias_valid_in(sys_valid_out_21),
-        .bias_valid_out(bias_valid_out_21)
+        .bias_valid_out(bias_valid_out_21),
+        .bias_backward(lr_is_backward)
     );
 
     bias bias_22 (
@@ -176,7 +177,8 @@ module nn (
         .bias_data_out(bias_data_out_2),
         .bias_scalar_out(),
         .bias_valid_in(sys_valid_out_22),
-        .bias_valid_out(bias_valid_out_22)
+        .bias_valid_out(bias_valid_out_22),
+        .bias_backward(lr_is_backward)
     );
 
     leaky_relu leaky_relu_21 (
