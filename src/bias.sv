@@ -11,6 +11,8 @@ module bias (
     input logic signed [15:0] bias_scalar_in, // THIS IS THE ACTUAL BIAS DATA
     output logic bias_valid_out,
     input wire signed [15:0] bias_sys_data_in, // THIS IS THE DATA COMING FROM THE SYS!!!
+
+    input logic bias_backward,
     
     output logic signed [15:0] bias_data_out,
     output logic signed [15:0] bias_scalar_out
@@ -45,12 +47,12 @@ module bias (
                 bias_inactive <= bias_scalar_in;  
                 bias_scalar_out <= bias_scalar_in;
             end 
-            // if (bias_switch_in) begin
-            //     bias_active <= bias_inactive; 
-            // end 
-            if (bias_valid_in) begin
+            if(bias_backward) begin
+                bias_data_out <= bias_sys_data_in;
+            end else if (bias_valid_in) begin
                 bias_data_out <= add_out;
             end
+            
         end
     end
 

@@ -12,7 +12,7 @@
 // 15:0 - data_in
 
 module control_unit (
-    input logic [23:0] instruction,
+    input logic [24:0] instruction,
     output logic [1:0] activation_datapath,
     output logic nn_start,
     output logic accept_w, // dequeue weight from FIFO
@@ -21,11 +21,13 @@ module control_unit (
     output logic load_inputs,
     output logic load_weights, // enqueue weight in FIFO
     output logic [15:0] data_in,
-    output logic address
+    output logic address, 
+    output logic lr_is_backward
 );
 
 always @(*)begin
     
+    lr_is_backward = instruction[24];  
     nn_start = instruction[23];
     accept_w = instruction[22];
     switch = instruction[21];
