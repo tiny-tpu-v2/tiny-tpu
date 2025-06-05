@@ -1,0 +1,28 @@
+Initial model parameters:
+layer1.weight: [[0.5406103730201721, 0.5869042277336121], [-0.16565565764904022, 0.6495562791824341]]
+layer1.bias: [-0.15492962300777435, 0.14268755912780762]
+layer2.weight: [[-0.34425848722457886, 0.4152715504169464]]
+layer2.bias: [0.6233449578285217]
+
+Performing forward pass...
+
+Forward pass results:
+Input [0.0, 0.0] → Hidden neurons: [-0.0015492961974814534, 0.14268755912780762] → Output: 0.6831 (Target: 0.0)
+Input [0.0, 1.0] → Hidden neurons: [0.4319745898246765, 0.7922438383102417] → Output: 0.8036 (Target: 1.0)
+Loss: 0.2526
+
+Performing backward pass...
+
+Gradients after backward pass:
+layer1.weight gradients: [[0.0, 0.06760191917419434], [0.0, -0.08154673129320145]]
+layer1.bias gradients: [0.06525018066167831, 0.2021387219429016]
+layer2.weight gradients: [[-0.08588507026433945, -0.05809815227985382]]
+layer2.bias gradients: [0.48676276206970215]
+
+Updating weights...
+
+Final model parameters after update:
+layer1.weight: [[0.5406103730201721, 0.5666236281394958], [-0.16565565764904022, 0.6740202903747559]]
+layer1.bias: [-0.17450468242168427, 0.08204594254493713]
+layer2.weight: [[-0.31849297881126404, 0.4327009916305542]]
+layer2.bias: [0.47731611132621765]
