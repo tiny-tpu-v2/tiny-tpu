@@ -5,6 +5,7 @@ import torch.optim as optim
 # Hyperparameters
 h1 = 2  # neurons in first hidden layer
 lr = 0.3  # learning rate
+num_steps = 1  # number of training steps
 
 # XOR dataset
 x_real = torch.tensor([[0., 0.],
@@ -35,7 +36,7 @@ class XORNet(nn.Module):
         output = self.layer2(activated)
         return output, activated
 
-def single_training_step():
+def train_model(num_steps):
     # Initialize the model
     model = XORNet(input_dim=2, h1=h1, output_dim=1)
     criterion = nn.MSELoss()
@@ -45,33 +46,36 @@ def single_training_step():
     for name, param in model.named_parameters():
         print(f"{name}: {param.data.tolist()}")
     
-    # Forward pass
-    print("\nPerforming forward pass...")
-    predictions, hidden_activations = model(x_test)
-    loss = criterion(predictions, y_test)
-    
-    print("\nForward pass results:")
-    for i, (input_x, hidden, pred) in enumerate(zip(x_test, hidden_activations, predictions)):
-        print(f"Input {input_x.tolist()} → Hidden neurons: {hidden.tolist()} → Output: {pred.item():.4f} (Target: {y_test[i].item()})")
-    print(f"Loss: {loss.item():.4f}")
-    
-    # Backward pass
-    print("\nPerforming backward pass...")
-    optimizer.zero_grad()
-    loss.backward()
-    
-    print("\nGradients after backward pass:")
-    for name, param in model.named_parameters():
-        print(f"{name} gradients: {param.grad.tolist()}")
-    
-    # Perform one optimization step
-    print("\nUpdating weights...")
-    optimizer.step()
-    
-    print("\nFinal model parameters after update:")
-    for name, param in model.named_parameters():
-        print(f"{name}: {param.data.tolist()}")
+    for step in range(num_steps):
+        print(f"\nStep {step + 1}/{num_steps}")
+        
+        # Forward pass
+        print("Performing forward pass...")
+        predictions, hidden_activations = model(x_test)
+        loss = criterion(predictions, y_test)
+        
+        print("\nForward pass results:")
+        for i, (input_x, hidden, pred) in enumerate(zip(x_test, hidden_activations, predictions)):
+            print(f"Input {input_x.tolist()} → Hidden neurons: {hidden.tolist()} → Output: {pred.item():.4f} (Target: {y_test[i].item()})")
+        print(f"Loss: {loss.item():.4f}")
+        
+        # Backward pass
+        print("\nPerforming backward pass...")
+        optimizer.zero_grad()
+        loss.backward()
+        
+        print("\nGradients after backward pass:")
+        for name, param in model.named_parameters():
+            print(f"{name} gradients: {param.grad.tolist()}")
+        
+        # Perform one optimization step
+        print("\nUpdating weights...")
+        optimizer.step()
+        
+        print("\nModel parameters after update:")
+        for name, param in model.named_parameters():
+            print(f"{name}: {param.data.tolist()}")
 
 if __name__ == "__main__":
     torch.manual_seed(42)  # For reproducibility
-    single_training_step() 
+    train_model(num_steps) 
