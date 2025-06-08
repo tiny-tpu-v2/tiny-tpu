@@ -35,7 +35,7 @@ module input_acc #(
     always_ff @(posedge clk) begin
         // logging each element of the memory in the waveform
         for (int i = 0; i < INPUT_ACC_WIDTH; i++) begin
-            $dumpvars(0, input_acc_mem_reg[i]);
+            //$dumpvars(0, input_acc_mem_reg[i]);
         end
 
         if (rst) begin
@@ -63,7 +63,7 @@ module input_acc #(
             end
 
             // tracking count based on wr_en and rd_en (enqueue and dequeue)
-            unique case ({wr_en && (count < INPUT_ACC_WIDTH), rd_en})
+            case ({wr_en && (count < INPUT_ACC_WIDTH), rd_en})
                 2'b10 : count <= count + 1;   // write only
                 2'b01 : count <= count - 1;   // read  only
                 2'b11 : count <= count;       // both: count unchanged;

@@ -15,8 +15,8 @@ module nn (
     
 );
 
-    assign nn_valid_out_1 = lr_valid_out_21;
-    assign nn_valid_out_2 = lr_valid_out_22;
+    assign nn_valid_out_1 = lr_valid_out_21 & activation_datapath[1];
+    assign nn_valid_out_2 = lr_valid_out_22 & activation_datapath[1];
 
     logic signed [15:0] input_11;   // Connections from accumulator 1 to systolic array pe11
     logic signed [15:0] input_21;   // Connections from accumulator 2 to systolic array pe21

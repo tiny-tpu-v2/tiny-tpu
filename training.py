@@ -29,6 +29,7 @@ class XORNet(nn.Module):
         hidden = self.layer1(x)
         activated = self.activation(hidden)
         output = self.layer2(activated)
+        output = self.activation(output)
         return output, activated  # Return both final output and hidden layer activation
 
 # 3) Training function (training on the entire dataset)

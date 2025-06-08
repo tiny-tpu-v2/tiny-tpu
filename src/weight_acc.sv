@@ -18,7 +18,7 @@ module weight_acc#(
 
     always @(posedge clk) begin
         for (int i = 0; i < WEIGHT_ACC_WIDTH; i++) begin
-            $dumpvars(0, weight_acc_mem_reg[i]);
+            //$dumpvars(0, weight_acc_mem_reg[i]);
         end
 
         if (rst) begin
