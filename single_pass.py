@@ -4,8 +4,8 @@ import torch.optim as optim
 
 # Hyperparameters
 h1 = 2  # neurons in first hidden layer
-lr = 0.3  # learning rate
-num_steps = 1  # number of training steps
+lr = 0.2  # learning rate
+num_steps = 2  # number of training steps
 
 # XOR dataset
 x_real = torch.tensor([[0., 0.],
@@ -18,9 +18,13 @@ y_real = torch.tensor([[0.],
                   [0.]], dtype=torch.float32)
 
 x_test = torch.tensor([[0., 0.],
-                       [0., 1.]], dtype=torch.float32)
+                       [0., 1.],
+                       [1., 0.],
+                       [1., 1.]], dtype=torch.float32)
 y_test = torch.tensor([[0.],
-                       [1.]], dtype=torch.float32)
+                       [1.],
+                       [1.],
+                       [0.]], dtype=torch.float32)
 
 # Define the same model architecture
 class XORNet(nn.Module):
@@ -34,6 +38,7 @@ class XORNet(nn.Module):
         hidden = self.layer1(x)
         activated = self.activation(hidden)
         output = self.layer2(activated)
+        output = self.activation(output)
         return output, activated
 
 def train_model(num_steps):
