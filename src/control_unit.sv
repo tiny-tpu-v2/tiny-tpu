@@ -35,14 +35,14 @@ always @(*)begin
     address = instruction[16];
     data_in = instruction[15:0];
 
-    // Default assignments for load signals
+    // default assignments for load signals (at the start of every signal change in the program)
     load_weights = 1'b0;
     load_bias = 1'b0;
     load_inputs = 1'b0;
 
     case (instruction[18:17]) 
         2'b00: begin
-            // All load signals remain 0 (as per default)
+            // do nothing if nothing is to be loaded
         end
         2'b01: begin
             load_inputs = 1'b1;
