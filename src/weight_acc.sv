@@ -17,9 +17,9 @@ module weight_acc#(
     logic signed [15:0] weight_acc_mem_reg [0:WEIGHT_ACC_WIDTH-1];
 
     always @(posedge clk) begin
-        for (int i = 0; i < WEIGHT_ACC_WIDTH; i++) begin
-            $dumpvars(0, weight_acc_mem_reg[i]);
-        end
+        // for (int i = 0; i < WEIGHT_ACC_WIDTH; i++) begin
+        //     $dumpvars(0, weight_acc_mem_reg[i]);
+        // end
 
         if (rst) begin
             for (int i = 0; i < WEIGHT_ACC_WIDTH; i++) begin
