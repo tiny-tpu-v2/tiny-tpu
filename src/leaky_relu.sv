@@ -9,7 +9,6 @@ module leaky_relu (
     input logic signed [15:0] lr_temp_leak_factor,
     output logic signed [15:0] lr_data_out,
     output logic lr_valid_out,
-    // input wire backward
     input logic h_store_valid,
     input logic lr_is_backward // if 1 then relu is in backward mode
 );
@@ -31,32 +30,32 @@ module leaky_relu (
             lr_data_out <= 16'b0;
             lr_valid_out <= 0;
             h_stack <= 0;
-        end else if (lr_valid_in) begin
-            if (lr_is_backward) begin // backward mode 
-                if (h_stack[0] == 1'b1) begin
-                    lr_data_out <= mul_out;
-                end else begin // if the bit is 0
-                    lr_data_out <= lr_data_in;
-                end
-                // add the bit shifting dequeue (bit shift right??)
-                h_stack <= (h_stack >> 1);
-            end else begin // forward mode
+        end 
+        else begin
+            if (lr_valid_in) begin
+                if (lr_is_backward) begin // backward mode 
+                    if (h_stack[0] == 1'b1) begin
+                        lr_data_out <= mul_out;
+                    end else begin // if the bit is 0
+                        lr_data_out <= lr_data_in;
+                    end
+                    // add the bit shifting dequeue (bit shift right??)
+                    h_stack <= (h_stack >> 1);
+                end 
+                else begin // forward mode
+                    if (lr_data_in >= 0) begin // if positive 
+                        lr_data_out <= lr_data_in; 
+                    end else begin  // if negative AND zero
+                        lr_data_out <= mul_out;
+                    end
 
-                if (lr_data_in >= 0) begin // if positive 
-                    lr_data_out <= lr_data_in; 
-                end else begin  // if negative AND zero
-                    lr_data_out <= mul_out;
-                end
-
-                if (h_store_valid) begin // store MSB of lr_data_in. stores 1 for positive, 0 for negative
-                    h_stack <= (h_stack << 1) | lr_data_in[15];
+                    if (h_store_valid) begin // store MSB of lr_data_in. stores 1 for positive, 0 for negative
+                        h_stack <= (h_stack << 1) | lr_data_in[15];
+                    end
                 end
             end
-            lr_valid_out <= 1;
-        end else begin
-            lr_valid_out <= 0;
-            lr_data_out <= 0;
-        end
+            lr_valid_out <= lr_valid_in;
+        end 
     end
 
 endmodule

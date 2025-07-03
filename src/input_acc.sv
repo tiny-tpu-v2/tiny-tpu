@@ -4,7 +4,7 @@ module input_acc #(
     input  logic clk,
     input  logic rst,
 
-    input  logic input_acc_valid_in,      
+    input  logic input_acc_valid_in,
     input  logic input_acc_valid_data_in,     
     input  logic signed [15:0] input_acc_data_in,
 
@@ -28,16 +28,18 @@ module input_acc #(
     logic signed [15:0] wr_data;
 
     always_comb begin
-        wr_en   = input_acc_valid_data_nn_in | input_acc_valid_data_in;
-        wr_data = input_acc_valid_data_nn_in ? input_acc_data_nn_in : input_acc_data_in;
+        wr_en   = input_acc_valid_data_nn_in | input_acc_valid_data_in; // both make write go high
+        wr_data = input_acc_valid_data_nn_in ? input_acc_data_nn_in : input_acc_data_in; // nn takes priority if both are on
     end
 
     always_ff @(posedge clk) begin
+
         // logging each element of the memory in the waveform
         for (int i = 0; i < INPUT_ACC_WIDTH; i++) begin
             $dumpvars(0, input_acc_mem_reg[i]);
         end
 
+        // reset logic
         if (rst) begin
             wr_ptr   <= '0;
             rd_ptr   <= '0;
@@ -45,18 +47,19 @@ module input_acc #(
             input_acc_data_out <= '0;
             input_acc_valid_out<= 1'b0;
         end
-        else begin
 
-            // enqueue 
+        else begin
+            // enqueue
+            // if not enabled, then skip writing
             if (wr_en && (count < INPUT_ACC_WIDTH)) begin
                 input_acc_mem_reg[wr_ptr] <= wr_data;
                 wr_ptr  <= (wr_ptr == INPUT_ACC_WIDTH-1) ? 0 : wr_ptr + 1'b1;
             end
 
             // dequeue
+            // if no enable, then data comes out, but no internal variables change
             rd_en = input_acc_valid_in && (count != 0);
             input_acc_valid_out <= rd_en;             
-
             if (rd_en) begin
                 input_acc_data_out <= input_acc_mem_reg[rd_ptr];
                 rd_ptr <= (rd_ptr == INPUT_ACC_WIDTH-1) ? 0 : rd_ptr + 1'b1;

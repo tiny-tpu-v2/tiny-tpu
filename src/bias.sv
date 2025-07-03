@@ -2,20 +2,20 @@
 `default_nettype none
 
 module bias (
-    input logic bias_switch_in, // brings bias from inactive to active
     input logic clk,
     input logic rst,
+    input logic bias_switch_in, // brings bias from inactive to active
 
-    input wire signed [15:0] bias_sys_data_in, // data from systolic array
+    input wire signed [15:0] bias_data_in, // y data from systolic array
+    output logic signed [15:0] bias_data_out, // y + b output
     input logic bias_valid_in, // valid data from systolic array?
     output logic bias_valid_out, // propogate signal forward for cascading
 
-    input logic load_bias_in, // global signal for loading biases into internal registers
+    input logic bias_load_in, // global signal for loading biases into internal registers
     input logic signed [15:0] bias_scalar_in, // bias value
     output logic signed [15:0] bias_scalar_out // cascaded bias value
     
-    output logic signed [15:0] bias_data_out, // y + b output
-    input logic bias_backward,
+    input logic bias_backward_in,
 );
 
     // internal registers
@@ -25,7 +25,7 @@ module bias (
 
 
     fxp_add add_inst(
-        .ina(bias_sys_data_in), // THIS IS THE SYS DATA!!!  
+        .ina(bias_data_in), // THIS IS THE SYS DATA!!!  
         .inb(bias_active),
         .out(add_out)
     );
@@ -44,7 +44,7 @@ module bias (
         else begin
             bias_valid_out <= bias_valid_in;
 
-            if (load_bias_in) begin // loading bias value
+            if (bias_load_in) begin // loading bias value
                 // propogate into inactive register, and out to next bias module
                 bias_inactive <= bias_scalar_in;  
                 bias_scalar_out <= bias_scalar_in;
@@ -54,9 +54,10 @@ module bias (
             if (bias_valid_in) begin
                 bias_data_out <= add_out;
             end
-
-            else if(bias_backward) begin
-                bias_data_out <= bias_sys_data_in;
+    
+            // backward pass
+            else if(bias_backward_in) begin
+                bias_data_out <= bias_data_in;
             end
             
         end

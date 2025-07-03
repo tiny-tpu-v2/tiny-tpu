@@ -14,24 +14,23 @@ module nn (
     output logic nn_valid_out_2
     
 );
-
     assign nn_valid_out_1 = lr_valid_out_21;
     assign nn_valid_out_2 = lr_valid_out_22;
 
-    logic signed [15:0] input_11;   // Connections from accumulator 1 to systolic array pe11
-    logic signed [15:0] input_21;   // Connections from accumulator 2 to systolic array pe21
+    logic signed [15:0] input_11; // connections from accumulator 1 to systolic array pe11
+    logic signed [15:0] input_21; // connections from accumulator 2 to systolic array pe21
 
-    logic signed[15:0] lr_data_out_1;    // Connections from leaky relu 1 to accumulator 1
-    logic signed[15:0] lr_data_out_2;    // Connections from leaky relu 2 to accumulator 2
+    logic signed[15:0] lr_data_out_1; // connections from leaky relu 1 to accumulator 1
+    logic signed[15:0] lr_data_out_2; // connections from leaky relu 2 to accumulator 2
 
-    logic signed [15:0] sys_data_out_21;        // Connections from systolic array pe21 to bias 1
-    logic signed [15:0] sys_data_out_22;        // Connections from systolic array pe22 to bias 2
+    logic signed [15:0] sys_data_out_21; // connections from systolic array pe21 to bias 1
+    logic signed [15:0] sys_data_out_22; // connections from systolic array pe22 to bias 2
 
     logic sys_switch_out_21;
     logic sys_switch_out_22;
 
-    logic signed [15:0] out_21_bias;        // Connections from bias 1 to leaky relu 1
-    logic signed [15:0] out_22_bias;        // Connections from bias 2 to leaky relu 2
+    logic signed [15:0] out_21_bias; // connections from bias 1 to leaky relu 1
+    logic signed [15:0] out_22_bias; // connections from bias 2 to leaky relu 2
 
     logic signed [15:0] nn_data_in_1;
     logic signed [15:0] nn_data_in_2;
@@ -52,8 +51,8 @@ module nn (
     logic signed [15:0] bias_data_out_2;
 
 
-    logic input_acc_valid_out_1;    // Valid signal from accumulator 1 to systolic array pe11 and accumulator 2
-    logic input_acc_valid_out_2;    // Valid signal from accumulator 2 to systolic array pe21
+    logic input_acc_valid_out_1;    // valid signal from accumulator 1 to systolic array pe11 and accumulator 2
+    logic input_acc_valid_out_2;    // valid signal from accumulator 2 to systolic array pe21
     logic weight_acc_valid_out_1;
     logic weight_acc_valid_out_2;
     logic bias_valid_out_1;
@@ -61,14 +60,14 @@ module nn (
     
 
     // Below are wires which connect the valid signals from systolic array to bias and leaky relu modules
-    logic sys_valid_out_21;        // Valid signal from systolic array pe21 to bias 1
-    logic sys_valid_out_22;        // Valid signal from systolic array pe22 to bias 2
+    logic sys_valid_out_21;        // valid signal from systolic array pe21 to bias 1
+    logic sys_valid_out_22;        // valid signal from systolic array pe22 to bias 2
 
-    logic bias_valid_out_21;        // Valid signal from bias 1 to leaky relu 1
-    logic bias_valid_out_22;        // Valid signal from bias 2 to leaky relu 2
+    logic bias_valid_out_21;        // valid signal from bias 1 to leaky relu 1
+    logic bias_valid_out_22;        // valid signal from bias 2 to leaky relu 2
 
-    logic lr_valid_out_21; // Valid signal from leaky relu 1 to accumulator 1
-    logic lr_valid_out_22; // Valid signal from leaky relu 2 to accumulator 2
+    logic lr_valid_out_21; // valid signal from leaky relu 1 to accumulator 1
+    logic lr_valid_out_22; // valid signal from leaky relu 2 to accumulator 2
 
     logic load_inputs_1;
     logic load_inputs_2;
@@ -221,58 +220,61 @@ module nn (
         .lr_is_backward(lr_is_backward)
     );
 
-    // Accumulator input control
+    // route to the input accumulators
     always @(*) begin
         input_acc_data_in_1 = activation_datapath[0] ? lr_data_out_1 : 16'b0;
         input_acc_data_in_2 = activation_datapath[0] ? lr_data_out_2 : 16'b0;
     end
 
-    // Load control for weights, bias, and inputs
+    // route to neural network output
     always @(*) begin
-        // Default assignments for all signals driven by this block
+        nn_data_out_1 = activation_datapath[1] ? lr_data_out_1 : 16'b0;
+        nn_data_out_2 = activation_datapath[1] ? lr_data_out_2 : 16'b0;
+    end
+
+    // load control for weights, bias, and inputs
+    always @(*) begin
+        // default assignments for all signals driven by this block
         nn_data_in_1 = 16'b0;
         load_inputs_1 = 1'b0;
         load_weights_1 = 1'b0;
         weight_acc_data_in_1 = 16'b0;
-
         nn_data_in_2 = 16'b0;
         load_inputs_2 = 1'b0;
         load_weights_2 = 1'b0;
         weight_acc_data_in_2 = 16'b0;
+        bias_temp_bias_in = 16'b0;
 
-        bias_temp_bias_in = 16'b0; // Default for the input to the first bias unit
-
-        // Main logic based on control signals
-        if (!address) begin // address == 1, for acc1/weight_acc1 path
+        // main logic based on control signals
+        // address == 0, for input_acc1/weight_acc1 path
+        // TODO: could flip the conditions - check for load_inputs vs load_weights and then check for address
+        if (!address) begin 
             if (load_inputs) begin
                 nn_data_in_1 = data_in;
                 load_inputs_1 = 1'b1;
-            end else if (load_weights) begin
+            end 
+            else if (load_weights) begin
                 weight_acc_data_in_1 = data_in;
                 load_weights_1 = 1'b1;
             end
-            // Note: load_bias handling for bias_temp_bias_in is common below
-        end else begin // address == 0, for acc2/weight_acc2 path
+        end 
+
+        // address == 1, for input_acc2/weight_acc2 path
+        else begin 
             if (load_inputs) begin
                 nn_data_in_2 = data_in;
                 load_inputs_2 = 1'b1;
-            end else if (load_weights) begin
+            end 
+            else if (load_weights) begin
                 weight_acc_data_in_2 = data_in;
                 load_weights_2 = 1'b1;
             end
-            // Note: load_bias handling for bias_temp_bias_in is common below
         end
 
-        // Common handling for bias loading:
+        // loading bias option
         if (load_bias) begin
             bias_temp_bias_in = data_in;
         end
-    end
-
-    // Neural network output control
-    always @(*) begin
-        nn_data_out_1 = activation_datapath[1] ? lr_data_out_1 : 16'b0;
-        nn_data_out_2 = activation_datapath[1] ? lr_data_out_2 : 16'b0;
     end
 
 

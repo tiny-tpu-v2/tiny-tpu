@@ -31,7 +31,7 @@ always @(*)begin
     nn_start = instruction[23];
     accept_w = instruction[22];
     switch = instruction[21];
-    activation_datapath = instruction[20:19]; // routes the activation output to either the accumulator or the output wire
+    activation_datapath = instruction[20:19]; // routes the activation output to either the accumulator or the output wire or both
     address = instruction[16];
     data_in = instruction[15:0];
 
@@ -40,6 +40,7 @@ always @(*)begin
     load_bias = 1'b0;
     load_inputs = 1'b0;
 
+    // decode load instruction
     case (instruction[18:17]) 
         2'b00: begin
             // do nothing if nothing is to be loaded
