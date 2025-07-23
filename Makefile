@@ -15,8 +15,17 @@ export LIBPYTHON_LOC=$(shell cocotb-config --libpython)
 export PYTHONPATH := test:$(PYTHONPATH)
 
 #=============== MODIFY BELOW ======================
-# IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
-SOURCES = src/pe.sv src/leaky_relu.sv src/systolic.sv src/nn.sv src/bias.sv src/fixedpoint.sv src/control_unit.sv src/input_acc.sv src/weight_acc.sv
+# ********** IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
+SOURCES = src/pe.sv \
+          src/leaky_relu.sv \
+          src/systolic.sv \
+          src/nn.sv \
+          src/bias.sv \
+          src/fixedpoint.sv \
+          src/control_unit.sv \
+          src/input_acc.sv \
+          src/weight_acc.sv \
+          src/test_module.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -72,6 +81,12 @@ test_cu: $(SIM_BUILD_DIR)
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_cu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 	mv cu.vcd waveforms/ 2>/dev/null || true
+
+test_test_module: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s test_module -s dump -g2012 $(SOURCES) test/dump_test_module.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_test_module $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv test_module.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
