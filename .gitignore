@@ -5,7 +5,7 @@ env/
 .env/
 waveforms/*.vcd
 
-
+cocotb
 # Python bytecode
 __pycache__/
 *.py[cod]
