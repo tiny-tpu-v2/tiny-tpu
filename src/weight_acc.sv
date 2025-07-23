@@ -38,12 +38,14 @@ module weight_acc#(
         end 
         else begin
             weight_acc_valid_out <= weight_acc_valid_in;
+            
             // enqueue 
             if (weight_acc_valid_data_in) begin 
                 weight_acc_mem_reg[counter] <= weight_acc_data_in;
                 counter <= counter + 1;
                 counter_reg <= counter;
             end
+
             // dequeue
             else if (weight_acc_valid_in) begin 
                 weight_acc_valid_out <= 1'b1;
