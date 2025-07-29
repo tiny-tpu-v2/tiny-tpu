@@ -56,5 +56,23 @@ gtkwave waveforms/<MODULE_NAME>.vcd
 make test_<MODULE_NAME>
 ```
 ```bash
+gtkwave waveform/<MODULE_NAME>
+```
+
+## Then, can run the following:
+```bash
 make show_<MODULE_NAME>
 ```
+
+
+
+## Fixed point vieweing in gtkwave
+Right click all signals
+Data Format -> Fixed Point Shift -> Specify -> Put in 8 -> OK
+Data Format -> Signed Decimal
+Data Format -> Fixed Point Shift -> ON
+
+
+
+## What is a gtkw file?
+Stores the signals for make show_<MODULE_NAME>. Only need to save it once, after running gtkwave waveforms/<MODULE_NAME>.vcd

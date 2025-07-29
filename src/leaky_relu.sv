@@ -16,8 +16,7 @@ module leaky_relu (
 
     logic signed [8:0] h_stack;
 
-
-    logic signed[15:0] mul_out;
+    logic signed [15:0] mul_out;
 
     fxp_mul mul_inst(
         .ina(lr_data_in),

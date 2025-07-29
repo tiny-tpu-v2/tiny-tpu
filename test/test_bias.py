@@ -66,6 +66,6 @@ async def test_pe(dut):
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
-
-    # Check output
+    
+    # check output
     

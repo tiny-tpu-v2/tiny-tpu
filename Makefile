@@ -25,7 +25,7 @@ SOURCES = src/pe.sv \
           src/control_unit.sv \
           src/input_acc.sv \
           src/weight_acc.sv \
-          src/test_module.sv
+		  src/unified_buffer.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -82,11 +82,11 @@ test_cu: $(SIM_BUILD_DIR)
 	! grep failure results.xml
 	mv cu.vcd waveforms/ 2>/dev/null || true
 
-test_test_module: $(SIM_BUILD_DIR)
-	$(IVERILOG) -o $(SIM_VVP) -s test_module -s dump -g2012 $(SOURCES) test/dump_test_module.sv
-	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_test_module $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+test_unified_buffer: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s unified_buffer -s dump -g2012 $(SOURCES) test/dump_unified_buffer.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_unified_buffer $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
-	mv test_module.vcd waveforms/ 2>/dev/null || true
+	mv unified_buffer.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
@@ -108,4 +108,4 @@ lint:
 clean:
 	rm -rf waveforms/*vcd $(SIM_BUILD_DIR) test/__pycache__
 
-.PHONY: clean
+.PHONY: clean	

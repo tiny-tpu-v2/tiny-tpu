@@ -1,0 +1,61 @@
+`timescale 1ns/1ps
+`default_nettype none
+
+module unified_buffer # (
+    parameter int UNIFIED_BUFFER_WIDTH = 50
+)(
+    input logic clk,
+    input logic rst,
+    input logic [15:0] ub_write_data_1_in,
+    input logic [15:0] ub_write_data_2_in,
+    input logic ub_write_valid_1_in,
+    input logic ub_write_valid_2_in
+);
+
+    logic [15:0] ub_memory [UNIFIED_BUFFER_WIDTH];
+    logic [8:0] wr_ptr;
+    
+
+    // usually negedge reset
+    always @(posedge clk or posedge rst) begin
+        
+        // view simulation only
+        for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
+            $dumpvars(0, ub_memory[i]);
+        end
+
+        // reset all memory to 0
+        if (rst) begin
+            wr_ptr <= 0;
+            // set every memory register to 0
+            for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin  
+                ub_memory[i] <= 0;
+            end
+        end 
+
+        // reset not high
+        else begin
+
+            // both valid, write two values
+            if (ub_write_valid_1_in && ub_write_valid_2_in) begin
+                ub_memory[wr_ptr] <= ub_write_data_1_in;
+                ub_memory[wr_ptr + 1] <= ub_write_data_2_in;
+                wr_ptr <= wr_ptr + 2;
+
+            end
+
+            // write if the write valid signal is on
+            else if (ub_write_valid_1_in) begin 
+                ub_memory[wr_ptr] <= ub_write_data_1_in;
+                wr_ptr <= wr_ptr + 1;
+            end
+
+            // write if the write valid signal is on
+            else if (ub_write_valid_2_in) begin 
+                ub_memory[wr_ptr] <= ub_write_data_2_in;
+                wr_ptr <= wr_ptr + 1;
+            end
+
+        end
+    end
+endmodule
