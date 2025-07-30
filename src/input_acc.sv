@@ -10,7 +10,7 @@ module input_acc #(
 
     input  logic input_acc_valid_data_nn_in,  
     input  logic signed [15:0] input_acc_data_nn_in,
-
+    
     output logic input_acc_valid_out,  
     output logic signed [15:0] input_acc_data_out
 );

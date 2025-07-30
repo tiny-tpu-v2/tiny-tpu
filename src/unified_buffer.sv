@@ -6,19 +6,33 @@ module unified_buffer # (
 )(
     input logic clk,
     input logic rst,
+
     input logic [15:0] ub_write_data_1_in,
     input logic [15:0] ub_write_data_2_in,
     input logic ub_write_valid_1_in,
-    input logic ub_write_valid_2_in
+    input logic ub_write_valid_2_in,
+
+
+    // ISA ***
+    input logic ub_write_start, // DETERMINES IF WE ARE WRITING
+    input logic ub_read_start, // supplied from assembly code (THIS DETERMINES IF WE START READING)
+    input logic ub_row_or_col_in, // read row or column
+    input logic [5:0] ub_read_addr_in, // this supplies the address which we decode from our ISA
+    input logic [5:0] ub_num_mem_locations, // NOT AN ADDRESS
+    // ISA ***
+    
+    output logic [15:0] ub_data_1_out,
+    output logic [15:0] ub_data_2_out,
+    
+    output logic ub_valid_1_out,
+    output logic ub_valid_2_out
 );
 
     logic [15:0] ub_memory [UNIFIED_BUFFER_WIDTH];
-    logic [8:0] wr_ptr;
-    
+    logic [5:0] wr_ptr;
 
-    // usually negedge reset
     always @(posedge clk or posedge rst) begin
-        
+
         // view simulation only
         for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
             $dumpvars(0, ub_memory[i]);
@@ -31,31 +45,41 @@ module unified_buffer # (
             for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin  
                 ub_memory[i] <= 0;
             end
-        end 
+        end
 
-        // reset not high
-        else begin
+        else begin 
+            // we keep ub_read_start and ub_write_start as seperate if blocks because they can run at the same time!
 
-            // both valid, write two values
-            if (ub_write_valid_1_in && ub_write_valid_2_in) begin
-                ub_memory[wr_ptr] <= ub_write_data_1_in;
-                ub_memory[wr_ptr + 1] <= ub_write_data_2_in;
-                wr_ptr <= wr_ptr + 2;
+            // reading (Leaky ReLU to UB)
+            if (ub_read_start) begin // for reading
 
+
+            end 
+
+            // writing (UB to input or weight accumulators)
+            if (ub_write_start) begin
+                // both valid, write two values
+                if (ub_write_valid_1_in && ub_write_valid_2_in) begin
+                    ub_memory[wr_ptr] <= ub_write_data_1_in;
+                    ub_memory[wr_ptr + 1] <= ub_write_data_2_in;
+                    wr_ptr <= wr_ptr + 2;
+
+                end
+
+                // write if the write valid signal is on
+                else if (ub_write_valid_1_in) begin 
+                    ub_memory[wr_ptr] <= ub_write_data_1_in;
+                    wr_ptr <= wr_ptr + 1;
+                end
+
+                // write if the write valid signal is on
+                else if (ub_write_valid_2_in) begin 
+                    ub_memory[wr_ptr] <= ub_write_data_2_in;
+                    wr_ptr <= wr_ptr + 1;
+                end
             end
-
-            // write if the write valid signal is on
-            else if (ub_write_valid_1_in) begin 
-                ub_memory[wr_ptr] <= ub_write_data_1_in;
-                wr_ptr <= wr_ptr + 1;
-            end
-
-            // write if the write valid signal is on
-            else if (ub_write_valid_2_in) begin 
-                ub_memory[wr_ptr] <= ub_write_data_2_in;
-                wr_ptr <= wr_ptr + 1;
-            end
-
         end
     end
+
+
 endmodule
