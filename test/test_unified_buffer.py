@@ -23,7 +23,7 @@ async def test_unified_buffer(dut):
     await RisingEdge(dut.clk) # values change here
 
     dut.rst.value = 0
-    dut.ub_write_start = 1
+    dut.ub_write_start_in = 1
     dut.ub_write_data_1_in.value = to_fixed(2.3)
     dut.ub_write_valid_1_in.value = 1
     await RisingEdge(dut.clk)
@@ -41,7 +41,7 @@ async def test_unified_buffer(dut):
     await RisingEdge(dut.clk)
 
     # Stop writing on this clock cycle (value won't be written to memory)
-    dut.ub_write_start = 0          
+    dut.ub_write_start_in = 0          
     dut.ub_write_valid_1_in.value = 0
     dut.ub_write_data_2_in.value = to_fixed(10.3)
     dut.ub_write_valid_2_in.value = 1
