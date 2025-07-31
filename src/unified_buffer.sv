@@ -45,13 +45,6 @@ module unified_buffer #(
     read_state_t read_state, read_state_next;
 
 
-    // initial begin
-    //     for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
-    //         $dumpvars(0, ub_memory[i]);  // dumps each element individually
-    //     end
-    // end
-
-
 
     // combinational logic for read state machine
     always_comb begin
@@ -80,7 +73,6 @@ module unified_buffer #(
 
     // sequential logic
     always @(posedge clk or posedge rst) begin
-
 
         if (rst) begin
             // reset all registers

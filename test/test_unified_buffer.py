@@ -13,45 +13,167 @@ async def test_unified_buffer(dut):
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start()) # start the clock
 
-    # clock is low here
-     # rst the DUT (device under test)
-    dut.rst.value = 1
+    # initialize all inputs to zero
     dut.ub_write_data_1_in.value = 0
     dut.ub_write_data_2_in.value = 0
     dut.ub_write_valid_1_in.value = 0
     dut.ub_write_valid_2_in.value = 0
-    await RisingEdge(dut.clk) # values change here
+    dut.ub_write_start_in.value = 0
+    dut.ub_read_start_in.value = 0
+    dut.ub_row_or_col_in.value = 0
+    dut.ub_read_addr_in.value = 0
+    dut.ub_num_mem_locations_in.value = 0
 
+    # reset the dut
+    dut.rst.value = 1
+    await RisingEdge(dut.clk)
     dut.rst.value = 0
-    dut.ub_write_start_in = 1
-    dut.ub_write_data_1_in.value = to_fixed(2.3)
-    dut.ub_write_valid_1_in.value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_write_data_1_in.value = to_fixed(3.4)
+    # test 1: write sequential data to buffer
+    print("\n=== test 1: writing data to buffer ===")
+    dut.ub_write_start_in.value = 1
+    
+    # write single value at location 0
+    dut.ub_write_data_1_in.value = to_fixed(1.0)
     dut.ub_write_valid_1_in.value = 1
-    dut.ub_write_data_2_in.value = to_fixed(5.6)
+    dut.ub_write_valid_2_in.value = 0
+    await RisingEdge(dut.clk)
+    
+    # write two values at locations 1,2
+    dut.ub_write_data_1_in.value = to_fixed(2.0)
+    dut.ub_write_data_2_in.value = to_fixed(3.0)
+    dut.ub_write_valid_1_in.value = 1
     dut.ub_write_valid_2_in.value = 1
     await RisingEdge(dut.clk)
-
-    dut.ub_write_data_1_in.value = to_fixed(7.8)
+    
+    # write two more values at locations 3,4
+    dut.ub_write_data_1_in.value = to_fixed(4.0)
+    dut.ub_write_data_2_in.value = to_fixed(5.0)
     dut.ub_write_valid_1_in.value = 1
-    dut.ub_write_data_2_in.value = to_fixed(9.11)
     dut.ub_write_valid_2_in.value = 1
     await RisingEdge(dut.clk)
-
-    # Stop writing on this clock cycle (value won't be written to memory)
-    dut.ub_write_start_in = 0          
+    
+    # write single value at location 5
+    dut.ub_write_data_1_in.value = 0
+    dut.ub_write_data_2_in.value = to_fixed(6.0)
     dut.ub_write_valid_1_in.value = 0
-    dut.ub_write_data_2_in.value = to_fixed(10.3)
     dut.ub_write_valid_2_in.value = 1
     await RisingEdge(dut.clk)
-
+    
+    # stop writing
+    dut.ub_write_start_in.value = 0
+    dut.ub_write_valid_1_in.value = 0
+    dut.ub_write_valid_2_in.value = 0
+    await ClockCycles(dut.clk, 2)
+    
+    # test 2: read even number of locations (6 values starting from address 0)
+    print("\n=== test 2: reading even number of locations ===")
+    dut.ub_read_addr_in.value = 0
+    dut.ub_num_mem_locations_in.value = 6
+    dut.ub_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_read_start_in.value = 0  # pulse read start
+    # cycle 1: expect first value on data_1_out only
+    # assert dut.ub_valid_1_out.value == 1
+    # assert dut.ub_valid_2_out.value == 0
+    print(f"cycle 1: data_1={dut.ub_data_1_out.value.integer/256.0:.1f} (expect 1.0)")
+    await RisingEdge(dut.clk)
+    # cycle 2: expect values 2,3
+    # assert dut.ub_valid_1_out.value == 1
+    # assert dut.ub_valid_2_out.value == 1
+    print(f"cycle 2: data_1={dut.ub_data_1_out.value.integer/256.0:.1f}, data_2={dut.ub_data_2_out.value.integer/256.0:.1f} (expect 2.0, 3.0)")
+    await RisingEdge(dut.clk)
+    # cycle 3: expect values 4,5
+    # assert dut.ub_valid_1_out.value == 1
+    # assert dut.ub_valid_2_out.value == 1
+    print(f"cycle 3: data_1={dut.ub_data_1_out.value.integer/256.0:.1f}, data_2={dut.ub_data_2_out.value.integer/256.0:.1f} (expect 4.0, 5.0)")
+    await RisingEdge(dut.clk)
+    # cycle 4: expect last value on data_2_out only
+    # assert dut.ub_valid_1_out.value == 0
+    # assert dut.ub_valid_2_out.value == 1
+    print(f"cycle 4: data_2={dut.ub_data_2_out.value.integer/256.0:.1f} (expect 6.0)")
+    await RisingEdge(dut.clk)
+    # should be back to idle
+    # assert dut.ub_valid_1_out.value == 0
+    # assert dut.ub_valid_2_out.value == 0
+    await ClockCycles(dut.clk, 2)
+    
+    # test 3: read odd number of locations (5 values starting from address 1)
+    print("\n=== test 3: reading odd number of locations ===")
+    dut.ub_read_addr_in.value = 1
+    dut.ub_num_mem_locations_in.value = 5
+    dut.ub_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_read_start_in.value = 0
+    
+    # cycle 1: expect value at addr 1 on data_1_out
+    # assert dut.ub_valid_1_out.value == 1
+    # assert dut.ub_valid_2_out.value == 0
+    print(f"cycle 1: data_1={dut.ub_data_1_out.value.integer/256.0:.1f} (expect 2.0)")
+    await RisingEdge(dut.clk)
+    
+    # cycle 2: expect values at addr 2,3
+    # assert dut.ub_valid_1_out.value == 1
+    # assert dut.ub_valid_2_out.value == 1
+    print(f"cycle 2: data_1={dut.ub_data_1_out.value.integer/256.0:.1f}, data_2={dut.ub_data_2_out.value.integer/256.0:.1f} (expect 3.0, 4.0)")
+    await RisingEdge(dut.clk)
+    
+    # cycle 3: expect last value at addr 5 on data_2_out
+    # assert dut.ub_valid_1_out.value == 0
+    # assert dut.ub_valid_2_out.value == 1
+    print(f"cycle 3: data_2={dut.ub_data_2_out.value.integer/256.0:.1f} (expect 6.0)")
+    await RisingEdge(dut.clk)
+    
+    await ClockCycles(dut.clk, 2)
+    
+    
+    # test 4: concurrent read and write
+    print("\n=== test 4: concurrent read and write ===")
+    # start writing new data while reading
+    dut.ub_write_start_in.value = 1
+    dut.ub_write_data_1_in.value = to_fixed(10.0)
+    dut.ub_write_data_2_in.value = to_fixed(11.0)
+    dut.ub_write_valid_1_in.value = 1
+    dut.ub_write_valid_2_in.value = 1
+    # simultaneously start reading from address 0
+    dut.ub_read_addr_in.value = 0
+    dut.ub_num_mem_locations_in.value = 6
+    dut.ub_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_read_start_in.value = 0
+    # continue writing while reading
+    print(f"concurrent cycle 1: reading data_1={dut.ub_data_1_out.value.integer/256.0:.1f}, writing 10.0, 11.0")
+    
+    dut.ub_write_data_1_in.value = to_fixed(12.0)
+    dut.ub_write_data_2_in.value = to_fixed(13.0)
+    await RisingEdge(dut.clk)
+    
+    print(f"concurrent cycle 2: reading data_1={dut.ub_data_1_out.value.integer/256.0:.1f}, data_2={dut.ub_data_2_out.value.integer/256.0:.1f}, writing 12.0, 13.0")
+    
+    dut.ub_write_start_in.value = 0
     dut.ub_write_valid_1_in.value = 0
     dut.ub_write_valid_2_in.value = 0
     await RisingEdge(dut.clk)
-
-    # waits for 10 clock cycles
-    await ClockCycles(dut.clk, 10)
-
-
+    
+    print(f"concurrent cycle 3: reading data_2={dut.ub_data_2_out.value.integer/256.0:.1f}")
+    
+    await ClockCycles(dut.clk, 8)
+    
+    # test 5: edge case - read 2 locations
+    print("\n=== test 5: edge case - read exactly 2 locations ===")
+    dut.ub_read_addr_in.value = 0
+    dut.ub_num_mem_locations_in.value = 2
+    dut.ub_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_read_start_in.value = 0
+    
+    # cycle 1: first value
+    print(f"cycle 1: data_1={dut.ub_data_1_out.value.integer/256.0:.1f}, valid_1={dut.ub_valid_1_out.value}, valid_2={dut.ub_valid_2_out.value}")
+    await RisingEdge(dut.clk)
+    
+    # cycle 2: second value on data_2
+    print(f"cycle 2: data_2={dut.ub_data_2_out.value.integer/256.0:.1f}, valid_1={dut.ub_valid_1_out.value}, valid_2={dut.ub_valid_2_out.value}")
+    await RisingEdge(dut.clk)
+    
+    print("\n=== test complete ===")
