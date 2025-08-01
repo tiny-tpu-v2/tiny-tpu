@@ -35,21 +35,21 @@ async def test_unified_buffer(dut):
     dut.ub_write_start_in.value = 1
     
     # write single value at location 0
-    dut.ub_write_data_1_in.value = to_fixed(1.0)
+    dut.ub_write_data_1_in.value = to_fixed(1.0) ## FROM Leaky relu 1
     dut.ub_write_valid_1_in.value = 1
     dut.ub_write_valid_2_in.value = 0
     await RisingEdge(dut.clk)
     
     # write two values at locations 1,2
-    dut.ub_write_data_1_in.value = to_fixed(2.0)
-    dut.ub_write_data_2_in.value = to_fixed(3.0)
+    dut.ub_write_data_1_in.value = to_fixed(3.0) ## FROM Leaky relu 1
+    dut.ub_write_data_2_in.value = to_fixed(2.0) ## FROM Leaky relu 2
     dut.ub_write_valid_1_in.value = 1
     dut.ub_write_valid_2_in.value = 1
     await RisingEdge(dut.clk)
     
     # write two more values at locations 3,4
-    dut.ub_write_data_1_in.value = to_fixed(4.0)
-    dut.ub_write_data_2_in.value = to_fixed(5.0)
+    dut.ub_write_data_1_in.value = to_fixed(5.0) ## FROM Leaky relu 1
+    dut.ub_write_data_2_in.value = to_fixed(4.0) ## FROM Leaky relu 2
     dut.ub_write_valid_1_in.value = 1
     dut.ub_write_valid_2_in.value = 1
     await RisingEdge(dut.clk)
@@ -69,7 +69,7 @@ async def test_unified_buffer(dut):
     
     # test 2: read even number of locations (6 values starting from address 0)
     print("\n=== test 2: reading even number of locations ===")
-    dut.ub_read_addr_in.value = 0
+    dut.ub_read_addr_in.value = 0b0000
     dut.ub_num_mem_locations_in.value = 6
     dut.ub_read_start_in.value = 1
     await RisingEdge(dut.clk)
@@ -101,8 +101,8 @@ async def test_unified_buffer(dut):
     
     # test 3: read odd number of locations (5 values starting from address 1)
     print("\n=== test 3: reading odd number of locations ===")
-    dut.ub_read_addr_in.value = 1
-    dut.ub_num_mem_locations_in.value = 5
+    dut.ub_read_addr_in.value = 0x0000
+    dut.ub_num_mem_locations_in.value = 4
     dut.ub_read_start_in.value = 1
     await RisingEdge(dut.clk)
     dut.ub_read_start_in.value = 0

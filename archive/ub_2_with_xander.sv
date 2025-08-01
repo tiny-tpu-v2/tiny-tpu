@@ -118,8 +118,8 @@ module unified_buffer #(
                 READ_ACTIVE: begin
                     if (rd_num_locations_left > 1) begin 
                         // read two more locations
-                        ub_data_1_out         <= ub_memory[rd_ptr+1]; // LINE A
-                        ub_data_2_out         <= ub_memory[rd_ptr];   // LINE B  (switch line A with line B to transpose)
+                        ub_data_1_out         <= ub_memory[rd_ptr + 1];
+                        ub_data_2_out         <= ub_memory[rd_ptr];
                         ub_valid_1_out        <= 1'b1;
                         ub_valid_2_out        <= 1'b1;
                         
