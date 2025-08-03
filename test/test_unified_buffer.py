@@ -103,6 +103,7 @@ async def test_unified_buffer(dut):
     print("\n=== test 3: reading odd number of locations ===")
     dut.ub_read_addr_in.value = 0x0000
     dut.ub_num_mem_locations_in.value = 4
+    dut.ub_transpose.value = 1 # enable transpose!!!!
     dut.ub_read_start_in.value = 1
     await RisingEdge(dut.clk)
     dut.ub_read_start_in.value = 0
@@ -136,6 +137,8 @@ async def test_unified_buffer(dut):
     dut.ub_write_data_2_in.value = to_fixed(11.0)
     dut.ub_write_valid_1_in.value = 1
     dut.ub_write_valid_2_in.value = 1
+    # no transpose for this test
+    dut.ub_transpose.value = 0 # disable transpose!!!!
     # simultaneously start reading from address 0
     dut.ub_read_addr_in.value = 0
     dut.ub_num_mem_locations_in.value = 6

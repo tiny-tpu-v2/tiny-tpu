@@ -149,7 +149,7 @@ module unified_buffer #(
                         ub_data_2_out         <= ub_memory[rd_ptr];
                         ub_valid_1_out        <= 1'b0;
                         ub_valid_2_out        <= 1'b1;
-                        
+                         
                         // clear counters
                         rd_num_locations_left <= '0;
                         
