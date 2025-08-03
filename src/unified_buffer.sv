@@ -16,7 +16,7 @@ module unified_buffer #(
     // ISA control signals
     input  logic        ub_write_start_in,        // determines if we are writing
     input  logic        ub_read_start_in,         // supplied from assembly code (determines if we start reading)
-    input  logic        ub_row_or_col_in,         // read row or column (WE STILL NEED TO IMPLEMENT THIS FEATURE)
+    input  logic        ub_transpose,         // read row or column (WE STILL NEED TO IMPLEMENT THIS FEATURE)
     input  logic [5:0]  ub_read_addr_in,          // address decoded from isa
     input  logic [5:0]  ub_num_mem_locations_in,  // number of memory locations/cells to increment by (HAS TO BE A MULTIPLE OF 2)
     
@@ -101,6 +101,9 @@ module unified_buffer #(
                     if (ub_read_start_in) begin
                         // NOTICE that this is staggered. the last value should be written to ub_data_1_out
                         // first cycle of reading - output first ONE mem location (staggered)
+                        // here we don't need to tranpose the first or last element
+                        // in the future, we can latch our tranpose signal in this cycle, and then use
+                        // the saved value for future signals
                         ub_data_1_out         <= ub_memory[ub_read_addr_in];
                         ub_data_2_out         <= '0;
                         ub_valid_1_out        <= 1'b1;
@@ -117,12 +120,23 @@ module unified_buffer #(
                 
                 READ_ACTIVE: begin
                     if (rd_num_locations_left > 1) begin 
+
+                        // perhaps write logic here to use ub_transpose flag to determine if we want to transpose
+
+
                         // read two more locations
-                        ub_data_1_out         <= ub_memory[rd_ptr+1]; // LINE A
-                        ub_data_2_out         <= ub_memory[rd_ptr];   // LINE B  (switch line A with line B to transpose)
+                        if (ub_transpose) begin // IF WE WANT TO TRANSPOSE (ub_transpose is high)
+                            ub_data_1_out         <= ub_memory[rd_ptr]; // LINE A
+                            ub_data_2_out         <= ub_memory[rd_ptr + 1]; 
+                       
+                        end else begin  // IF WE DON'T WANT TO TRANSPOSE (ub_transpose is low)
+                            ub_data_1_out         <= ub_memory[rd_ptr + 1]; // LINE A
+                            ub_data_2_out         <= ub_memory[rd_ptr]; 
+                        end
+
                         ub_valid_1_out        <= 1'b1;
                         ub_valid_2_out        <= 1'b1;
-                        
+        
                         // update pointers
                         rd_ptr                <= rd_ptr + 2;
                         rd_num_locations_left <= rd_num_locations_left - 2;
@@ -130,6 +144,7 @@ module unified_buffer #(
                     end else if (rd_num_locations_left == 1) begin
                         // read last single location
                         // NOTICE that this is staggered. the last value should be written to ub_data_2_out
+                        // here we don't need to tranpose the first or last element
                         ub_data_1_out         <= '0;
                         ub_data_2_out         <= ub_memory[rd_ptr];
                         ub_valid_1_out        <= 1'b0;

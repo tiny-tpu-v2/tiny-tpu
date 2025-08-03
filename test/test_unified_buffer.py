@@ -20,7 +20,7 @@ async def test_unified_buffer(dut):
     dut.ub_write_valid_2_in.value = 0
     dut.ub_write_start_in.value = 0
     dut.ub_read_start_in.value = 0
-    dut.ub_row_or_col_in.value = 0
+    dut.ub_transpose.value = 0 # if want tranpose, turn it to 1 (will make all test cases transpose)
     dut.ub_read_addr_in.value = 0
     dut.ub_num_mem_locations_in.value = 0
 
