@@ -76,3 +76,10 @@ Data Format -> Fixed Point Shift -> ON
 
 ## What is a gtkw file?
 Stores the signals for make show_<MODULE_NAME>. Only need to save it once, after running gtkwave waveforms/<MODULE_NAME>.vcd
+
+
+# one-off (current terminal only)
+export GSETTINGS_SCHEMA_DIR=$(brew --prefix)/share/glib-2.0/schemas
+gtkwave loss.vcd
+
+^^ run this command is GTKWAVE is not letting u save the waveform!!
