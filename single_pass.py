@@ -2,6 +2,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+def round_list(lst, decimals=4):
+    """Helper function to round all numbers in a nested list to specified decimal places"""
+    if isinstance(lst, list):
+        return [round_list(item, decimals) for item in lst]
+    else:
+        return round(lst, decimals)
+
 # Hyperparameters
 h1 = 2  # neurons in first hidden layer
 lr = 0.75  # learning rate
@@ -49,7 +56,7 @@ def train_model(num_steps):
     
     print("Initial model parameters:")
     for name, param in model.named_parameters():
-        print(f"{name}: {param.data.tolist()}")
+        print(f"{name}: {round_list(param.data.tolist())}")
     
     for step in range(num_steps):
         print(f"\nStep {step + 1}/{num_steps}")
@@ -61,7 +68,7 @@ def train_model(num_steps):
         
         print("\nForward pass results:")
         for i, (input_x, hidden, pred) in enumerate(zip(x_test, hidden_activations, predictions)):
-            print(f"Input {input_x.tolist()} → Hidden neurons: {hidden.tolist()} → Output: {pred.item():.4f} (Target: {y_test[i].item()})")
+            print(f"Input {round_list(input_x.tolist())} → Hidden neurons: {round_list(hidden.tolist())} → Output: {pred.item():.4f} (Target: {y_test[i].item()})")
         print(f"Loss: {loss.item():.4f}")
         
         # Backward pass
@@ -71,7 +78,7 @@ def train_model(num_steps):
         
         print("\nGradients after backward pass:")
         for name, param in model.named_parameters():
-            print(f"{name} gradients: {param.grad.tolist()}")
+            print(f"{name} gradients: {round_list(param.grad.tolist())}")
         
         # Perform one optimization step
         print("\nUpdating weights...")
@@ -79,7 +86,7 @@ def train_model(num_steps):
         
         print("\nModel parameters after update:")
         for name, param in model.named_parameters():
-            print(f"{name}: {param.data.tolist()}")
+            print(f"{name}: {round_list(param.data.tolist())}")
 
 if __name__ == "__main__":
     torch.manual_seed(110)  # For reproducibility
