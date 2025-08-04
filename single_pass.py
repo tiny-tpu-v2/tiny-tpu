@@ -4,7 +4,7 @@ import torch.optim as optim
 
 # Hyperparameters
 h1 = 2  # neurons in first hidden layer
-lr = 0.2  # learning rate
+lr = 0.75  # learning rate
 num_steps = 2  # number of training steps
 
 # XOR dataset
@@ -31,7 +31,7 @@ class XORNet(nn.Module):
     def __init__(self, input_dim, h1, output_dim):
         super().__init__()
         self.layer1 = nn.Linear(input_dim, h1)
-        self.activation = nn.LeakyReLU(negative_slope=0.01)
+        self.activation = nn.LeakyReLU(negative_slope=0.5)
         self.layer2 = nn.Linear(h1, output_dim)
 
     def forward(self, x):
@@ -82,5 +82,5 @@ def train_model(num_steps):
             print(f"{name}: {param.data.tolist()}")
 
 if __name__ == "__main__":
-    torch.manual_seed(42)  # For reproducibility
+    torch.manual_seed(110)  # For reproducibility
     train_model(num_steps) 
