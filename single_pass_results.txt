@@ -30,6 +30,12 @@ layer1.bias: [-0.5337, 0.1443]
 layer2.weight: [[0.5657, 0.229]]
 layer2.bias: [0.4845]
 
+
+
+
+
+
+
 Step 2/2
 Performing forward pass...
 
