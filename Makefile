@@ -26,7 +26,8 @@ SOURCES = src/pe.sv \
           src/input_acc.sv \
           src/weight_acc.sv \
           src/unified_buffer.sv \
-          src/loss.sv
+          src/loss_parent.sv \
+		  src/loss_child.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -91,11 +92,17 @@ test_unified_buffer: $(SIM_BUILD_DIR)
 
 # Loss module test
 
-test_loss: $(SIM_BUILD_DIR)
-	$(IVERILOG) -o $(SIM_VVP) -s loss -s dump -g2012 $(SOURCES) test/dump_loss.sv
-	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_loss $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+test_loss_child: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s loss_child -s dump -g2012 $(SOURCES) test/dump_loss_child.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_loss_child $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
-	mv loss.vcd waveforms/ 2>/dev/null || true
+	mv loss_child.vcd waveforms/ 2>/dev/null || true
+
+test_loss_parent: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s loss_parent -s dump -g2012 $(SOURCES) test/dump_loss_parent.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_loss_parent $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv loss_parent.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
