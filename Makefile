@@ -30,7 +30,7 @@ SOURCES = src/pe.sv \
           src/input_acc.sv \
           src/weight_acc.sv \
           src/unified_buffer.sv \
-          src/vector_unit.sv \
+          src/vpu.sv \
           src/loss_parent.sv \
 		  src/loss_child.sv
 
@@ -147,12 +147,12 @@ test_bias_parent: $(SIM_BUILD_DIR)
 	! grep failure results.xml
 	mv bias_parent.vcd waveforms/ 2>/dev/null || true
 
-# Vector unit test
-test_vector_unit: $(SIM_BUILD_DIR)
-	$(IVERILOG) -o $(SIM_VVP) -s vector_unit -s dump -g2012 $(SOURCES) test/dump_vector_unit.sv
-	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_vector_unit $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+# Vector Processing unit test
+test_vpu: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s vpu -s dump -g2012 $(SOURCES) test/dump_vpu.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_vpu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
-	mv vector_unit.vcd waveforms/ 2>/dev/null || true
+	mv vpu.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============

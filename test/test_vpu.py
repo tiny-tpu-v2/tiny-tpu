@@ -11,3 +11,11 @@ from cocotb.triggers import RisingEdge
 async def test_vector_unit(dut):
     clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
+
+    # Test forward pass pathway
+
+
+    # Test transition pathway
+
+
+    # Test 
