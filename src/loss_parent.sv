@@ -20,8 +20,6 @@ module loss_parent (
     output logic valid_2_out
 );
 
-
-
 // loss child #1 instantiation
 loss_child first_column (
     .clk(clk),

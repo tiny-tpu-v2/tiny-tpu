@@ -17,15 +17,20 @@ export PYTHONPATH := test:$(PYTHONPATH)
 #=============== MODIFY BELOW ======================
 # ********** IF YOU HAVE A NEW VERILOG FILE, ADD IT TO THE SOURCES VARIABLE
 SOURCES = src/pe.sv \
-          src/leaky_relu.sv \
+          src/leaky_relu_child.sv \
+          src/leaky_relu_parent.sv \
+          src/leaky_relu_derivative_child.sv \
+          src/leaky_relu_derivative_parent.sv \
           src/systolic.sv \
           src/nn.sv \
-          src/bias.sv \
+          src/bias_child.sv \
+          src/bias_parent.sv \
           src/fixedpoint.sv \
           src/control_unit.sv \
           src/input_acc.sv \
           src/weight_acc.sv \
           src/unified_buffer.sv \
+          src/vector_unit.sv \
           src/loss_parent.sv \
 		  src/loss_child.sv
 
@@ -103,6 +108,51 @@ test_loss_parent: $(SIM_BUILD_DIR)
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_loss_parent $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 	mv loss_parent.vcd waveforms/ 2>/dev/null || true
+
+# Leaky ReLU module tests
+test_leaky_relu_child: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s leaky_relu_child -s dump -g2012 $(SOURCES) test/dump_leaky_relu_child.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_leaky_relu_child $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv leaky_relu_child.vcd waveforms/ 2>/dev/null || true
+
+test_leaky_relu_parent: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s leaky_relu_parent -s dump -g2012 $(SOURCES) test/dump_leaky_relu_parent.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_leaky_relu_parent $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv leaky_relu_parent.vcd waveforms/ 2>/dev/null || true
+
+test_leaky_relu_derivative_child: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s leaky_relu_derivative_child -s dump -g2012 $(SOURCES) test/dump_leaky_relu_derivative_child.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_leaky_relu_derivative_child $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv leaky_relu_derivative_child.vcd waveforms/ 2>/dev/null || true
+
+test_leaky_relu_derivative_parent: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s leaky_relu_derivative_parent -s dump -g2012 $(SOURCES) test/dump_leaky_relu_derivative_parent.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_leaky_relu_derivative_parent $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv leaky_relu_derivative_parent.vcd waveforms/ 2>/dev/null || true
+
+# Bias module tests
+test_bias_child: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s bias_child -s dump -g2012 $(SOURCES) test/dump_bias_child.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_bias_child $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv bias_child.vcd waveforms/ 2>/dev/null || true
+
+test_bias_parent: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s bias_parent -s dump -g2012 $(SOURCES) test/dump_bias_parent.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_bias_parent $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv bias_parent.vcd waveforms/ 2>/dev/null || true
+
+# Vector unit test
+test_vector_unit: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s vector_unit -s dump -g2012 $(SOURCES) test/dump_vector_unit.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_vector_unit $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv vector_unit.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============
