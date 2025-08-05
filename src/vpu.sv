@@ -15,7 +15,7 @@ module vpu (
 
     input logic [2:0] data_pathway, // 3-bit code to signify data pathway
     
-    // comes from systolic array 
+    // comes from systolic array  VALID SIGNALS HERE CO-EXIST WITH THE DATA 
     input logic signed [15:0] vpu_data_in_1, 
     input logic signed [15:0] vpu_data_in_2,
     input logic vpu_valid_in_1,
