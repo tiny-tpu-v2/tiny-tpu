@@ -16,10 +16,10 @@ module vpu (
     input logic [2:0] data_pathway, // 3-bit code to signify data pathway
     
     // comes from systolic array 
-    input logic signed [15:0] vpu_data_1_in, 
-    input logic signed [15:0] vpu_data_2_in,
-    input logic vpu_valid_1_in,
-    input logic vpu_valid_2_in,
+    input logic signed [15:0] vpu_data_in_1, 
+    input logic signed [15:0] vpu_data_in_2,
+    input logic vpu_valid_in_1,
+    input logic vpu_valid_in_2,
     
     // comes from UB
     input logic signed [15:0] bias_scalar_in_1,             // for bias module
@@ -27,20 +27,19 @@ module vpu (
     input logic signed [15:0] lr_leak_factor_in,            // for Leaky ReLU module                  
     input logic signed [15:0] Y_in_1,                       // for loss module
     input logic signed [15:0] Y_in_2,                       // for loss module
-    input logic signed [15:0] H_in_1,                       // for Leaky ReLU derivative module
-    input logic signed [15:0] H_in_2,                       // for Leaky ReLU derivative module
-    input logic signed [15:0] inv_batch_size_times_two_in;  // for loss module
+    input logic signed [15:0] H_in_1,                       // for loss module
+    input logic signed [15:0] H_in_2,                       // for loss module
+    input logic signed [15:0] inv_batch_size_times_two_in,  // for loss module
 
     // goes to UB
-    output logic signed [15:0] vpu_data_1_out,
-    output logic signed [15:0] vpu_data_2_out,
-    output logic vpu_valid_1_out,
-    output logic vpu_valid_2_out,
-    output logic [15:0] vpu_final_H_1_out,
-    output logic [15:0] vpu_final_H_2_out,
-    output logic vpu_valid_final_H_1_out,
-    output logic vpu_valid_final_H_2_out,
-    
+    output logic signed [15:0] vpu_data_out_1,
+    output logic signed [15:0] vpu_data_out_2,
+    output logic vpu_valid_out_1,
+    output logic vpu_valid_out_2,
+    output logic [15:0] vpu_final_H_out_1,
+    output logic [15:0] vpu_final_H_out_2,
+    output logic vpu_valid_final_H_out_1,
+    output logic vpu_valid_final_H_out_2
 );
     
     /*
@@ -51,57 +50,66 @@ module vpu (
     */
 
     // bias
-    wire [15:0] bias_data_1_in; 
-    wire bias_valid_1_in;
-    wire [15:0] bias_data_2_in;
-    wire bias_valid_2_in;
-    wire [15:0] bias_z_data_out_1;
-    wire bias_valid_1_out;
-    wire [15:0] bias_z_data_out_2;
-    wire bias_valid_2_out;
+    logic [15:0] bias_data_1_in; 
+    logic bias_valid_1_in;
+    logic [15:0] bias_data_2_in;
+    logic bias_valid_2_in;
+    logic [15:0] bias_z_data_out_1;
+    logic bias_valid_1_out;
+    logic [15:0] bias_z_data_out_2;
+    logic bias_valid_2_out;
 
     // lr
-    wire [15:0] lr_data_1_in; 
-    wire lr_valid_1_in;
-    wire [15:0] lr_data_2_in;
-    wire lr_valid_2_in;
-    wire [15:0] lr_data_1_out;
-    wire lr_valid_1_out;
-    wire [15:0] lr_data_2_out;
-    wire lr_valid_2_out;
+    logic [15:0] lr_data_1_in; 
+    logic lr_valid_1_in;
+    logic [15:0] lr_data_2_in;
+    logic lr_valid_2_in;
+    logic [15:0] lr_data_1_out;
+    logic lr_valid_1_out;
+    logic [15:0] lr_data_2_out;
+    logic lr_valid_2_out;
 
     // loss
-    wire [15:0] loss_data_1_in; 
-    wire loss_valid_1_in;
-    wire [15:0] loss_data_2_in;
-    wire loss_valid_2_in;
-    wire [15:0] loss_data_1_out;
-    wire loss_valid_1_out;
-    wire [15:0] loss_data_2_out;
-    wire loss_valid_2_out;
+    logic [15:0] loss_data_1_in; 
+    logic loss_valid_1_in;
+    logic [15:0] loss_data_2_in;
+    logic loss_valid_2_in;
+    logic [15:0] loss_data_1_out;
+    logic loss_valid_1_out;
+    logic [15:0] loss_data_2_out;
+    logic loss_valid_2_out;
 
     // lr_d
-    wire [15:0] lr_d_data_1_in; 
-    wire lr_d_valid_1_in;
-    wire [15:0] lr_d_data_2_in;
-    wire lr_d_valid_2_in;
-    wire [15:0] lr_d_data_1_out;
-    wire lr_d_valid_1_out;
-    wire [15:0] lr_d_data_2_out;
-    wire lr_d_valid_2_out;
+    logic [15:0] lr_d_data_1_in; 
+    logic lr_d_valid_1_in;
+    logic [15:0] lr_d_data_2_in;
+    logic lr_d_valid_2_in;
+    logic [15:0] lr_d_data_1_out;
+    logic lr_d_valid_1_out;
+    logic [15:0] lr_d_data_2_out;
+    logic lr_d_valid_2_out;
+    logic [15:0] lr_d_H_1_in;
+    logic [15:0] lr_d_H_2_in;
+    
+
+    // temp H2 cache (last H values from leaky relu during forward pass)
+    logic [15:0] last_H_data_1_in;
+    logic [15:0] last_H_data_2_in;
+    logic [15:0] last_H_data_1_out;
+    logic [15:0] last_H_data_2_out;
     
 
 // make combinational always block to decode a "word" to signify data pathway
 always_comb begin   
     if (rst) begin
-        vpu_data_1_out = 16'b0;
-        vpu_data_2_out = 16'b0;
-        vpu_valid_1_out = 1'b0;
-        vpu_valid_2_out = 1'b0;
-        vpu_final_H_1_out = 16'b0;
-        vpu_final_H_2_out = 16'b0;
-        vpu_valid_final_H_1_out = 1'b0;
-        vpu_valid_final_H_2_out = 1'b0;
+        vpu_data_out_1 = 16'b0;
+        vpu_data_out_2 = 16'b0;
+        vpu_valid_out_1 = 1'b0;
+        vpu_valid_out_2 = 1'b0;
+        vpu_final_H_out_1 = 16'b0;
+        vpu_final_H_out_2 = 16'b0;
+        vpu_valid_final_H_out_1 = 1'b0;
+        vpu_valid_final_H_out_2 = 1'b0;
         
         // default internal wire assignments during reset
         bias_data_1_in = 16'b0;
@@ -126,14 +134,14 @@ always_comb begin
             
             3'b000: begin // do nothing
                 // No operation, no data flow
-                vpu_data_1_out = 16'b0;
-                vpu_data_2_out = 16'b0;
-                vpu_valid_1_out = 1'b0;
-                vpu_valid_2_out = 1'b0;
-                vpu_final_H_1_out = 16'b0;
-                vpu_final_H_2_out = 16'b0;
-                vpu_valid_final_H_1_out = 1'b0;
-                vpu_valid_final_H_2_out = 1'b0;
+                vpu_data_out_1 = 16'b0;
+                vpu_data_out_2 = 16'b0;
+                vpu_valid_out_1 = 1'b0;
+                vpu_valid_out_2 = 1'b0;
+                vpu_final_H_out_1 = 16'b0;
+                vpu_final_H_out_2 = 16'b0;
+                vpu_valid_final_H_out_1 = 1'b0;
+                vpu_valid_final_H_out_2 = 1'b0;
                 
                 // disable all internal connections
                 bias_data_1_in = 16'b0;
@@ -156,10 +164,10 @@ always_comb begin
             
             3'b001: begin // forward pass: sys -> bias -> leaky_relu -> output
                 // connect systolic data to bias module
-                bias_data_1_in = vpu_data_1_in;
-                bias_data_2_in = vpu_data_2_in;
-                bias_valid_1_in = vpu_valid_1_in;
-                bias_valid_2_in = vpu_valid_2_in;
+                bias_data_1_in = vpu_data_in_1;
+                bias_data_2_in = vpu_data_in_2;
+                bias_valid_1_in = vpu_valid_in_1;
+                bias_valid_2_in = vpu_valid_in_2;
                 
                 // connect bias output to leaky relu
                 lr_data_1_in = bias_z_data_out_1;
@@ -168,16 +176,16 @@ always_comb begin
                 lr_valid_2_in = bias_valid_2_out;
                 
                 // connect leaky relu output to VPU output
-                vpu_data_1_out = lr_data_1_out;
-                vpu_data_2_out = lr_data_2_out;
-                vpu_valid_1_out = lr_valid_1_out;
-                vpu_valid_2_out = lr_valid_2_out;
+                vpu_data_out_1 = lr_data_1_out;
+                vpu_data_out_2 = lr_data_2_out;
+                vpu_valid_out_1 = lr_valid_1_out;
+                vpu_valid_out_2 = lr_valid_2_out;
                 
                 // no final H output in forward pass
-                vpu_final_H_1_out = 16'b0;
-                vpu_final_H_2_out = 16'b0;
-                vpu_valid_final_H_1_out = 1'b0;
-                vpu_valid_final_H_2_out = 1'b0;
+                vpu_final_H_out_1 = 16'b0;
+                vpu_final_H_out_2 = 16'b0;
+                vpu_valid_final_H_out_1 = 1'b0;
+                vpu_valid_final_H_out_2 = 1'b0;
                 
                 // disable unused modules
                 loss_data_1_in = 16'b0;
@@ -192,10 +200,10 @@ always_comb begin
             
             3'b010: begin // transition: sys -> bias -> leaky_relu -> loss -> leaky_relu_derivative -> output
                 // Connect systolic data to bias module
-                bias_data_1_in = vpu_data_1_in;
-                bias_data_2_in = vpu_data_2_in;
-                bias_valid_1_in = vpu_valid_1_in;
-                bias_valid_2_in = vpu_valid_2_in;
+                bias_data_1_in = vpu_data_in_1;
+                bias_data_2_in = vpu_data_in_2;
+                bias_valid_1_in = vpu_valid_in_1;
+                bias_valid_2_in = vpu_valid_in_2;
                 
                 // Connect bias output to leaky relu
                 lr_data_1_in = bias_z_data_out_1;
@@ -209,6 +217,10 @@ always_comb begin
                 loss_valid_1_in = lr_valid_1_out;
                 loss_valid_2_in = lr_valid_2_out;
                 
+                // Connect leaky relu output to last H cache
+                last_H_data_1_in = lr_data_1_out;
+                last_H_data_2_in = lr_data_2_out;
+                
                 // Connect loss output to leaky relu derivative
                 lr_d_data_1_in = loss_data_1_out;
                 lr_d_data_2_in = loss_data_2_out;
@@ -216,36 +228,45 @@ always_comb begin
                 lr_d_valid_2_in = loss_valid_2_out;
                 
                 // Connect leaky relu derivative output to VPU output
-                vpu_data_1_out = lr_d_data_1_out;
-                vpu_data_2_out = lr_d_data_2_out;
-                vpu_valid_1_out = lr_d_valid_1_out;
-                vpu_valid_2_out = lr_d_valid_2_out;
+                vpu_data_out_1 = lr_d_data_1_out;
+                vpu_data_out_2 = lr_d_data_2_out;
+                vpu_valid_out_1 = lr_d_valid_1_out;
+                vpu_valid_out_2 = lr_d_valid_2_out;
+
+                // Connect last H cache output to leaky relu derivative modules
+                lr_d_H_1_in = last_H_data_1_out;
+                lr_d_H_2_in = last_H_data_1_out;
+
 
                 // Store H matrices from leaky relu for later use
-                vpu_final_H_1_out = lr_data_1_out;
-                vpu_final_H_2_out = lr_data_2_out;
-                vpu_valid_final_H_1_out = lr_valid_1_out;
-                vpu_valid_final_H_2_out = lr_valid_2_out;
+                // vpu_final_H_out_1 = lr_data_1_out;
+                // vpu_final_H_out_2 = lr_data_2_out;
+                // vpu_valid_final_H_out_1 = lr_valid_1_out;
+                // vpu_valid_final_H_out_2 = lr_valid_2_out;
             end
             
             3'b011: begin // backward: sys -> leaky_relu_derivative -> output
+                // sys to leaky relu derivative
+                lr_d_data_1_in = vpu_data_in_1;
+                lr_d_data_2_in = vpu_data_in_2;
+                lr_d_valid_1_in = vpu_valid_in_1;
+                lr_d_valid_2_in = vpu_valid_in_2;
+
                 // connect stored H values to leaky relu derivative
-                lr_d_data_1_in = H_in_1;  // Use stored H values
-                lr_d_data_2_in = H_in_2;  // Use stored H values  
-                lr_d_valid_1_in = vpu_valid_1_in;
-                lr_d_valid_2_in = vpu_valid_2_in;
+                lr_d_H_1_in = H_in_1;
+                lr_d_H_2_in = H_in_2;
 
                 // connect leaky relu derivative output to VPU output
-                vpu_data_1_out = lr_d_data_1_out;
-                vpu_data_2_out = lr_d_data_2_out;
-                vpu_valid_1_out = lr_d_valid_1_out;
-                vpu_valid_2_out = lr_d_valid_2_out;
+                vpu_data_out_1 = lr_d_data_1_out;
+                vpu_data_out_2 = lr_d_data_2_out;
+                vpu_valid_out_1 = lr_d_valid_1_out;
+                vpu_valid_out_2 = lr_d_valid_2_out;
                 
                 // no final H output in backward pass
-                vpu_final_H_1_out = 16'b0;
-                vpu_final_H_2_out = 16'b0;
-                vpu_valid_final_H_1_out = 1'b0;
-                vpu_valid_final_H_2_out = 1'b0;
+                vpu_final_H_out_1 = 16'b0;
+                vpu_final_H_out_2 = 16'b0;
+                vpu_valid_final_H_out_1 = 1'b0;
+                vpu_valid_final_H_out_2 = 1'b0;
                 
                 // disable unused modules
                 bias_data_1_in = 16'b0;
@@ -264,14 +285,14 @@ always_comb begin
             
             default: begin
                 // Default case - same as 000
-                vpu_data_1_out = 16'b0;
-                vpu_data_2_out = 16'b0;
-                vpu_valid_1_out = 1'b0;
-                vpu_valid_2_out = 1'b0;
-                vpu_final_H_1_out = 16'b0;
-                vpu_final_H_2_out = 16'b0;
-                vpu_valid_final_H_1_out = 1'b0;
-                vpu_valid_final_H_2_out = 1'b0;
+                vpu_data_out_1 = 16'b0;
+                vpu_data_out_2 = 16'b0;
+                vpu_valid_out_1 = 1'b0;
+                vpu_valid_out_2 = 1'b0;
+                vpu_final_H_out_1 = 16'b0;
+                vpu_final_H_out_2 = 16'b0;
+                vpu_valid_final_H_out_1 = 1'b0;
+                vpu_valid_final_H_out_2 = 1'b0;
                 
                 bias_data_1_in = 16'b0;
                 bias_data_2_in = 16'b0;
@@ -359,8 +380,30 @@ leaky_relu_derivative_parent leaky_relu_derivative_parent_inst (
     .lr_d_data_1_out(lr_d_data_1_out),
     .lr_d_data_2_out(lr_d_data_2_out),
     .lr_d_valid_1_out(lr_d_valid_1_out),
-    .lr_d_valid_2_out(lr_d_valid_2_out)
+    .lr_d_valid_2_out(lr_d_valid_2_out),
+    .lr_d_H_1_in(lr_d_H_1_in),
+    .lr_d_H_2_in(lr_d_H_2_in)
 );
 
+// sequential logic to cache last H???
+always @(posedge clk or posedge rst) begin
+    
+    if (rst) begin
+        last_H_data_1_in <= 0;
+        last_H_data_2_in <= 0;
+        last_H_data_1_out <= 0;
+        last_H_data_2_out <= 0;
+
+    end else begin
+        if (data_pathway == 3'b010) begin
+            last_H_data_1_out <= last_H_data_1_in;
+            last_H_data_2_out <= last_H_data_2_in;
+        end else begin
+            last_H_data_1_out <= 0;
+            last_H_data_2_out <= 0;
+        end 
+    end
+    
+end 
 
 endmodule
