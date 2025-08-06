@@ -24,6 +24,26 @@ async def test_unified_buffer(dut):
     dut.ub_read_addr_in.value = 0
     dut.ub_num_mem_locations_in.value = 0
 
+    # initialize bias port inputs to zero (read-only)
+    dut.ub_bias_read_start_in.value = 0
+    dut.ub_bias_addr_in.value = 0
+    dut.ub_bias_num_mem_locations_in.value = 0
+
+    # initialize activation port inputs to zero (read-only)
+    dut.ub_activation_read_start_in.value = 0
+    dut.ub_activation_addr_in.value = 0
+    dut.ub_activation_num_mem_locations_in.value = 0
+
+    # initialize loss port inputs to zero (read-only)
+    dut.ub_loss_read_start_in.value = 0
+    dut.ub_loss_addr_in.value = 0
+    dut.ub_loss_num_mem_locations_in.value = 0
+
+    # initialize activation derivative port inputs to zero (read-only)
+    dut.ub_activation_derivative_read_start_in.value = 0
+    dut.ub_activation_derivative_addr_in.value = 0
+    dut.ub_activation_derivative_num_mem_locations_in.value = 0
+
     # reset the dut
     dut.rst.value = 1
     await RisingEdge(dut.clk)
@@ -179,4 +199,276 @@ async def test_unified_buffer(dut):
     print(f"cycle 2: data_2={dut.ub_data_2_out.value.integer/256.0:.1f}, valid_1={dut.ub_valid_1_out.value}, valid_2={dut.ub_valid_2_out.value}")
     await RisingEdge(dut.clk)
     
-    print("\n=== test complete ===")
+    print("\n=== main port tests complete ===")
+
+    # ======================================
+    # bias port tests (read-only)
+    # ======================================
+    
+    # test 6: bias port read even number of locations (6 values starting from address 0)
+    print("\n=== test 6: bias port - reading even number of locations ===")
+    dut.ub_bias_addr_in.value = 0b0000
+    dut.ub_bias_num_mem_locations_in.value = 6
+    dut.ub_bias_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_bias_read_start_in.value = 0  # pulse read start
+    # cycle 1: expect first value on data_1_out only
+    print(f"cycle 1: bias_data_1={dut.ub_bias_data_1_out.value.integer/256.0:.1f} (expect 7.0)")
+    await RisingEdge(dut.clk)
+    # cycle 2: expect values 8,9
+    print(f"cycle 2: bias_data_1={dut.ub_bias_data_1_out.value.integer/256.0:.1f}, bias_data_2={dut.ub_bias_data_2_out.value.integer/256.0:.1f} (expect 8.0, 9.0)")
+    await RisingEdge(dut.clk)
+    # cycle 3: expect values 10,11
+    print(f"cycle 3: bias_data_1={dut.ub_bias_data_1_out.value.integer/256.0:.1f}, bias_data_2={dut.ub_bias_data_2_out.value.integer/256.0:.1f} (expect 10.0, 11.0)")
+    await RisingEdge(dut.clk)
+    # cycle 4: expect last value on data_2_out only
+    print(f"cycle 4: bias_data_2={dut.ub_bias_data_2_out.value.integer/256.0:.1f} (expect 12.0)")
+    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 2)
+    
+    print("\n=== bias port tests complete ===")
+
+    # ======================================
+    # activation port tests (read-only)
+    # ======================================
+    
+    # test 8: activation port read even number of locations (6 values starting from address 0)
+    print("\n=== test 8: activation port - reading even number of locations ===")
+    dut.ub_activation_addr_in.value = 0b0000
+    dut.ub_activation_num_mem_locations_in.value = 6
+    dut.ub_activation_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_activation_read_start_in.value = 0  # pulse read start
+    # cycle 1: expect first value on data_1_out only
+    print(f"cycle 1: activation_data_1={dut.ub_activation_data_1_out.value.integer/256.0:.1f} (expect 10.0)")
+    await RisingEdge(dut.clk)
+    # cycle 2: expect values from global write
+    print(f"cycle 2: activation_data_1={dut.ub_activation_data_1_out.value.integer/256.0:.1f}, activation_data_2={dut.ub_activation_data_2_out.value.integer/256.0:.1f} (expect 11.0, 12.0)")
+    await RisingEdge(dut.clk)
+    # cycle 3: expect more values from global write
+    print(f"cycle 3: activation_data_1={dut.ub_activation_data_1_out.value.integer/256.0:.1f}, activation_data_2={dut.ub_activation_data_2_out.value.integer/256.0:.1f} (expect 13.0, 0.0)")
+    await RisingEdge(dut.clk)
+    # cycle 4: expect last value on data_2_out only
+    print(f"cycle 4: activation_data_2={dut.ub_activation_data_2_out.value.integer/256.0:.1f} (expect 0.0)")
+    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 2)
+    
+    print("\n=== activation port tests complete ===")
+
+    # ======================================
+    # loss port tests (read-only)
+    # ======================================
+    
+    # test 9: loss port read even number of locations (6 values starting from address 0)
+    print("\n=== test 9: loss port - reading even number of locations ===")
+    dut.ub_loss_addr_in.value = 0b0000
+    dut.ub_loss_num_mem_locations_in.value = 6
+    dut.ub_loss_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_loss_read_start_in.value = 0  # pulse read start
+    # cycle 1: expect first value on data_1_out only
+    print(f"cycle 1: loss_data_1={dut.ub_loss_data_1_out.value.integer/256.0:.1f} (expect 10.0)")
+    await RisingEdge(dut.clk)
+    # cycle 2: expect values from global write
+    print(f"cycle 2: loss_data_1={dut.ub_loss_data_1_out.value.integer/256.0:.1f}, loss_data_2={dut.ub_loss_data_2_out.value.integer/256.0:.1f} (expect 11.0, 12.0)")
+    await RisingEdge(dut.clk)
+    # cycle 3: expect more values from global write
+    print(f"cycle 3: loss_data_1={dut.ub_loss_data_1_out.value.integer/256.0:.1f}, loss_data_2={dut.ub_loss_data_2_out.value.integer/256.0:.1f} (expect 13.0, 0.0)")
+    await RisingEdge(dut.clk)
+    # cycle 4: expect last value on data_2_out only
+    print(f"cycle 4: loss_data_2={dut.ub_loss_data_2_out.value.integer/256.0:.1f} (expect 0.0)")
+    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 2)
+    
+    print("\n=== loss port tests complete ===")
+
+    # ======================================
+    # activation derivative port tests (read-only)
+    # ======================================
+    
+    # test 10: activation derivative port read even number of locations (6 values starting from address 0)
+    print("\n=== test 10: activation derivative port - reading even number of locations ===")
+    dut.ub_activation_derivative_addr_in.value = 0b0000
+    dut.ub_activation_derivative_num_mem_locations_in.value = 6
+    dut.ub_activation_derivative_read_start_in.value = 1
+    await RisingEdge(dut.clk)
+    dut.ub_activation_derivative_read_start_in.value = 0  # pulse read start
+    # cycle 1: expect first value on data_1_out only
+    print(f"cycle 1: activation_derivative_data_1={dut.ub_activation_derivative_data_1_out.value.integer/256.0:.1f} (expect 10.0)")
+    await RisingEdge(dut.clk)
+    # cycle 2: expect values from global write
+    print(f"cycle 2: activation_derivative_data_1={dut.ub_activation_derivative_data_1_out.value.integer/256.0:.1f}, activation_derivative_data_2={dut.ub_activation_derivative_data_2_out.value.integer/256.0:.1f} (expect 11.0, 12.0)")
+    await RisingEdge(dut.clk)
+    # cycle 3: expect more values from global write
+    print(f"cycle 3: activation_derivative_data_1={dut.ub_activation_derivative_data_1_out.value.integer/256.0:.1f}, activation_derivative_data_2={dut.ub_activation_derivative_data_2_out.value.integer/256.0:.1f} (expect 13.0, 0.0)")
+    await RisingEdge(dut.clk)
+    # cycle 4: expect last value on data_2_out only
+    print(f"cycle 4: activation_derivative_data_2={dut.ub_activation_derivative_data_2_out.value.integer/256.0:.1f} (expect 0.0)")
+    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 2)
+    
+    print("\n=== activation derivative port tests complete ===")
+
+    # ======================================
+    # multi-port simultaneous tests
+    # ======================================
+    
+    # test 14: write to all 5 ports simultaneously
+    print("\n=== test 14: writing to all 5 ports simultaneously ===")
+    
+    # start writing on all ports
+    dut.ub_write_start_in.value = 1
+    dut.ub_bias_read_start_in.value = 1
+    dut.ub_activation_read_start_in.value = 1
+    dut.ub_loss_read_start_in.value = 1
+    dut.ub_activation_derivative_read_start_in.value = 1
+    
+    # write single values to main port only
+    dut.ub_write_data_1_in.value = to_fixed(31.0)
+    dut.ub_write_valid_1_in.value = 1
+    dut.ub_write_valid_2_in.value = 0
+    
+    await RisingEdge(dut.clk)
+    
+    # write dual values to main port only
+    dut.ub_write_data_1_in.value = to_fixed(37.0)
+    dut.ub_write_data_2_in.value = to_fixed(36.0)
+    dut.ub_write_valid_1_in.value = 1
+    dut.ub_write_valid_2_in.value = 1
+    
+    await RisingEdge(dut.clk)
+    
+    # stop writing on all ports
+    dut.ub_write_start_in.value = 0
+    dut.ub_write_valid_1_in.value = 0
+    dut.ub_write_valid_2_in.value = 0
+    
+    dut.ub_bias_read_start_in.value = 0
+    
+    dut.ub_activation_read_start_in.value = 0
+    
+    dut.ub_loss_read_start_in.value = 0
+    
+    dut.ub_activation_derivative_read_start_in.value = 0
+    
+    await ClockCycles(dut.clk, 2)
+    print("multi-port write completed")
+    
+    # test 15: read from all 5 ports simultaneously 
+    print("\n=== test 15: reading from all 5 ports simultaneously ===")
+    
+    # start reading from all ports (reading 4 locations each from address 0)
+    dut.ub_read_addr_in.value = 0
+    dut.ub_num_mem_locations_in.value = 4
+    dut.ub_read_start_in.value = 1
+    
+    # ensure all write signals are off for reading operations
+    dut.ub_bias_addr_in.value = 0
+    dut.ub_bias_num_mem_locations_in.value = 4
+    dut.ub_bias_read_start_in.value = 1
+    
+    dut.ub_activation_addr_in.value = 0
+    dut.ub_activation_num_mem_locations_in.value = 4
+    dut.ub_activation_read_start_in.value = 1
+    
+    dut.ub_loss_addr_in.value = 0
+    dut.ub_loss_num_mem_locations_in.value = 4
+    dut.ub_loss_read_start_in.value = 1
+    
+    dut.ub_activation_derivative_addr_in.value = 0
+    dut.ub_activation_derivative_num_mem_locations_in.value = 4
+    dut.ub_activation_derivative_read_start_in.value = 1
+    
+    await RisingEdge(dut.clk)
+    
+    # stop read start signals (pulse)
+    dut.ub_read_start_in.value = 0
+    dut.ub_bias_read_start_in.value = 0
+    dut.ub_activation_read_start_in.value = 0
+    dut.ub_loss_read_start_in.value = 0
+    dut.ub_activation_derivative_read_start_in.value = 0
+    
+    await ClockCycles(dut.clk, 3)
+    print("multi-port read completed")
+    
+    # test 16: concurrent write/read operations across all ports
+    print("\n=== test 16: concurrent write/read operations across all ports ===")
+    
+    # start concurrent operations: write new data while reading existing data
+    # write to higher memory addresses while reading from lower addresses
+    
+    # start writing to all ports at higher addresses
+    dut.ub_write_start_in.value = 1
+    dut.ub_write_data_1_in.value = to_fixed(46.0)
+    dut.ub_write_data_2_in.value = to_fixed(47.0) 
+    dut.ub_write_valid_1_in.value = 1
+    dut.ub_write_valid_2_in.value = 1
+    
+    dut.ub_bias_read_start_in.value = 1
+    
+    dut.ub_activation_read_start_in.value = 1
+    
+    dut.ub_loss_read_start_in.value = 1
+    
+    dut.ub_activation_derivative_read_start_in.value = 1
+    
+    # simultaneously start reading from all ports at lower addresses
+    dut.ub_read_addr_in.value = 1
+    dut.ub_num_mem_locations_in.value = 2
+    dut.ub_read_start_in.value = 1
+    
+    dut.ub_bias_addr_in.value = 1  
+    dut.ub_bias_num_mem_locations_in.value = 2
+    # note: bias_start_in already set to 1 for writing, this will handle both
+    
+    dut.ub_activation_addr_in.value = 1
+    dut.ub_activation_num_mem_locations_in.value = 2
+    # note: activation_start_in already set to 1 for writing
+    
+    dut.ub_loss_addr_in.value = 1
+    dut.ub_loss_num_mem_locations_in.value = 2
+    # note: loss_start_in already set to 1 for writing
+    
+    dut.ub_activation_derivative_addr_in.value = 1
+    dut.ub_activation_derivative_num_mem_locations_in.value = 2
+    # note: activation_derivative_start_in already set to 1 for writing
+    
+    await RisingEdge(dut.clk)
+    
+    # stop read start signals (pulse)
+    dut.ub_read_start_in.value = 0
+    
+    # print(f"concurrent cycle 1: writing new values while reading:")
+    # print(f"  main: reading data_1={dut.ub_data_1_out.value.integer/256.0:.1f} (expect 36.0), writing 46.0, 47.0")
+    # print(f"  bias: reading data_1={dut.ub_bias_data_1_out.value.integer/256.0:.1f} (expect 38.0), writing 48.0, 49.0")
+    # print(f"  activation: reading data_1={dut.ub_activation_data_1_out.value.integer/256.0:.1f} (expect 40.0), writing 50.0, 51.0")
+    # print(f"  loss: reading data_1={dut.ub_loss_data_1_out.value.integer/256.0:.1f} (expect 42.0), writing 52.0, 53.0")
+    # print(f"  activation_derivative: reading data_1={dut.ub_activation_derivative_data_1_out.value.integer/256.0:.1f} (expect 44.0), writing 54.0, 55.0")
+    
+    await RisingEdge(dut.clk)
+    
+    # print(f"concurrent cycle 2:")
+    # print(f"  main: reading data_2={dut.ub_data_2_out.value.integer/256.0:.1f} (expect 37.0)")
+    # print(f"  bias: reading data_2={dut.ub_bias_data_2_out.value.integer/256.0:.1f} (expect 39.0)")
+    # print(f"  activation: reading data_2={dut.ub_activation_data_2_out.value.integer/256.0:.1f} (expect 41.0)")
+    # print(f"  loss: reading data_2={dut.ub_loss_data_2_out.value.integer/256.0:.1f} (expect 43.0)")
+    # print(f"  activation_derivative: reading data_2={dut.ub_activation_derivative_data_2_out.value.integer/256.0:.1f} (expect 45.0)")
+    
+    # stop writing on all ports
+    dut.ub_write_start_in.value = 0
+    dut.ub_write_valid_1_in.value = 0
+    dut.ub_write_valid_2_in.value = 0
+    
+    dut.ub_bias_read_start_in.value = 0
+    
+    dut.ub_activation_read_start_in.value = 0
+    
+    dut.ub_loss_read_start_in.value = 0
+    
+    dut.ub_activation_derivative_read_start_in.value = 0
+    
+    await RisingEdge(dut.clk)
+    await ClockCycles(dut.clk, 2)
+    print("concurrent multi-port operations completed")
+
+    print("\n=== all tests complete ===")
