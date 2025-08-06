@@ -4,6 +4,7 @@ venv/
 env/
 .env/
 waveforms/*.vcd
+.venv/
 
 cocotb
 # Python bytecode

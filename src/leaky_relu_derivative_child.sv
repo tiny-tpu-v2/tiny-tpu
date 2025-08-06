@@ -8,7 +8,7 @@ module leaky_relu_derivative_child(
     input logic lr_d_valid_in,
     input logic signed [15:0] lr_d_data_in,
     input logic signed [15:0] lr_leak_factor_in,
-    input logic signed [15:0] lr_d_H_data_in, 
+    input logic signed [15:0] lr_d_H_data_in, // H data coming through
 
     output logic lr_d_valid_out,
     output logic signed [15:0] lr_d_data_out

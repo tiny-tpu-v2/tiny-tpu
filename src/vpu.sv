@@ -102,8 +102,9 @@ module vpu (
     logic lr_d_valid_1_out;
     logic [15:0] lr_d_data_2_out;
     logic lr_d_valid_2_out;
-    logic [15:0] lr_d_H_1_in;
-    logic [15:0] lr_d_H_2_in;
+    logic [15:0] lr_d_H_in_1;
+    logic [15:0] lr_d_H_in_2;
+    
 
     // temp 'last H matrix' cache
     logic [15:0] last_H_data_1_in;
@@ -171,9 +172,10 @@ module vpu (
         .lr_d_data_2_in(lr_d_data_2_in),    // input
         .lr_d_valid_1_in(lr_d_valid_1_in),  // input
         .lr_d_valid_2_in(lr_d_valid_2_in),  // input
-
-        .lr_d_H_1_in(lr_d_H_1_in),              // input from UB or temp 'last H matrix' cache
-        .lr_d_H_2_in(lr_d_H_2_in),              // input from UB or temp 'last H matrix' cache
+         
+         // TODO - change this variable from leaky relu parent for consistency
+        .lr_d_H_1_in(lr_d_H_in_1),              // input from UB or temp 'last H matrix' cache
+        .lr_d_H_2_in(lr_d_H_in_2),              // input from UB or temp 'last H matrix' cache
         .lr_leak_factor_in(lr_leak_factor_in),
         
         .lr_d_data_1_out(lr_d_data_1_out),      // output
@@ -279,8 +281,8 @@ module vpu (
                 // Cache and use 'last H matrix'
                 last_H_data_1_in = lr_data_1_out;
                 last_H_data_2_in = lr_data_2_out;
-                lr_d_H_1_in = last_H_data_1_out;
-                lr_d_H_2_in = last_H_data_2_out;
+                lr_d_H_in_1 = last_H_data_1_out;
+                lr_d_H_in_2 = last_H_data_2_out;
             end else begin
                 // disable inputs
                 loss_data_1_in = 16'b0;
@@ -295,8 +297,8 @@ module vpu (
                 loss_to_lrd_valid_in_2 = lr_to_loss_valid_in_2;
 
                 // Don't cache and use 'last H matrix'
-                lr_d_H_1_in = H_in_1;
-                lr_d_H_2_in = H_in_2;
+                lr_d_H_in_1 = H_in_1;
+                lr_d_H_in_2 = H_in_2;
             end
 
             // leaky relu derivative module
@@ -444,8 +446,8 @@ endmodule
 //     logic lr_d_valid_1_out;
 //     logic [15:0] lr_d_data_2_out;
 //     logic lr_d_valid_2_out;
-//     logic [15:0] lr_d_H_1_in;
-//     logic [15:0] lr_d_H_2_in;
+//     logic [15:0] lr_d_H_in_1;
+//     logic [15:0] lr_d_H_in_2;
     
 
 //     // temp H2 cache (last H values from leaky relu during forward pass)
@@ -590,8 +592,8 @@ endmodule
 //                 vpu_valid_out_2 = lr_d_valid_2_out;
 
 //                 // Connect last H cache output to leaky relu derivative modules
-//                 lr_d_H_1_in = last_H_data_1_out;
-//                 lr_d_H_2_in = last_H_data_1_out;
+//                 lr_d_H_in_1 = last_H_data_1_out;
+//                 lr_d_H_in_2 = last_H_data_1_out;
 
 
 //                 // Store H matrices from leaky relu for later use
@@ -609,8 +611,8 @@ endmodule
 //                 lr_d_valid_2_in = vpu_valid_in_2;
 
 //                 // connect stored H values to leaky relu derivative
-//                 lr_d_H_1_in = H_in_1;
-//                 lr_d_H_2_in = H_in_2;
+//                 lr_d_H_in_1 = H_in_1;
+//                 lr_d_H_in_2 = H_in_2;
 
 //                 // connect leaky relu derivative output to VPU output
 //                 vpu_data_out_1 = lr_d_data_1_out;
@@ -737,8 +739,8 @@ endmodule
 //     .lr_d_data_2_out(lr_d_data_2_out),
 //     .lr_d_valid_1_out(lr_d_valid_1_out),
 //     .lr_d_valid_2_out(lr_d_valid_2_out),
-//     .lr_d_H_1_in(lr_d_H_1_in),
-//     .lr_d_H_2_in(lr_d_H_2_in)
+//     .lr_d_H_in_1(lr_d_H_in_1),
+//     .lr_d_H_in_2(lr_d_H_in_2)
 // );
 
 // // sequential logic to cache last H???
