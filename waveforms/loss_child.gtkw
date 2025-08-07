@@ -1,0 +1,32 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Tue Aug  5 06:39:39 2025
+[*]
+[dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/loss_child.vcd"
+[dumpfile_mtime] "Tue Aug  5 06:38:31 2025"
+[dumpfile_size] 6845
+[savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/loss_child.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 768 -322
+*-15.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 294
+[sst_expanded] 1
+[sst_vpaned_height] 157
+@22
+loss_child.H_in[15:0]
+loss_child.Y_in[15:0]
+@28
+loss_child.clk
+@22
+loss_child.diff_stage1[15:0]
+loss_child.final_gradient[15:0]
+loss_child.gradient_out[15:0]
+loss_child.inv_batch_size_times_two_in[15:0]
+@28
+loss_child.rst
+loss_child.valid_in
+loss_child.valid_out
+[pattern_trace] 1
+[pattern_trace] 0

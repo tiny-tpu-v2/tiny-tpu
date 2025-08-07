@@ -3,7 +3,6 @@ my-env/
 venv/
 env/
 .env/
-waveforms/*.vcd
 .venv/
 
 cocotb
@@ -19,7 +18,6 @@ build/
 
 # Simulation and waveform files
 **/sim_build/
-waveforms/
 *.vcd
 
 # IDE specific files

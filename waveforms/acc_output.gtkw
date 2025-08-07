@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Tue May 20 19:45:38 2025
+[*]
+[dumpfile] "/home/xander/verilog/apex-tpu/waveforms/acc_output.vcd"
+[dumpfile_mtime] "Tue May 20 19:44:59 2025"
+[dumpfile_size] 2038
+[savefile] "/home/xander/verilog/apex-tpu/waveforms/acc_output.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] 572 -1014
+*-16.000000 1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 198
+[sst_expanded] 1
+[sst_vpaned_height] 157
+@24
+acc_output.clk
+acc_output.rst
+acc_output.acc_valid_i
+acc_output.acc_data_in[15:0]
+acc_output.\acc_mem_reg[0][15:0]
+acc_output.\acc_mem_reg[1][15:0]
+acc_output.\acc_mem_reg[2][15:0]
+acc_output.\acc_mem_reg[3][15:0]
+acc_output.acc_valid_o
+acc_output.\acc_mem_out[0][15:0]
+acc_output.\acc_mem_out[1][15:0]
+acc_output.\acc_mem_out[2][15:0]
+acc_output.\acc_mem_out[3][15:0]
+acc_output.acc_mem_counter[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

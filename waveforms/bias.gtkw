@@ -1,0 +1,108 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Thu Aug  7 03:28:41 2025
+[*]
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/bias.vcd"
+[dumpfile_mtime] "Sun Jun  1 20:19:24 2025"
+[dumpfile_size] 3915
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/bias.gtkw"
+[timestart] 0
+[size] 1512 824
+[pos] 646 0
+*-15.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 210
+[sst_expanded] 1
+[sst_vpaned_height] 264
+@40000420
+[fpshift_count] 8
+bias.clk
+[fpshift_count] 8
+bias.rst
+[fpshift_count] 8
+bias.bias_scalar_in[15:0]
+[fpshift_count] 8
+bias.load_bias_in
+[fpshift_count] 8
+bias.bias_inactive[15:0]
+[fpshift_count] 8
+bias.bias_active[15:0]
+[fpshift_count] 8
+bias.bias_switch_in
+[fpshift_count] 8
+bias.bias_scalar_out[15:0]
+@40c00420
+[fpshift_count] 8
+bias.add_out[15:0]
+@28
+(0)bias.add_out[15:0]
+(1)bias.add_out[15:0]
+(2)bias.add_out[15:0]
+(3)bias.add_out[15:0]
+(4)bias.add_out[15:0]
+(5)bias.add_out[15:0]
+(6)bias.add_out[15:0]
+(7)bias.add_out[15:0]
+(8)bias.add_out[15:0]
+(9)bias.add_out[15:0]
+(10)bias.add_out[15:0]
+(11)bias.add_out[15:0]
+(12)bias.add_out[15:0]
+(13)bias.add_out[15:0]
+(14)bias.add_out[15:0]
+(15)bias.add_out[15:0]
+@1401200
+-group_end
+@40c00420
+[fpshift_count] 8
+bias.bias_sys_data_in[15:0]
+@28
+(0)bias.bias_sys_data_in[15:0]
+(1)bias.bias_sys_data_in[15:0]
+(2)bias.bias_sys_data_in[15:0]
+(3)bias.bias_sys_data_in[15:0]
+(4)bias.bias_sys_data_in[15:0]
+(5)bias.bias_sys_data_in[15:0]
+(6)bias.bias_sys_data_in[15:0]
+(7)bias.bias_sys_data_in[15:0]
+(8)bias.bias_sys_data_in[15:0]
+(9)bias.bias_sys_data_in[15:0]
+(10)bias.bias_sys_data_in[15:0]
+(11)bias.bias_sys_data_in[15:0]
+(12)bias.bias_sys_data_in[15:0]
+(13)bias.bias_sys_data_in[15:0]
+(14)bias.bias_sys_data_in[15:0]
+(15)bias.bias_sys_data_in[15:0]
+@1401200
+-group_end
+@40c00420
+[fpshift_count] 8
+bias.bias_data_out[15:0]
+@28
+(0)bias.bias_data_out[15:0]
+(1)bias.bias_data_out[15:0]
+(2)bias.bias_data_out[15:0]
+(3)bias.bias_data_out[15:0]
+(4)bias.bias_data_out[15:0]
+(5)bias.bias_data_out[15:0]
+(6)bias.bias_data_out[15:0]
+(7)bias.bias_data_out[15:0]
+(8)bias.bias_data_out[15:0]
+(9)bias.bias_data_out[15:0]
+(10)bias.bias_data_out[15:0]
+(11)bias.bias_data_out[15:0]
+(12)bias.bias_data_out[15:0]
+(13)bias.bias_data_out[15:0]
+(14)bias.bias_data_out[15:0]
+(15)bias.bias_data_out[15:0]
+@1401200
+-group_end
+@40000420
+[fpshift_count] 8
+bias.bias_valid_in
+[fpshift_count] 8
+bias.bias_valid_out
+[fpshift_count] 8
+bias.bias_backward
+[pattern_trace] 1
+[pattern_trace] 0

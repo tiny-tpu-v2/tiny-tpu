@@ -1,0 +1,43 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Aug  5 22:48:33 2025
+[*]
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/vpu.vcd"
+[dumpfile_mtime] "Tue Aug  5 21:46:17 2025"
+[dumpfile_size] 33863
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/vpu.gtkw"
+[timestart] 294300
+[size] 1512 822
+[pos] -1 -1
+*-14.550008 348800 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 276
+[signals_width] 244
+[sst_expanded] 1
+[sst_vpaned_height] 285
+@40000420
+[fpshift_count] 8
+vpu.clk
+[fpshift_count] 8
+vpu.rst
+[fpshift_count] 8
+vpu.vpu_data_in_1[15:0]
+[fpshift_count] 8
+vpu.vpu_data_in_2[15:0]
+[fpshift_count] 8
+vpu.vpu_valid_in_1
+[fpshift_count] 8
+vpu.vpu_valid_in_2
+[fpshift_count] 8
+vpu.vpu_data_out_1[15:0]
+[fpshift_count] 8
+vpu.vpu_data_out_2[15:0]
+[fpshift_count] 8
+vpu.vpu_valid_out_1
+[fpshift_count] 8
+vpu.vpu_valid_out_2
+[fpshift_count] 8
+vpu.H_in_1[15:0]
+[fpshift_count] 8
+vpu.H_in_2[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

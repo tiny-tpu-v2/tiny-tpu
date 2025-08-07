@@ -1,0 +1,112 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Thu Aug  7 03:34:08 2025
+[*]
+[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/unified_buffer.vcd"
+[dumpfile_mtime] "Thu Aug  7 03:30:30 2025"
+[dumpfile_size] 9117
+[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/unified_buffer.gtkw"
+[timestart] 0
+[size] 1344 622
+[pos] 83 843
+*-15.600000 83900 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[treeopen] unified_buffer.
+[sst_width] 255
+[signals_width] 365
+[sst_expanded] 1
+[sst_vpaned_height] 167
+@40000024
+[fpshift_count] 8
+unified_buffer.\ub_memory[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[2][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[3][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[4][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[5][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[6][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[7][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[8][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[9][15:0]
+@22
+unified_buffer.\ub_memory[10][15:0]
+unified_buffer.\ub_memory[11][15:0]
+unified_buffer.\ub_memory[12][15:0]
+@40c00420
+[fpshift_count] 8
+unified_buffer.\ub_memory[13][15:0]
+@28
+(0)unified_buffer.\ub_memory[13][15:0]
+(1)unified_buffer.\ub_memory[13][15:0]
+(2)unified_buffer.\ub_memory[13][15:0]
+(3)unified_buffer.\ub_memory[13][15:0]
+(4)unified_buffer.\ub_memory[13][15:0]
+(5)unified_buffer.\ub_memory[13][15:0]
+(6)unified_buffer.\ub_memory[13][15:0]
+(7)unified_buffer.\ub_memory[13][15:0]
+(8)unified_buffer.\ub_memory[13][15:0]
+(9)unified_buffer.\ub_memory[13][15:0]
+(10)unified_buffer.\ub_memory[13][15:0]
+(11)unified_buffer.\ub_memory[13][15:0]
+(12)unified_buffer.\ub_memory[13][15:0]
+(13)unified_buffer.\ub_memory[13][15:0]
+(14)unified_buffer.\ub_memory[13][15:0]
+(15)unified_buffer.\ub_memory[13][15:0]
+@41401600
+-group_end
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_memory[14][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[15][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[16][15:0]
+@24
+unified_buffer.wr_ptr[5:0]
+unified_buffer.ub_wr_addr_in[5:0]
+@28
+unified_buffer.ub_wr_addr_valid_in
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_wr_data_in_1[15:0]
+[fpshift_count] 8
+unified_buffer.ub_wr_data_in_2[15:0]
+@28
+unified_buffer.ub_wr_valid_data_in_1
+unified_buffer.ub_wr_valid_data_in_2
+[pattern_trace] 1
+[pattern_trace] 0

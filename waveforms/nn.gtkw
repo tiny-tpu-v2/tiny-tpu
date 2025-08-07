@@ -1,0 +1,93 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Sun Jun 22 21:48:07 2025
+[*]
+[dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/nn.vcd"
+[dumpfile_mtime] "Sun Jun 22 21:45:45 2025"
+[dumpfile_size] 55429
+[savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/nn.gtkw"
+[timestart] 73000
+[size] 2245 1267
+[pos] 0 22171
+*-15.112754 289400 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[treeopen] nn.
+[sst_width] 276
+[signals_width] 325
+[sst_expanded] 1
+[sst_vpaned_height] 394
+@28
+nn.clk
+nn.rst
+@40000420
+[fpshift_count] 8
+nn.nn_data_in_1[15:0]
+[fpshift_count] 8
+nn.nn_data_in_2[15:0]
+[fpshift_count] 8
+nn.nn_data_out_1[15:0]
+@28
+nn.nn_valid_out_1
+@40000420
+[fpshift_count] 8
+nn.nn_data_out_2[15:0]
+@28
+nn.nn_valid_out_2
+@200
+-
+-
+-
+@40000420
+[fpshift_count] 8
+nn.nn_data_out_2[15:0]
+@200
+-
+@28
+nn.nn_start
+nn.input_acc_valid_out_1
+nn.sys_valid_out_21
+nn.bias_valid_out_21
+nn.lr_valid_out_21
+@40000420
+[fpshift_count] 8
+nn.input_acc_1.input_acc_data_in[15:0]
+@200
+-
+@28
+nn.nn_start
+nn.input_acc_valid_out_2
+nn.sys_valid_out_22
+nn.bias_valid_out_22
+nn.lr_valid_out_22
+@40000420
+[fpshift_count] 8
+nn.input_acc_2.input_acc_data_in[15:0]
+@200
+-
+[pattern_trace] 1
+[pattern_trace] 0
