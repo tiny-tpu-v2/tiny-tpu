@@ -32,7 +32,8 @@ SOURCES = src/pe.sv \
           src/unified_buffer.sv \
           src/vpu.sv \
           src/loss_parent.sv \
-		  src/loss_child.sv
+		  src/loss_child.sv \
+		  src/tpu.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -153,6 +154,12 @@ test_vpu: $(SIM_BUILD_DIR)
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_vpu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 	mv vpu.vcd waveforms/ 2>/dev/null || true
+
+test_tpu: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s tpu -s dump -g2012 $(SOURCES) test/dump_tpu.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_tpu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv tpu.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============

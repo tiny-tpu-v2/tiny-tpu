@@ -7,627 +7,690 @@ module unified_buffer #(
     input  logic        clk,
     input  logic        rst,
     
-    // write interface
-    input  logic [15:0] ub_write_data_1_in,
-    input  logic [15:0] ub_write_data_2_in,
-    input  logic        ub_write_valid_1_in,
-    input  logic        ub_write_valid_2_in,
+    // WRITING!!!
+    // inputs from VPU to UB (CURRENTLY NO ADDRESSING --> STARTS AT ADDRESS 0 AND INCREMENTS FROM THERE)
+    input  logic        ub_wr_addr_valid_in,
+    input  logic [5:0]  ub_wr_addr_in,   
+
+    // inputs from VPU to UB
+    input  logic [15:0] ub_wr_data_in_1, 
+    input  logic [15:0] ub_wr_data_in_2, 
+    input  logic        ub_wr_valid_data_in_1, 
+    input  logic        ub_wr_valid_data_in_2, 
+
+
+
+    // model data from host to UB (put in weights, inputs, biases, and outputs Y) THERE IS DATA CONTENTION HERE IF WE HAVE DRAM BUT FOR SIMPLICITY OF DESIGN WE WILL ALL NECESSARY VALUES
+    input  logic [15:0] ub_wr_host_data_in_1, 
+    input  logic [15:0] ub_wr_host_data_in_2, 
+    input  logic        ub_wr_host_valid_in_1, 
+    input  logic        ub_wr_host_valid_in_2, 
     
-    // ISA control signals
-    input  logic        ub_write_start_in,        // determines if we are writing
-    input  logic        ub_read_start_in,         // supplied from assembly code (determines if we start reading)
-    input  logic        ub_transpose,         // read row or column (WE STILL NEED TO IMPLEMENT THIS FEATURE)
-    input  logic [5:0]  ub_read_addr_in,          // address decoded from isa
-    input  logic [5:0]  ub_num_mem_locations_in,  // number of memory locations/cells to increment by (HAS TO BE A MULTIPLE OF 2)
     
-    // read interface
-    output logic [15:0] ub_data_1_out,
-    output logic [15:0] ub_data_2_out,
-    output logic        ub_valid_1_out,
-    output logic        ub_valid_2_out,
 
-    // bias read interface
-    input  logic        ub_bias_read_start_in,
-    input  logic [5:0]  ub_bias_addr_in,
-    input  logic [5:0]  ub_bias_num_mem_locations_in,
 
-    // bias read interface
-    output logic [15:0] ub_bias_data_1_out,
-    output logic [15:0] ub_bias_data_2_out,
-    output logic        ub_bias_valid_1_out,
-    output logic        ub_bias_valid_2_out,
+    // READING!!!!
+    // read interface for left inputs (X's, H's, or dL/dZ^T) from UB to systolic array
+    input  logic        ub_rd_input_transpose,         // FLAG EXCLUSIVE TO LEFT SIDE OF SYSTOLIC ARRAY
+    input  logic        ub_rd_input_start_in,
+    input  logic [5:0]  ub_rd_input_addr_in,
+    input  logic [5:0]  ub_rd_input_loc_in,
 
-    // activation read interface
-    input  logic        ub_activation_read_start_in,
-    input  logic [5:0]  ub_activation_addr_in,
-    input  logic [5:0]  ub_activation_num_mem_locations_in,
+    // outputs for left inputs (X's, H's, or dL/dZ^T) from UB to systolic array
+    output logic [15:0] ub_rd_input_data_1_out,
+    output logic [15:0] ub_rd_input_data_2_out,
+    output logic        ub_rd_input_valid_1_out,
+    output logic        ub_rd_input_valid_2_out,
 
-    // activation read interface
-    output logic [15:0] ub_activation_data_1_out,
-    output logic [15:0] ub_activation_data_2_out,
-    output logic        ub_activation_valid_1_out,
-    output logic        ub_activation_valid_2_out,
 
-    // loss read interface
-    input  logic        ub_loss_read_start_in,
-    input  logic [5:0]  ub_loss_addr_in,
-    input  logic [5:0]  ub_loss_num_mem_locations_in,
 
-    // loss read interface
-    output logic [15:0] ub_loss_data_1_out,
-    output logic [15:0] ub_loss_data_2_out,
-    output logic        ub_loss_valid_1_out,
-    output logic        ub_loss_valid_2_out,
 
-    // activation derivative read interface
-    input  logic        ub_activation_derivative_read_start_in,
-    input  logic [5:0]  ub_activation_derivative_addr_in,
-    input  logic [5:0]  ub_activation_derivative_num_mem_locations_in,
+    // read interface for weights (W^T or H aka top inputs) from UB to systolic array
+    input  logic        ub_rd_weight_start_in,
+    input  logic [5:0]  ub_rd_weight_addr_in,
+    input  logic [5:0]  ub_rd_weight_loc_in,
 
-    // activation derivative read interface
-    output logic [15:0] ub_activation_derivative_data_1_out,
-    output logic [15:0] ub_activation_derivative_data_2_out,
-    output logic        ub_activation_derivative_valid_1_out,
-    output logic        ub_activation_derivative_valid_2_out
+    // outputs for weights (W^T or H aka top inputs) from UB to systolic array
+    output logic [15:0] ub_rd_weight_data_1_out,
+    output logic [15:0] ub_rd_weight_data_2_out,
+    output logic        ub_rd_weight_valid_1_out,
+    output logic        ub_rd_weight_valid_2_out,
+    
+
+
+
+    // bias read interface for biases from UB to VPU bias module
+    input  logic        ub_rd_bias_start_in,
+    input  logic [5:0]  ub_rd_bias_addr_in,
+    input  logic [5:0]  ub_rd_bias_loc_in,
+    
+    // outputs for biases from UB to VPU bias module
+    output logic [15:0] ub_rd_bias_data_1_out,
+    output logic [15:0] ub_rd_bias_data_2_out,
+    output logic        ub_rd_bias_valid_1_out,
+    output logic        ub_rd_bias_valid_2_out,
+    
+
+
+    
+    // loss read interface for Y's from UB to VPU loss module
+    input  logic        ub_rd_Y_start_in,
+    input  logic [5:0]  ub_rd_Y_addr_in,
+    input  logic [5:0]  ub_rd_Y_loc_in,
+
+    // outputs for outputs (Y's) from UB to VPU loss module
+    output logic [15:0] ub_rd_Y_data_1_out,
+    output logic [15:0] ub_rd_Y_data_2_out,
+    output logic        ub_rd_Y_valid_1_out,
+    output logic        ub_rd_Y_valid_2_out,
+
+
+
+    // activation derivative read interface for H's from UB to VPU activation derivative module
+    input  logic        ub_rd_H_start_in,
+    input  logic [5:0]  ub_rd_H_addr_in,
+    input  logic [5:0]  ub_rd_H_loc_in,
+
+    // outputs for H's from UB to VPU activation derivative module
+    output logic [15:0] ub_rd_H_data_1_out,
+    output logic [15:0] ub_rd_H_data_2_out,
+    output logic        ub_rd_H_valid_1_out,
+    output logic        ub_rd_H_valid_2_out
 );
 
     // internal memory array
-    logic [15:0] ub_memory [UNIFIED_BUFFER_WIDTH-1:0];
+    logic [15:0] ub_memory [0:UNIFIED_BUFFER_WIDTH-1];
     
     // internal pointers and counters
-    logic [5:0] wr_ptr;                    // write pointer
-    logic [5:0] rd_ptr;                    // read pointer
-    logic [5:0] rd_num_locations_left;     // remaining locations to read
+    logic [5:0] wr_ptr;                         // write pointer (from VPU to UB and host to UB)
+
+    logic [5:0] wr_num_locations_left;          // remaining locations to write to
+    
+    logic [5:0] rd_input_ptr;                    // read pointer for UB to left side inputs of systolic array
+    logic [5:0] rd_input_num_locations_left;     // remaining locations to read
 
     // pointers and counters for bias (read only)
-    logic [5:0] bias_rd_ptr;
-    logic [5:0] bias_rd_num_locations_left;
+    logic [5:0] rd_bias_ptr;
+    logic [5:0] rd_bias_num_locations_left;
 
     // pointers and counters for activation (read only)
-    logic [5:0] activation_rd_ptr;
-    logic [5:0] activation_rd_num_locations_left;
+    logic [5:0] rd_weight_ptr;
+    logic [5:0] rd_weight_num_locations_left;
 
     // pointers and counters for loss (read only)
-    logic [5:0] loss_rd_ptr;
-    logic [5:0] loss_rd_num_locations_left;
+    logic [5:0] rd_Y_ptr;
+    logic [5:0] rd_Y_num_locations_left;
 
     // pointers and counters for activation derivative (read only)
-    logic [5:0] activation_derivative_rd_ptr;
-    logic [5:0] activation_derivative_rd_num_locations_left;
+    logic [5:0] rd_H_ptr;
+    logic [5:0] rd_H_num_locations_left;
+
+
+    // write_state_t wr_state, wr_state_next;
+
     
     // read state machine
     typedef enum logic [1:0] {
         READ_IDLE    = 2'b00,
         READ_ACTIVE  = 2'b10
-    } read_state_t;
+    } read_write_state_t;
     
-    read_state_t read_state, read_state_next;
+    read_write_state_t rd_input_state, rd_input_state_next;
     
     // bias read state machine
-    read_state_t bias_read_state, bias_read_state_next;
+    read_write_state_t rd_bias_state, rd_bias_state_next;
     
     // activation read state machine 
-    read_state_t activation_read_state, activation_read_state_next;
+    read_write_state_t rd_weight_state, rd_weight_state_next;
     
     // loss read state machine
-    read_state_t loss_read_state, loss_read_state_next;
+    read_write_state_t rd_Y_state, rd_Y_state_next;
     
     // activation derivative read state machine
-    read_state_t activation_derivative_read_state, activation_derivative_read_state_next;
+    read_write_state_t rd_H_state, rd_H_state_next;
+
+
+    // combinational logic for write state machine
+    // always_comb begin
+    //     case (wr_state)
+    //         READ_IDLE: begin
+    //             if (ub_wr_addr_valid_in) begin
+    //                 wr_state_next = READ_ACTIVE;
+    //             end else begin
+    //                 wr_state_next = READ_IDLE;
+    //             end
+    //         end
+
+    //         READ_ACTIVE: begin
+    //             if (wr_num_locations_left <= 1) begin
+    //                 wr_state_next = READ_IDLE;
+    //             end else begin
+    //                 wr_state_next = READ_ACTIVE;
+    //             end
+    //         end
+    //     endcase
+
+    // end
 
 
     // combinational logic for read state machine
     always_comb begin
-        case (read_state)
+        case (rd_input_state)
             READ_IDLE: begin
-                if (ub_read_start_in) begin
-                    read_state_next = READ_ACTIVE;
+                if (ub_rd_input_start_in) begin
+                    rd_input_state_next = READ_ACTIVE;
                 end else begin
-                    read_state_next = READ_IDLE;
+                    rd_input_state_next = READ_IDLE;
                 end
             end
             
             READ_ACTIVE: begin
-                if (rd_num_locations_left <= 1) begin 
-                    read_state_next = READ_IDLE;
+                if (rd_input_num_locations_left <= 1) begin 
+                    rd_input_state_next = READ_IDLE;
                 end else begin
-                    read_state_next = READ_ACTIVE;
+                    rd_input_state_next = READ_ACTIVE;
                 end
             end
             
             default: begin
-                read_state_next = READ_IDLE; // goes to here once rd_num_locations_left is zero. 
+                rd_input_state_next = READ_IDLE; // goes to here once rd_input_num_locations_left is zero. 
             end
         endcase
     end
 
     // combinational logic for bias read state machine
     always_comb begin
-        case (bias_read_state)
+        case (rd_bias_state)
             READ_IDLE: begin
-                if (ub_bias_read_start_in) begin
-                    bias_read_state_next = READ_ACTIVE;
+                if (ub_rd_bias_start_in) begin
+                    rd_bias_state_next = READ_ACTIVE;
                 end else begin
-                    bias_read_state_next = READ_IDLE;
+                    rd_bias_state_next = READ_IDLE;
                 end
             end
             
             READ_ACTIVE: begin
-                if (bias_rd_num_locations_left <= 1) begin 
-                    bias_read_state_next = READ_IDLE;
+                if (rd_bias_num_locations_left <= 1) begin 
+                    rd_bias_state_next = READ_IDLE;
                 end else begin
-                    bias_read_state_next = READ_ACTIVE;
+                    rd_bias_state_next = READ_ACTIVE;
                 end
             end
             
             default: begin
-                bias_read_state_next = READ_IDLE;
+                rd_bias_state_next = READ_IDLE;
             end
         endcase
     end
 
     // combinational logic for activation read state machine
     always_comb begin
-        case (activation_read_state)
+        case (rd_weight_state)
             READ_IDLE: begin
-                if (ub_activation_read_start_in) begin
-                    activation_read_state_next = READ_ACTIVE;
+                if (ub_rd_weight_start_in) begin
+                    rd_weight_state_next = READ_ACTIVE;
                 end else begin
-                    activation_read_state_next = READ_IDLE;
+                    rd_weight_state_next = READ_IDLE;
                 end
             end
             
             READ_ACTIVE: begin
-                if (activation_rd_num_locations_left <= 1) begin 
-                    activation_read_state_next = READ_IDLE;
+                if (rd_weight_num_locations_left <= 1) begin 
+                    rd_weight_state_next = READ_IDLE;
                 end else begin
-                    activation_read_state_next = READ_ACTIVE;
+                    rd_weight_state_next = READ_ACTIVE;
                 end
             end
             
             default: begin
-                activation_read_state_next = READ_IDLE;
+                rd_weight_state_next = READ_IDLE;
             end
         endcase
     end
 
     // combinational logic for loss read state machine
     always_comb begin
-        case (loss_read_state)
+        case (rd_Y_state)
             READ_IDLE: begin
-                if (ub_loss_read_start_in) begin
-                    loss_read_state_next = READ_ACTIVE;
+                if (ub_rd_Y_start_in) begin
+                    rd_Y_state_next = READ_ACTIVE;
                 end else begin
-                    loss_read_state_next = READ_IDLE;
+                    rd_Y_state_next = READ_IDLE;
                 end
             end
             
             READ_ACTIVE: begin
-                if (loss_rd_num_locations_left <= 1) begin 
-                    loss_read_state_next = READ_IDLE;
+                if (rd_Y_num_locations_left <= 1) begin 
+                    rd_Y_state_next = READ_IDLE;
                 end else begin
-                    loss_read_state_next = READ_ACTIVE;
+                    rd_Y_state_next = READ_ACTIVE;
                 end
             end
             
             default: begin
-                loss_read_state_next = READ_IDLE;
+                rd_Y_state_next = READ_IDLE;
             end
         endcase
     end
 
     // combinational logic for activation derivative read state machine
     always_comb begin
-        case (activation_derivative_read_state)
+        case (rd_H_state)
             READ_IDLE: begin
-                if (ub_activation_derivative_read_start_in) begin
-                    activation_derivative_read_state_next = READ_ACTIVE;
+                if (ub_rd_H_start_in) begin
+                    rd_H_state_next = READ_ACTIVE;
                 end else begin
-                    activation_derivative_read_state_next = READ_IDLE;
+                    rd_H_state_next = READ_IDLE;
                 end
             end
             
             READ_ACTIVE: begin
-                if (activation_derivative_rd_num_locations_left <= 1) begin 
-                    activation_derivative_read_state_next = READ_IDLE;
+                if (rd_H_num_locations_left <= 1) begin 
+                    rd_H_state_next = READ_IDLE;
                 end else begin
-                    activation_derivative_read_state_next = READ_ACTIVE;
+                    rd_H_state_next = READ_ACTIVE;
                 end
             end
             
             default: begin
-                activation_derivative_read_state_next = READ_IDLE;
+                rd_H_state_next = READ_IDLE;
             end
         endcase
     end
 
     // sequential logic
     always @(posedge clk or posedge rst) begin
+        for (int i = 0; i < 10; i++) begin
+            $dumpvars(0, ub_memory[i]);
+        end
 
         if (rst) begin
             // reset all registers
             wr_ptr                <= '0;
-            rd_ptr                <= '0;
-            rd_num_locations_left <= '0;
-            read_state            <= READ_IDLE;
+            rd_input_ptr                <= '0;
+            rd_input_num_locations_left <= '0;
+            rd_input_state            <= READ_IDLE;
             
             // reset bias pointers and state (read only)
-            bias_rd_ptr                <= '0;
-            bias_rd_num_locations_left <= '0;
-            bias_read_state            <= READ_IDLE;
+            rd_bias_ptr                <= '0;
+            rd_bias_num_locations_left <= '0;
+            rd_bias_state            <= READ_IDLE;
             
             // reset activation pointers and state (read only)
-            activation_rd_ptr                <= '0;
-            activation_rd_num_locations_left <= '0;
-            activation_read_state            <= READ_IDLE;
+            rd_weight_ptr                <= '0;
+            rd_weight_num_locations_left <= '0;
+            rd_weight_state            <= READ_IDLE;
             
             // reset loss pointers and state (read only)
-            loss_rd_ptr                <= '0;
-            loss_rd_num_locations_left <= '0;
-            loss_read_state            <= READ_IDLE;
+            rd_Y_ptr                <= '0;
+            rd_Y_num_locations_left <= '0;
+            rd_Y_state            <= READ_IDLE;
             
             // reset activation derivative pointers and state (read only)
-            activation_derivative_rd_ptr                <= '0;
-            activation_derivative_rd_num_locations_left <= '0;
-            activation_derivative_read_state            <= READ_IDLE;
+            rd_H_ptr                <= '0;
+            rd_H_num_locations_left <= '0;
+            rd_H_state            <= READ_IDLE;
             
             // clear output registers
-            ub_data_1_out         <= '0;
-            ub_data_2_out         <= '0;
-            ub_valid_1_out        <= '0;
-            ub_valid_2_out        <= '0;
+            ub_rd_input_data_1_out         <= '0;
+            ub_rd_input_data_2_out         <= '0;
+            ub_rd_input_valid_1_out        <= '0;
+            ub_rd_input_valid_2_out        <= '0;
             
             // clear bias output registers
-            ub_bias_data_1_out    <= '0;
-            ub_bias_data_2_out    <= '0;
-            ub_bias_valid_1_out   <= '0;
-            ub_bias_valid_2_out   <= '0;
+            ub_rd_bias_data_1_out    <= '0;
+            ub_rd_bias_data_2_out    <= '0;
+            ub_rd_bias_valid_1_out   <= '0;
+            ub_rd_bias_valid_2_out   <= '0;
             
             // clear activation output registers
-            ub_activation_data_1_out    <= '0;
-            ub_activation_data_2_out    <= '0;
-            ub_activation_valid_1_out   <= '0;
-            ub_activation_valid_2_out   <= '0;
+            ub_rd_weight_data_1_out    <= '0;
+            ub_rd_weight_data_2_out    <= '0;
+            ub_rd_weight_valid_1_out   <= '0;
+            ub_rd_weight_valid_2_out   <= '0;
             
             // clear loss output registers
-            ub_loss_data_1_out    <= '0;
-            ub_loss_data_2_out    <= '0;
-            ub_loss_valid_1_out   <= '0;
-            ub_loss_valid_2_out   <= '0;
+            ub_rd_Y_data_1_out    <= '0;
+            ub_rd_Y_data_2_out    <= '0;
+            ub_rd_Y_valid_1_out   <= '0;
+            ub_rd_Y_valid_2_out   <= '0;
             
             // clear activation derivative output registers
-            ub_activation_derivative_data_1_out    <= '0;
-            ub_activation_derivative_data_2_out    <= '0;
-            ub_activation_derivative_valid_1_out   <= '0;
-            ub_activation_derivative_valid_2_out   <= '0;
+            ub_rd_H_data_1_out    <= '0;
+            ub_rd_H_data_2_out    <= '0;
+            ub_rd_H_valid_1_out   <= '0;
+            ub_rd_H_valid_2_out   <= '0;
             
             // clear memory array
             for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
                 ub_memory[i] <= '0;
             end
-        end 
+        end else begin
 
-        else begin
+            // READING LOGIC:
             // update read state machines
-            read_state <= read_state_next;
-            bias_read_state <= bias_read_state_next;
-            activation_read_state <= activation_read_state_next;
-            loss_read_state <= loss_read_state_next;
-            activation_derivative_read_state <= activation_derivative_read_state_next;
+            rd_input_state <= rd_input_state_next;
+            rd_bias_state <= rd_bias_state_next;
+            rd_weight_state <= rd_weight_state_next;
+            rd_Y_state <= rd_Y_state_next;
+            rd_H_state <= rd_H_state_next;
             
             // reading logic
-            case (read_state)
+            case (rd_input_state)
                 READ_IDLE: begin
-                    if (ub_read_start_in) begin
-                        // NOTICE that this is staggered. the last value should be written to ub_data_1_out
+                    if (ub_rd_input_start_in) begin
+                        // NOTICE that this is staggered. the last value should be written to ub_rd_input_data_1_out
                         // first cycle of reading - output first ONE mem location (staggered)
                         // here we don't need to tranpose the first or last element
                         // in the future, we can latch our tranpose signal in this cycle, and then use
                         // the saved value for future signals
-                        ub_data_1_out         <= ub_memory[ub_read_addr_in];
-                        ub_data_2_out         <= '0;
-                        ub_valid_1_out        <= 1'b1;
-                        ub_valid_2_out        <= 1'b0;
+                        ub_rd_input_data_1_out         <= ub_memory[ub_rd_input_addr_in];
+                        ub_rd_input_data_2_out         <= '0;
+                        ub_rd_input_valid_1_out        <= 1'b1;
+                        ub_rd_input_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        rd_ptr                <= ub_read_addr_in + 1;
-                        rd_num_locations_left <= ub_num_mem_locations_in - 1;
+                        rd_input_ptr                <= ub_rd_input_addr_in + 1;
+                        rd_input_num_locations_left <= ub_rd_input_loc_in - 1;
                     end else begin
-                        ub_valid_1_out        <= 1'b0;
-                        ub_valid_2_out        <= 1'b0;
+                        ub_rd_input_valid_1_out        <= 1'b0;
+                        ub_rd_input_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 READ_ACTIVE: begin
-                    if (rd_num_locations_left > 1) begin 
+                    if (rd_input_num_locations_left > 1) begin 
 
-                        // perhaps write logic here to use ub_transpose flag to determine if we want to transpose
+                        // perhaps write logic here to use ub_rd_input_transpose flag to determine if we want to transpose
 
 
                         // read two more locations
-                        if (ub_transpose) begin // IF WE WANT TO TRANSPOSE (ub_transpose is high)
-                            ub_data_1_out         <= ub_memory[rd_ptr]; // LINE A
-                            ub_data_2_out         <= ub_memory[rd_ptr + 1]; 
+                        if (ub_rd_input_transpose) begin // IF WE WANT TO TRANSPOSE (ub_rd_input_transpose is high)
+                            ub_rd_input_data_1_out         <= ub_memory[rd_input_ptr]; // LINE A
+                            ub_rd_input_data_2_out         <= ub_memory[rd_input_ptr + 1]; 
                        
-                        end else begin  // IF WE DON'T WANT TO TRANSPOSE (ub_transpose is low)
-                            ub_data_1_out         <= ub_memory[rd_ptr + 1]; // LINE A
-                            ub_data_2_out         <= ub_memory[rd_ptr]; 
+                        end else begin  // IF WE DON'T WANT TO TRANSPOSE (ub_rd_input_transpose is low)
+                            ub_rd_input_data_1_out         <= ub_memory[rd_input_ptr + 1]; // LINE A
+                            ub_rd_input_data_2_out         <= ub_memory[rd_input_ptr]; 
                         end
 
-                        ub_valid_1_out        <= 1'b1;
-                        ub_valid_2_out        <= 1'b1;
+                        ub_rd_input_valid_1_out        <= 1'b1;
+                        ub_rd_input_valid_2_out        <= 1'b1;
         
                         // update pointers
-                        rd_ptr                <= rd_ptr + 2;
-                        rd_num_locations_left <= rd_num_locations_left - 2;
+                        rd_input_ptr                <= rd_input_ptr + 2;
+                        rd_input_num_locations_left <= rd_input_num_locations_left - 2;
                         
-                    end else if (rd_num_locations_left == 1) begin
+                    end else if (rd_input_num_locations_left == 1) begin
                         // read last single location
-                        // NOTICE that this is staggered. the last value should be written to ub_data_2_out
+                        // NOTICE that this is staggered. the last value should be written to ub_rd_input_data_2_out
                         // here we don't need to tranpose the first or last element
-                        ub_data_1_out         <= '0;
-                        ub_data_2_out         <= ub_memory[rd_ptr];
-                        ub_valid_1_out        <= 1'b0;
-                        ub_valid_2_out        <= 1'b1;
+                        ub_rd_input_data_1_out         <= '0;
+                        ub_rd_input_data_2_out         <= ub_memory[rd_input_ptr];
+                        ub_rd_input_valid_1_out        <= 1'b0;
+                        ub_rd_input_valid_2_out        <= 1'b1;
                          
                         // clear counters
-                        rd_num_locations_left <= '0;
+                        rd_input_num_locations_left <= '0;
                         
                     end else begin
                         // no more data to read
-                        ub_valid_1_out        <= 1'b0;
-                        ub_valid_2_out        <= 1'b0;
+                        ub_rd_input_valid_1_out        <= 1'b0;
+                        ub_rd_input_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 default: begin
-                    ub_valid_1_out            <= 1'b0;
-                    ub_valid_2_out            <= 1'b0;
+                    ub_rd_input_valid_1_out            <= 1'b0;
+                    ub_rd_input_valid_2_out            <= 1'b0;
                 end
             endcase
             
             // bias reading logic
-            case (bias_read_state)
+            case (rd_bias_state)
                 READ_IDLE: begin
-                    if (ub_bias_read_start_in) begin
+                    if (ub_rd_bias_start_in) begin
                         // first cycle of reading - output first one mem location (staggered)
-                        ub_bias_data_1_out         <= ub_memory[ub_bias_addr_in];
-                        ub_bias_data_2_out         <= '0;
-                        ub_bias_valid_1_out        <= 1'b1;
-                        ub_bias_valid_2_out        <= 1'b0;
+                        ub_rd_bias_data_1_out         <= ub_memory[ub_rd_bias_addr_in];
+                        ub_rd_bias_data_2_out         <= '0;
+                        ub_rd_bias_valid_1_out        <= 1'b1;
+                        ub_rd_bias_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        bias_rd_ptr                <= ub_bias_addr_in + 1;
-                        bias_rd_num_locations_left <= ub_bias_num_mem_locations_in - 1;
+                        rd_bias_ptr                <= ub_rd_bias_addr_in + 1;
+                        rd_bias_num_locations_left <= ub_rd_bias_loc_in - 1;
                     end else begin
-                        ub_bias_valid_1_out        <= 1'b0;
-                        ub_bias_valid_2_out        <= 1'b0;
+                        ub_rd_bias_valid_1_out        <= 1'b0;
+                        ub_rd_bias_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 READ_ACTIVE: begin
-                    if (bias_rd_num_locations_left > 1) begin 
+                    if (rd_bias_num_locations_left > 1) begin 
                         // read two more locations (no transpose)
-                        ub_bias_data_1_out         <= ub_memory[bias_rd_ptr + 1];
-                        ub_bias_data_2_out         <= ub_memory[bias_rd_ptr];
+                        ub_rd_bias_data_1_out         <= ub_memory[rd_bias_ptr + 1];
+                        ub_rd_bias_data_2_out         <= ub_memory[rd_bias_ptr];
 
-                        ub_bias_valid_1_out        <= 1'b1;
-                        ub_bias_valid_2_out        <= 1'b1;
+                        ub_rd_bias_valid_1_out        <= 1'b1;
+                        ub_rd_bias_valid_2_out        <= 1'b1;
         
                         // update pointers
-                        bias_rd_ptr                <= bias_rd_ptr + 2;
-                        bias_rd_num_locations_left <= bias_rd_num_locations_left - 2;
+                        rd_bias_ptr                <= rd_bias_ptr + 2;
+                        rd_bias_num_locations_left <= rd_bias_num_locations_left - 2;
                         
-                    end else if (bias_rd_num_locations_left == 1) begin
+                    end else if (rd_bias_num_locations_left == 1) begin
                         // read last single location
-                        ub_bias_data_1_out         <= '0;
-                        ub_bias_data_2_out         <= ub_memory[bias_rd_ptr];
-                        ub_bias_valid_1_out        <= 1'b0;
-                        ub_bias_valid_2_out        <= 1'b1;
+                        ub_rd_bias_data_1_out         <= '0;
+                        ub_rd_bias_data_2_out         <= ub_memory[rd_bias_ptr];
+                        ub_rd_bias_valid_1_out        <= 1'b0;
+                        ub_rd_bias_valid_2_out        <= 1'b1;
                          
                         // clear counters
-                        bias_rd_num_locations_left <= '0;
+                        rd_bias_num_locations_left <= '0;
                         
                     end else begin
                         // no more data to read
-                        ub_bias_valid_1_out        <= 1'b0;
-                        ub_bias_valid_2_out        <= 1'b0;
+                        ub_rd_bias_valid_1_out        <= 1'b0;
+                        ub_rd_bias_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 default: begin
-                    ub_bias_valid_1_out            <= 1'b0;
-                    ub_bias_valid_2_out            <= 1'b0;
+                    ub_rd_bias_valid_1_out            <= 1'b0;
+                    ub_rd_bias_valid_2_out            <= 1'b0;
                 end
             endcase
             
             // activation reading logic
-            case (activation_read_state)
+            case (rd_weight_state)
                 READ_IDLE: begin
-                    if (ub_activation_read_start_in) begin
+                    if (ub_rd_weight_start_in) begin
                         // first cycle of reading - output first one mem location (staggered)
-                        ub_activation_data_1_out         <= ub_memory[ub_activation_addr_in];
-                        ub_activation_data_2_out         <= '0;
-                        ub_activation_valid_1_out        <= 1'b1;
-                        ub_activation_valid_2_out        <= 1'b0;
+                        ub_rd_weight_data_1_out         <= ub_memory[ub_rd_weight_addr_in];
+                        ub_rd_weight_data_2_out         <= '0;
+                        ub_rd_weight_valid_1_out        <= 1'b1;
+                        ub_rd_weight_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        activation_rd_ptr                <= ub_activation_addr_in + 1;
-                        activation_rd_num_locations_left <= ub_activation_num_mem_locations_in - 1;
+                        rd_weight_ptr                <= ub_rd_weight_addr_in + 1;
+                        rd_weight_num_locations_left <= ub_rd_weight_loc_in - 1;
                     end else begin
-                        ub_activation_valid_1_out        <= 1'b0;
-                        ub_activation_valid_2_out        <= 1'b0;
+                        ub_rd_weight_valid_1_out        <= 1'b0;
+                        ub_rd_weight_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 READ_ACTIVE: begin
-                    if (activation_rd_num_locations_left > 1) begin 
+                    if (rd_weight_num_locations_left > 1) begin 
                         // read two more locations (no transpose)
-                        ub_activation_data_1_out         <= ub_memory[activation_rd_ptr + 1];
-                        ub_activation_data_2_out         <= ub_memory[activation_rd_ptr];
+                        ub_rd_weight_data_1_out         <= ub_memory[rd_weight_ptr + 1];
+                        ub_rd_weight_data_2_out         <= ub_memory[rd_weight_ptr];
 
-                        ub_activation_valid_1_out        <= 1'b1;
-                        ub_activation_valid_2_out        <= 1'b1;
+                        ub_rd_weight_valid_1_out        <= 1'b1;
+                        ub_rd_weight_valid_2_out        <= 1'b1;
         
                         // update pointers
-                        activation_rd_ptr                <= activation_rd_ptr + 2;
-                        activation_rd_num_locations_left <= activation_rd_num_locations_left - 2;
+                        rd_weight_ptr                <= rd_weight_ptr + 2;
+                        rd_weight_num_locations_left <= rd_weight_num_locations_left - 2;
                         
-                    end else if (activation_rd_num_locations_left == 1) begin
+                    end else if (rd_weight_num_locations_left == 1) begin
                         // read last single location
-                        ub_activation_data_1_out         <= '0;
-                        ub_activation_data_2_out         <= ub_memory[activation_rd_ptr];
-                        ub_activation_valid_1_out        <= 1'b0;
-                        ub_activation_valid_2_out        <= 1'b1;
+                        ub_rd_weight_data_1_out         <= '0;
+                        ub_rd_weight_data_2_out         <= ub_memory[rd_weight_ptr];
+                        ub_rd_weight_valid_1_out        <= 1'b0;
+                        ub_rd_weight_valid_2_out        <= 1'b1;
                          
                         // clear counters
-                        activation_rd_num_locations_left <= '0;
+                        rd_weight_num_locations_left <= '0;
                         
                     end else begin
                         // no more data to read
-                        ub_activation_valid_1_out        <= 1'b0;
-                        ub_activation_valid_2_out        <= 1'b0;
+                        ub_rd_weight_valid_1_out        <= 1'b0;
+                        ub_rd_weight_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 default: begin
-                    ub_activation_valid_1_out            <= 1'b0;
-                    ub_activation_valid_2_out            <= 1'b0;
+                    ub_rd_weight_valid_1_out            <= 1'b0;
+                    ub_rd_weight_valid_2_out            <= 1'b0;
                 end
             endcase
             
             // loss reading logic
-            case (loss_read_state)
+            case (rd_Y_state)
                 READ_IDLE: begin
-                    if (ub_loss_read_start_in) begin
+                    if (ub_rd_Y_start_in) begin
                         // first cycle of reading - output first one mem location (staggered)
-                        ub_loss_data_1_out         <= ub_memory[ub_loss_addr_in];
-                        ub_loss_data_2_out         <= '0;
-                        ub_loss_valid_1_out        <= 1'b1;
-                        ub_loss_valid_2_out        <= 1'b0;
+                        ub_rd_Y_data_1_out         <= ub_memory[ub_rd_Y_addr_in];
+                        ub_rd_Y_data_2_out         <= '0;
+                        ub_rd_Y_valid_1_out        <= 1'b1;
+                        ub_rd_Y_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        loss_rd_ptr                <= ub_loss_addr_in + 1;
-                        loss_rd_num_locations_left <= ub_loss_num_mem_locations_in - 1;
+                        rd_Y_ptr                <= ub_rd_Y_addr_in + 1;
+                        rd_Y_num_locations_left <= ub_rd_Y_loc_in - 1;
                     end else begin
-                        ub_loss_valid_1_out        <= 1'b0;
-                        ub_loss_valid_2_out        <= 1'b0;
+                        ub_rd_Y_valid_1_out        <= 1'b0;
+                        ub_rd_Y_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 READ_ACTIVE: begin
-                    if (loss_rd_num_locations_left > 1) begin 
+                    if (rd_Y_num_locations_left > 1) begin 
                         // read two more locations (no transpose)
-                        ub_loss_data_1_out         <= ub_memory[loss_rd_ptr + 1];
-                        ub_loss_data_2_out         <= ub_memory[loss_rd_ptr];
+                        ub_rd_Y_data_1_out         <= ub_memory[rd_Y_ptr + 1];
+                        ub_rd_Y_data_2_out         <= ub_memory[rd_Y_ptr];
 
-                        ub_loss_valid_1_out        <= 1'b1;
-                        ub_loss_valid_2_out        <= 1'b1;
+                        ub_rd_Y_valid_1_out        <= 1'b1;
+                        ub_rd_Y_valid_2_out        <= 1'b1;
         
                         // update pointers
-                        loss_rd_ptr                <= loss_rd_ptr + 2;
-                        loss_rd_num_locations_left <= loss_rd_num_locations_left - 2;
+                        rd_Y_ptr                <= rd_Y_ptr + 2;
+                        rd_Y_num_locations_left <= rd_Y_num_locations_left - 2;
                         
-                    end else if (loss_rd_num_locations_left == 1) begin
+                    end else if (rd_Y_num_locations_left == 1) begin
                         // read last single location
-                        ub_loss_data_1_out         <= '0;
-                        ub_loss_data_2_out         <= ub_memory[loss_rd_ptr];
-                        ub_loss_valid_1_out        <= 1'b0;
-                        ub_loss_valid_2_out        <= 1'b1;
+                        ub_rd_Y_data_1_out         <= '0;
+                        ub_rd_Y_data_2_out         <= ub_memory[rd_Y_ptr];
+                        ub_rd_Y_valid_1_out        <= 1'b0;
+                        ub_rd_Y_valid_2_out        <= 1'b1;
                          
                         // clear counters
-                        loss_rd_num_locations_left <= '0;
+                        rd_Y_num_locations_left <= '0;
                         
                     end else begin
                         // no more data to read
-                        ub_loss_valid_1_out        <= 1'b0;
-                        ub_loss_valid_2_out        <= 1'b0;
+                        ub_rd_Y_valid_1_out        <= 1'b0;
+                        ub_rd_Y_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 default: begin
-                    ub_loss_valid_1_out            <= 1'b0;
-                    ub_loss_valid_2_out            <= 1'b0;
+                    ub_rd_Y_valid_1_out            <= 1'b0;
+                    ub_rd_Y_valid_2_out            <= 1'b0;
                 end
             endcase
             
             // activation derivative reading logic
-            case (activation_derivative_read_state)
+            case (rd_H_state)
                 READ_IDLE: begin
-                    if (ub_activation_derivative_read_start_in) begin
+                    if (ub_rd_H_start_in) begin
                         // first cycle of reading - output first one mem location (staggered)
-                        ub_activation_derivative_data_1_out         <= ub_memory[ub_activation_derivative_addr_in];
-                        ub_activation_derivative_data_2_out         <= '0;
-                        ub_activation_derivative_valid_1_out        <= 1'b1;
-                        ub_activation_derivative_valid_2_out        <= 1'b0;
+                        ub_rd_H_data_1_out         <= ub_memory[ub_rd_H_addr_in];
+                        ub_rd_H_data_2_out         <= '0;
+                        ub_rd_H_valid_1_out        <= 1'b1;
+                        ub_rd_H_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        activation_derivative_rd_ptr                <= ub_activation_derivative_addr_in + 1;
-                        activation_derivative_rd_num_locations_left <= ub_activation_derivative_num_mem_locations_in - 1;
+                        rd_H_ptr                <= ub_rd_H_addr_in + 1;
+                        rd_H_num_locations_left <= ub_rd_H_loc_in - 1;
                     end else begin
-                        ub_activation_derivative_valid_1_out        <= 1'b0;
-                        ub_activation_derivative_valid_2_out        <= 1'b0;
+                        ub_rd_H_valid_1_out        <= 1'b0;
+                        ub_rd_H_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 READ_ACTIVE: begin
-                    if (activation_derivative_rd_num_locations_left > 1) begin 
+                    if (rd_H_num_locations_left > 1) begin 
                         // read two more locations (no transpose)
-                        ub_activation_derivative_data_1_out         <= ub_memory[activation_derivative_rd_ptr + 1];
-                        ub_activation_derivative_data_2_out         <= ub_memory[activation_derivative_rd_ptr];
+                        ub_rd_H_data_1_out         <= ub_memory[rd_H_ptr + 1];
+                        ub_rd_H_data_2_out         <= ub_memory[rd_H_ptr];
 
-                        ub_activation_derivative_valid_1_out        <= 1'b1;
-                        ub_activation_derivative_valid_2_out        <= 1'b1;
+                        ub_rd_H_valid_1_out        <= 1'b1;
+                        ub_rd_H_valid_2_out        <= 1'b1;
         
                         // update pointers
-                        activation_derivative_rd_ptr                <= activation_derivative_rd_ptr + 2;
-                        activation_derivative_rd_num_locations_left <= activation_derivative_rd_num_locations_left - 2;
+                        rd_H_ptr                <= rd_H_ptr + 2;
+                        rd_H_num_locations_left <= rd_H_num_locations_left - 2;
                         
-                    end else if (activation_derivative_rd_num_locations_left == 1) begin
+                    end else if (rd_H_num_locations_left == 1) begin
                         // read last single location
-                        ub_activation_derivative_data_1_out         <= '0;
-                        ub_activation_derivative_data_2_out         <= ub_memory[activation_derivative_rd_ptr];
-                        ub_activation_derivative_valid_1_out        <= 1'b0;
-                        ub_activation_derivative_valid_2_out        <= 1'b1;
+                        ub_rd_H_data_1_out         <= '0;
+                        ub_rd_H_data_2_out         <= ub_memory[rd_H_ptr];
+                        ub_rd_H_valid_1_out        <= 1'b0;
+                        ub_rd_H_valid_2_out        <= 1'b1;
                          
                         // clear counters
-                        activation_derivative_rd_num_locations_left <= '0;
+                        rd_H_num_locations_left <= '0;
                         
                     end else begin
                         // no more data to read
-                        ub_activation_derivative_valid_1_out        <= 1'b0;
-                        ub_activation_derivative_valid_2_out        <= 1'b0;
+                        ub_rd_H_valid_1_out        <= 1'b0;
+                        ub_rd_H_valid_2_out        <= 1'b0;
                     end
                 end
                 
                 default: begin
-                    ub_activation_derivative_valid_1_out            <= 1'b0;
-                    ub_activation_derivative_valid_2_out            <= 1'b0;
+                    ub_rd_H_valid_1_out            <= 1'b0;
+                    ub_rd_H_valid_2_out            <= 1'b0;
                 end
             endcase
             
             // writing INTO unified buffer logic (can run concurrently with reading)
-            if (ub_write_start_in) begin
-                if (ub_write_valid_1_in && ub_write_valid_2_in) begin
-                    // write both data inputs
-                    ub_memory[wr_ptr+1]     <= ub_write_data_1_in;
-                    ub_memory[wr_ptr] <= ub_write_data_2_in;
-                    wr_ptr                <= wr_ptr + 2;
-                    
-                end else if (ub_write_valid_1_in) begin
-                    // write only first data input
-                    ub_memory[wr_ptr]     <= ub_write_data_1_in;
-                    wr_ptr                <= wr_ptr + 1;
-                    
-                end else if (ub_write_valid_2_in) begin
-                    // write only second data input
-                    ub_memory[wr_ptr]     <= ub_write_data_2_in;
-                    wr_ptr                <= wr_ptr + 1;
-                end
+
+           
+
+            if (ub_wr_valid_data_in_1 && ub_wr_valid_data_in_2) begin
+                // write both data inputs
+                ub_memory[wr_ptr+1]     <= ub_wr_data_in_1;
+                ub_memory[wr_ptr] <= ub_wr_data_in_2;
+                wr_ptr                <= wr_ptr + 2;
+                
+            end else if (ub_wr_valid_data_in_1) begin
+                // write only first data input
+                ub_memory[wr_ptr]     <= ub_wr_data_in_1;
+                wr_ptr                <= wr_ptr + 1;
+                
+            end else if (ub_wr_valid_data_in_2) begin
+                // write only second data input
+                ub_memory[wr_ptr]     <= ub_wr_data_in_2;
+                wr_ptr                <= wr_ptr + 1;
             end
             
-            
-            
+            // ub_wr_addr_valid_in should only be on for 1 clock cycle
+            if (ub_wr_addr_valid_in) begin
+                wr_ptr <= ub_wr_addr_in; 
+            end 
             
         end
     end
