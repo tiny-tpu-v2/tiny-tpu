@@ -300,9 +300,6 @@ module unified_buffer #(
 
     // sequential logic
     always @(posedge clk or posedge rst) begin
-        for (int i = 0; i < 10; i++) begin
-            $dumpvars(0, ub_memory[i]);
-        end
 
         if (rst) begin
             // reset all registers
