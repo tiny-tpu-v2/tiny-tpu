@@ -1,0 +1,135 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Thu Aug  7 00:04:37 2025
+[*]
+[dumpfile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.vcd"
+[dumpfile_mtime] "Thu Aug  7 00:01:03 2025"
+[dumpfile_size] 12225
+[savefile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.gtkw"
+[timestart] 423500
+[size] 1344 622
+[pos] 615 1564
+*-16.200001 471600 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[sst_width] 255
+[signals_width] 365
+[sst_expanded] 1
+[sst_vpaned_height] 167
+@40000024
+[fpshift_count] 8
+unified_buffer.\ub_memory[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[2][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[3][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[4][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[5][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[6][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[7][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[8][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_memory[9][15:0]
+@200
+-
+-weights into sys array
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_data_1_out[15:0]
+[fpshift_count] 8
+unified_buffer.ub_data_2_out[15:0]
+@200
+-
+-inputs into sys array
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_activation_data_1_out[15:0]
+[fpshift_count] 8
+unified_buffer.ub_activation_data_2_out[15:0]
+@200
+-
+-h into activation derivative module
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_activation_derivative_data_1_out[15:0]
+[fpshift_count] 8
+unified_buffer.ub_activation_derivative_data_2_out[15:0]
+@200
+-
+-bias into bias module
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_bias_data_1_out[15:0]
+[fpshift_count] 8
+unified_buffer.ub_bias_data_2_out[15:0]
+@200
+-
+-target prediction into loss module
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_loss_data_1_out[15:0]
+[fpshift_count] 8
+unified_buffer.ub_loss_data_2_out[15:0]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_write_data_1_in[15:0]
+@40c00420
+[fpshift_count] 8
+unified_buffer.ub_write_data_2_in[15:0]
+@28
+(0)unified_buffer.ub_write_data_2_in[15:0]
+(1)unified_buffer.ub_write_data_2_in[15:0]
+(2)unified_buffer.ub_write_data_2_in[15:0]
+(3)unified_buffer.ub_write_data_2_in[15:0]
+(4)unified_buffer.ub_write_data_2_in[15:0]
+(5)unified_buffer.ub_write_data_2_in[15:0]
+(6)unified_buffer.ub_write_data_2_in[15:0]
+(7)unified_buffer.ub_write_data_2_in[15:0]
+(8)unified_buffer.ub_write_data_2_in[15:0]
+(9)unified_buffer.ub_write_data_2_in[15:0]
+(10)unified_buffer.ub_write_data_2_in[15:0]
+(11)unified_buffer.ub_write_data_2_in[15:0]
+(12)unified_buffer.ub_write_data_2_in[15:0]
+(13)unified_buffer.ub_write_data_2_in[15:0]
+(14)unified_buffer.ub_write_data_2_in[15:0]
+(15)unified_buffer.ub_write_data_2_in[15:0]
+@1401200
+-group_end
+@40000420
+[fpshift_count] 8
+unified_buffer.ub_transpose
+[pattern_trace] 1
+[pattern_trace] 0
