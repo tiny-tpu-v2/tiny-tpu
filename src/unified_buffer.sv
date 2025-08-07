@@ -8,17 +8,15 @@ module unified_buffer #(
     input  logic        rst,
     
     // WRITING!!!
-    // inputs from VPU to UB (CURRENTLY NO ADDRESSING --> STARTS AT ADDRESS 0 AND INCREMENTS FROM THERE)
+    // inputs from VPU to UB
     input  logic        ub_wr_addr_valid_in,
-    input  logic [5:0]  ub_wr_addr_in,   
+    input  logic [5:0]  ub_wr_addr_in,          // address to start at
 
     // inputs from VPU to UB
     input  logic [15:0] ub_wr_data_in_1, 
     input  logic [15:0] ub_wr_data_in_2, 
     input  logic        ub_wr_valid_data_in_1, 
     input  logic        ub_wr_valid_data_in_2, 
-
-
 
     // model data from host to UB (put in weights, inputs, biases, and outputs Y) THERE IS DATA CONTENTION HERE IF WE HAVE DRAM BUT FOR SIMPLICITY OF DESIGN WE WILL ALL NECESSARY VALUES
     input  logic [15:0] ub_wr_host_data_in_1, 
@@ -27,8 +25,6 @@ module unified_buffer #(
     input  logic        ub_wr_host_valid_in_2, 
     
     
-
-
     // READING!!!!
     // read interface for left inputs (X's, H's, or dL/dZ^T) from UB to systolic array
     input  logic        ub_rd_input_transpose,         // FLAG EXCLUSIVE TO LEFT SIDE OF SYSTOLIC ARRAY
@@ -42,9 +38,6 @@ module unified_buffer #(
     output logic        ub_rd_input_valid_1_out,
     output logic        ub_rd_input_valid_2_out,
 
-
-
-
     // read interface for weights (W^T or H aka top inputs) from UB to systolic array
     input  logic        ub_rd_weight_start_in,
     input  logic [5:0]  ub_rd_weight_addr_in,
@@ -56,9 +49,6 @@ module unified_buffer #(
     output logic        ub_rd_weight_valid_1_out,
     output logic        ub_rd_weight_valid_2_out,
     
-
-
-
     // bias read interface for biases from UB to VPU bias module
     input  logic        ub_rd_bias_start_in,
     input  logic [5:0]  ub_rd_bias_addr_in,
@@ -70,9 +60,6 @@ module unified_buffer #(
     output logic        ub_rd_bias_valid_1_out,
     output logic        ub_rd_bias_valid_2_out,
     
-
-
-    
     // loss read interface for Y's from UB to VPU loss module
     input  logic        ub_rd_Y_start_in,
     input  logic [5:0]  ub_rd_Y_addr_in,
@@ -83,8 +70,6 @@ module unified_buffer #(
     output logic [15:0] ub_rd_Y_data_2_out,
     output logic        ub_rd_Y_valid_1_out,
     output logic        ub_rd_Y_valid_2_out,
-
-
 
     // activation derivative read interface for H's from UB to VPU activation derivative module
     input  logic        ub_rd_H_start_in,
@@ -125,9 +110,6 @@ module unified_buffer #(
     logic [5:0] rd_H_ptr;
     logic [5:0] rd_H_num_locations_left;
 
-
-    // write_state_t wr_state, wr_state_next;
-
     
     // read state machine
     typedef enum logic [1:0] {
@@ -148,29 +130,6 @@ module unified_buffer #(
     
     // activation derivative read state machine
     read_write_state_t rd_H_state, rd_H_state_next;
-
-
-    // combinational logic for write state machine
-    // always_comb begin
-    //     case (wr_state)
-    //         READ_IDLE: begin
-    //             if (ub_wr_addr_valid_in) begin
-    //                 wr_state_next = READ_ACTIVE;
-    //             end else begin
-    //                 wr_state_next = READ_IDLE;
-    //             end
-    //         end
-
-    //         READ_ACTIVE: begin
-    //             if (wr_num_locations_left <= 1) begin
-    //                 wr_state_next = READ_IDLE;
-    //             end else begin
-    //                 wr_state_next = READ_ACTIVE;
-    //             end
-    //         end
-    //     endcase
-
-    // end
 
 
     // combinational logic for read state machine
@@ -300,6 +259,10 @@ module unified_buffer #(
 
     // sequential logic
     always @(posedge clk or posedge rst) begin
+
+        for (int i = 0; i < 15; i++) begin
+            $dumpvars(0, ub_memory[i]);
+        end
 
         if (rst) begin
             // reset all registers
@@ -509,7 +472,7 @@ module unified_buffer #(
                         ub_rd_weight_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        rd_weight_ptr                <= ub_rd_weight_addr_in + 1;
+                        rd_weight_ptr                <= ub_rd_weight_addr_in - 1;
                         rd_weight_num_locations_left <= ub_rd_weight_loc_in - 1;
                     end else begin
                         ub_rd_weight_valid_1_out        <= 1'b0;
@@ -520,14 +483,14 @@ module unified_buffer #(
                 READ_ACTIVE: begin
                     if (rd_weight_num_locations_left > 1) begin 
                         // read two more locations (no transpose)
-                        ub_rd_weight_data_1_out         <= ub_memory[rd_weight_ptr + 1];
+                        ub_rd_weight_data_1_out         <= ub_memory[rd_weight_ptr - 1];
                         ub_rd_weight_data_2_out         <= ub_memory[rd_weight_ptr];
 
                         ub_rd_weight_valid_1_out        <= 1'b1;
                         ub_rd_weight_valid_2_out        <= 1'b1;
         
                         // update pointers
-                        rd_weight_ptr                <= rd_weight_ptr + 2;
+                        rd_weight_ptr                <= rd_weight_ptr - 2;
                         rd_weight_num_locations_left <= rd_weight_num_locations_left - 2;
                         
                     end else if (rd_weight_num_locations_left == 1) begin
@@ -665,13 +628,24 @@ module unified_buffer #(
             
             // writing INTO unified buffer logic (can run concurrently with reading)
 
-           
-
-            if (ub_wr_valid_data_in_1 && ub_wr_valid_data_in_2) begin
+            if (ub_wr_host_valid_in_1 && ub_wr_host_valid_in_2) begin
+                // write both data inputs
+                ub_memory[wr_ptr+1]     <= ub_wr_host_data_in_1;
+                ub_memory[wr_ptr]       <= ub_wr_host_data_in_2;
+                wr_ptr                  <= wr_ptr + 2;
+            end else if (ub_wr_host_valid_in_1) begin
+                // write only first data input
+                ub_memory[wr_ptr]     <= ub_wr_host_data_in_1;
+                wr_ptr                <= wr_ptr + 1;
+            end else if (ub_wr_host_valid_in_2) begin
+                // write only second data input
+                ub_memory[wr_ptr]     <= ub_wr_host_data_in_2;
+                wr_ptr                <= wr_ptr + 1;
+            end else if (ub_wr_valid_data_in_1 && ub_wr_valid_data_in_2) begin
                 // write both data inputs
                 ub_memory[wr_ptr+1]     <= ub_wr_data_in_1;
-                ub_memory[wr_ptr] <= ub_wr_data_in_2;
-                wr_ptr                <= wr_ptr + 2;
+                ub_memory[wr_ptr]       <= ub_wr_data_in_2;
+                wr_ptr                  <= wr_ptr + 2;
                 
             end else if (ub_wr_valid_data_in_1) begin
                 // write only first data input

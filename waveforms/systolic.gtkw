@@ -1,0 +1,79 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Thu Aug  7 12:43:18 2025
+[*]
+[dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/systolic.vcd"
+[dumpfile_mtime] "Thu Aug  7 12:23:55 2025"
+[dumpfile_size] 25396
+[savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/systolic.gtkw"
+[timestart] 0
+[size] 1942 888
+[pos] 181 529
+*-15.000000 94200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] systolic.
+[sst_width] 276
+[signals_width] 230
+[sst_expanded] 1
+[sst_vpaned_height] 258
+@28
+systolic.clk
+systolic.rst
+@40000420
+[fpshift_count] 8
+systolic.sys_weight_in_11[15:0]
+[fpshift_count] 8
+systolic.sys_accept_w_1
+[fpshift_count] 8
+systolic.sys_weight_in_12[15:0]
+[fpshift_count] 8
+systolic.sys_accept_w_2
+@200
+-
+@40000420
+[fpshift_count] 8
+systolic.sys_data_in_11[15:0]
+[fpshift_count] 8
+systolic.sys_start_1
+[fpshift_count] 8
+systolic.sys_data_in_21[15:0]
+[fpshift_count] 8
+systolic.sys_start_2
+@200
+-
+@40000420
+[fpshift_count] 8
+systolic.sys_switch_in
+@200
+-
+@40000420
+[fpshift_count] 8
+systolic.sys_data_out_21[15:0]
+[fpshift_count] 8
+systolic.sys_data_out_22[15:0]
+[fpshift_count] 8
+systolic.sys_valid_out_21
+[fpshift_count] 8
+systolic.sys_valid_out_22
+@200
+-
+@40000420
+[fpshift_count] 8
+systolic.pe11.weight_reg_inactive[15:0]
+[fpshift_count] 8
+systolic.pe11.weight_reg_active[15:0]
+[fpshift_count] 8
+systolic.pe12.weight_reg_inactive[15:0]
+[fpshift_count] 8
+systolic.pe12.weight_reg_active[15:0]
+[fpshift_count] 8
+systolic.pe21.weight_reg_inactive[15:0]
+[fpshift_count] 8
+systolic.pe21.weight_reg_active[15:0]
+[fpshift_count] 8
+systolic.pe22.weight_reg_inactive[15:0]
+[fpshift_count] 8
+systolic.pe22.weight_reg_active[15:0]
+@200
+-
+[pattern_trace] 1
+[pattern_trace] 0
