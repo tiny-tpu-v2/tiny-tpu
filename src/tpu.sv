@@ -22,6 +22,7 @@ module tpu (
     input logic [5:0] ub_rd_input_addr_in,
     input logic [5:0] ub_rd_input_loc_in,
 
+    input logic ub_rd_weight_transpose,
     input logic ub_rd_weight_start_in,
     input logic [5:0] ub_rd_weight_addr_in,
     input logic [5:0] ub_rd_weight_loc_in,
@@ -86,6 +87,7 @@ unified_buffer unified_buffer_inst (
 
     // for top input of systolic array
     .ub_rd_weight_start_in(ub_rd_weight_start_in),
+    .ub_rd_weight_transpose(ub_rd_weight_transpose),
     .ub_rd_weight_addr_in(ub_rd_weight_addr_in),
     .ub_rd_weight_loc_in(ub_rd_weight_loc_in),
 

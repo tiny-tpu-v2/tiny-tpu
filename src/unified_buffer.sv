@@ -38,7 +38,8 @@ module unified_buffer #(
     output logic        ub_rd_input_valid_1_out,
     output logic        ub_rd_input_valid_2_out,
 
-    // read interface for weights (W^T or H aka top inputs) from UB to systolic array
+    // read interface for weights (W^T, W or H aka top inputs) from UB to systolic array
+    input  logic        ub_rd_weight_transpose,
     input  logic        ub_rd_weight_start_in,
     input  logic [5:0]  ub_rd_weight_addr_in,
     input  logic [5:0]  ub_rd_weight_loc_in,
@@ -101,6 +102,7 @@ module unified_buffer #(
     // pointers and counters for activation (read only)
     logic [5:0] rd_weight_ptr;
     logic [5:0] rd_weight_num_locations_left;
+    logic rd_weight_transpose;
 
     // pointers and counters for loss (read only)
     logic [5:0] rd_Y_ptr;
@@ -188,6 +190,7 @@ module unified_buffer #(
             READ_IDLE: begin
                 if (ub_rd_weight_start_in) begin
                     rd_weight_state_next = READ_ACTIVE;
+                    rd_weight_transpose = ub_rd_weight_transpose;
                 end else begin
                     rd_weight_state_next = READ_IDLE;
                 end
@@ -472,7 +475,11 @@ module unified_buffer #(
                         ub_rd_weight_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        rd_weight_ptr                <= ub_rd_weight_addr_in - 1;
+                        if (rd_weight_transpose) begin // if transpose 
+                            rd_weight_ptr                <= ub_rd_weight_addr_in + 2;
+                        end else begin // if not transpose 
+                            rd_weight_ptr                <= ub_rd_weight_addr_in + 1;
+                        end // this rule applies for both transpose and non-tranpose 
                         rd_weight_num_locations_left <= ub_rd_weight_loc_in - 1;
                     end else begin
                         ub_rd_weight_valid_1_out        <= 1'b0;
@@ -480,33 +487,25 @@ module unified_buffer #(
                     end
                 end
                 
-                READ_ACTIVE: begin
+                READ_ACTIVE: begin 
                     if (rd_weight_num_locations_left > 1) begin 
-                        // read two more locations (no transpose)
-                        ub_rd_weight_data_1_out         <= ub_memory[rd_weight_ptr - 1];
-                        ub_rd_weight_data_2_out         <= ub_memory[rd_weight_ptr];
-
+                        ub_rd_weight_data_1_out <= ub_memory[rd_weight_ptr - 3];
+                        ub_rd_weight_data_2_out <= ub_memory[rd_weight_ptr];
                         ub_rd_weight_valid_1_out        <= 1'b1;
                         ub_rd_weight_valid_2_out        <= 1'b1;
-        
-                        // update pointers
-                        rd_weight_ptr                <= rd_weight_ptr - 2;
+
+                        if (rd_weight_transpose) begin // if transpose 
+                            rd_weight_ptr                <= rd_weight_ptr + 2;
+                        end else begin // if no transpose
+                            rd_weight_ptr                <= rd_weight_ptr + 1;
+                        end// this rule applies for both tranpose and non-transpose
                         rd_weight_num_locations_left <= rd_weight_num_locations_left - 2;
-                        
+
                     end else if (rd_weight_num_locations_left == 1) begin
-                        // read last single location
-                        ub_rd_weight_data_1_out         <= '0;
-                        ub_rd_weight_data_2_out         <= ub_memory[rd_weight_ptr];
+                        ub_rd_weight_data_1_out         <= 0;
+                        ub_rd_weight_data_2_out         <= ub_memory[rd_weight_ptr - 3];
                         ub_rd_weight_valid_1_out        <= 1'b0;
                         ub_rd_weight_valid_2_out        <= 1'b1;
-                         
-                        // clear counters
-                        rd_weight_num_locations_left <= '0;
-                        
-                    end else begin
-                        // no more data to read
-                        ub_rd_weight_valid_1_out        <= 1'b0;
-                        ub_rd_weight_valid_2_out        <= 1'b0;
                     end
                 end
                 

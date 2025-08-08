@@ -20,7 +20,6 @@ W1 = np.array([
     [0.2985, -0.5792], 
     [0.0913, 0.4234]
 ])
-W1 = W1.T
 
 # Calculating X @ W1^T (Z1 pre bias)
 # Expected output:
@@ -95,7 +94,8 @@ async def test_tpu(dut):
 
     # Load W1 into systolic array (reading W1 from UB)
     dut.ub_rd_weight_start_in.value = 1
-    dut.ub_rd_weight_addr_in.value = 11
+    dut.ub_rd_weight_transpose = 1
+    dut.ub_rd_weight_addr_in.value = 9
     dut.ub_rd_weight_loc_in.value = 4
     await RisingEdge(dut.clk)
 
@@ -103,7 +103,6 @@ async def test_tpu(dut):
     dut.ub_rd_weight_addr_in.value = 0
     dut.ub_rd_weight_loc_in.value = 0
     await RisingEdge(dut.clk)
-
 
     dut.ub_rd_input_start_in.value = 1
     dut.ub_rd_input_addr_in.value = 0
@@ -116,9 +115,6 @@ async def test_tpu(dut):
 
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
-
-
-
 
     await ClockCycles(dut.clk, 10)
 
