@@ -20,6 +20,7 @@ module bias_child (
         .inb(bias_scalar_in),
         .out(z_pre_activation)
     );
+    // TODO: we only switch bias values for EACH layer!!!! maybe change logic herer
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
