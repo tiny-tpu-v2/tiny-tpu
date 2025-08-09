@@ -1,20 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Sat Aug  9 00:30:48 2025
+[*] Sat Aug  9 00:48:20 2025
 [*]
 [dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/tpu.vcd"
-[dumpfile_mtime] "Sat Aug  9 00:28:53 2025"
-[dumpfile_size] 73734
+[dumpfile_mtime] "Sat Aug  9 00:48:12 2025"
+[dumpfile_size] 74070
 [savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/tpu.gtkw"
-[timestart] 0
-[size] 1769 701
+[timestart] 51700
+[size] 1825 902
 [pos] 415 92
-*-15.000000 190300 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.000000 150000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tpu.
+[treeopen] tpu.vpu_inst.
 [sst_width] 276
 [signals_width] 262
 [sst_expanded] 1
-[sst_vpaned_height] 196
+[sst_vpaned_height] 267
 @28
 tpu.clk
 tpu.rst
@@ -85,10 +86,10 @@ tpu.unified_buffer_inst.ub_rd_input_valid_2_out
 @40000420
 [fpshift_count] 8
 tpu.unified_buffer_inst.ub_rd_bias_start_in
-[fpshift_count] 8
+@24
 tpu.unified_buffer_inst.ub_rd_bias_addr_in[5:0]
-[fpshift_count] 8
 tpu.unified_buffer_inst.ub_rd_bias_loc_in[5:0]
+@40000420
 [fpshift_count] 8
 tpu.unified_buffer_inst.ub_rd_bias_data_1_out[15:0]
 [fpshift_count] 8

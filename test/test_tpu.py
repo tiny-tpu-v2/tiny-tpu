@@ -135,33 +135,17 @@ async def test_tpu(dut):
     dut.sys_switch_in.value = 1
     await RisingEdge(dut.clk)
 
-    dut.sys_switch_in.value = 0
-    await RisingEdge(dut.clk)
-
     # Read B1 from UB for 4 clock cycles
     dut.ub_rd_bias_start_in.value = 1
     dut.ub_rd_bias_addr_in.value = 12
-    dut.ub_rd_bias_loc_in.value = 2
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_bias_start_in.value = 1
-    dut.ub_rd_bias_addr_in.value = 12
-    dut.ub_rd_bias_loc_in.value = 2
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_bias_start_in.value = 1
-    dut.ub_rd_bias_addr_in.value = 12
-    dut.ub_rd_bias_loc_in.value = 2
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_bias_start_in.value = 1
-    dut.ub_rd_bias_addr_in.value = 12
-    dut.ub_rd_bias_loc_in.value = 2
+    dut.ub_rd_bias_loc_in.value = 4             # Batch size of 4
+    dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
     dut.ub_rd_bias_start_in.value = 0
     dut.ub_rd_bias_addr_in.value = 0
-    dut.ub_rd_bias_loc_in.value = 0
+    dut.ub_rd_bias_loc_in.value = 0             # Batch size of 4
+    dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
     await ClockCycles(dut.clk, 10)

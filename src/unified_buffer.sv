@@ -97,7 +97,8 @@ module unified_buffer #(
 
     // pointers and counters for bias (read only)
     logic [5:0] rd_bias_ptr;
-    logic [5:0] rd_bias_num_locations_left;
+    logic [5:0] rd_bias_num_output_left;
+    logic [5:0] rd_bias_address;
 
     // pointers and counters for activation (read only)
     logic [5:0] rd_weight_ptr;
@@ -118,11 +119,18 @@ module unified_buffer #(
         READ_IDLE    = 2'b00,
         READ_ACTIVE  = 2'b10
     } read_write_state_t;
+
+
+    typedef enum logic [1:0] {
+        FIRST_COL               = 2'b00,
+        FIRST_AND_SECOND_COL    = 2'b01,
+        SECOND_COL              = 2'b10
+    } bias_state_t;
     
     read_write_state_t rd_input_state, rd_input_state_next;
     
     // bias read state machine
-    read_write_state_t rd_bias_state, rd_bias_state_next;
+    bias_state_t rd_bias_state, rd_bias_state_next;
     
     // activation read state machine 
     read_write_state_t rd_weight_state, rd_weight_state_next;
@@ -159,27 +167,36 @@ module unified_buffer #(
         endcase
     end
 
-    // combinational logic for bias read state machine
+
+    //combinational logic for bias read state machine
     always_comb begin
         case (rd_bias_state)
-            READ_IDLE: begin
+            FIRST_COL: begin
                 if (ub_rd_bias_start_in) begin
-                    rd_bias_state_next = READ_ACTIVE;
+                    rd_bias_state_next = FIRST_AND_SECOND_COL;
                 end else begin
-                    rd_bias_state_next = READ_IDLE;
+                    rd_bias_state_next = FIRST_COL;
                 end
             end
             
-            READ_ACTIVE: begin
-                if (rd_bias_num_locations_left <= 1) begin 
-                    rd_bias_state_next = READ_IDLE;
+            FIRST_AND_SECOND_COL: begin
+                if (rd_bias_num_output_left <= 1) begin 
+                    rd_bias_state_next = SECOND_COL;
                 end else begin
-                    rd_bias_state_next = READ_ACTIVE;
+                    rd_bias_state_next = FIRST_AND_SECOND_COL;
+                end
+            end
+
+            SECOND_COL: begin
+                if (rd_bias_num_output_left <= 1) begin 
+                    rd_bias_state_next = FIRST_COL;
+                end else begin
+                    rd_bias_state_next = FIRST_AND_SECOND_COL;
                 end
             end
             
             default: begin
-                rd_bias_state_next = READ_IDLE;
+                rd_bias_state_next = FIRST_COL;
             end
         endcase
     end
@@ -276,7 +293,7 @@ module unified_buffer #(
             
             // reset bias pointers and state (read only)
             rd_bias_ptr                <= '0;
-            rd_bias_num_locations_left <= '0;
+            rd_bias_num_output_left <= '0;
             rd_bias_state            <= READ_IDLE;
             
             // reset activation pointers and state (read only)
@@ -411,8 +428,9 @@ module unified_buffer #(
             
             // bias reading logic
             case (rd_bias_state)
-                READ_IDLE: begin
+                FIRST_COL: begin
                     if (ub_rd_bias_start_in) begin
+                        rd_bias_address <=  ub_rd_bias_addr_in; // copy the address from the line below into a register so that we can "deassert" the address in waveform 1 clk cycle later
                         // first cycle of reading - output first one mem location (staggered)
                         ub_rd_bias_data_1_out         <= ub_memory[ub_rd_bias_addr_in];
                         ub_rd_bias_data_2_out         <= '0;
@@ -420,42 +438,33 @@ module unified_buffer #(
                         ub_rd_bias_valid_2_out        <= 1'b0;
                         
                         // update internal counters
-                        rd_bias_ptr                <= ub_rd_bias_addr_in + 1;
-                        rd_bias_num_locations_left <= ub_rd_bias_loc_in - 1;
-                    end else begin
+                        rd_bias_num_output_left <= ub_rd_bias_loc_in - 1;
+                        rd_bias_state <= FIRST_AND_SECOND_COL;
+                    end else begin // IDLE STATE (assuming ub_rd_bias_start_in is zero now)
                         ub_rd_bias_valid_1_out        <= 1'b0;
                         ub_rd_bias_valid_2_out        <= 1'b0;
                     end
                 end
-                
-                READ_ACTIVE: begin
-                    if (rd_bias_num_locations_left > 1) begin 
-                        // read two more locations (no transpose)
-                        ub_rd_bias_data_1_out         <= ub_memory[rd_bias_ptr + 1];
-                        ub_rd_bias_data_2_out         <= ub_memory[rd_bias_ptr];
 
+                FIRST_AND_SECOND_COL: begin 
+                    if (rd_bias_num_output_left > 1) begin
+                        ub_rd_bias_data_1_out         <= ub_memory[rd_bias_address];
+                        ub_rd_bias_data_2_out         <= ub_memory[rd_bias_address + 1];
                         ub_rd_bias_valid_1_out        <= 1'b1;
                         ub_rd_bias_valid_2_out        <= 1'b1;
-        
-                        // update pointers
-                        rd_bias_ptr                <= rd_bias_ptr + 2;
-                        rd_bias_num_locations_left <= rd_bias_num_locations_left - 2;
-                        
-                    end else if (rd_bias_num_locations_left == 1) begin
-                        // read last single location
-                        ub_rd_bias_data_1_out         <= '0;
-                        ub_rd_bias_data_2_out         <= ub_memory[rd_bias_ptr];
-                        ub_rd_bias_valid_1_out        <= 1'b0;
-                        ub_rd_bias_valid_2_out        <= 1'b1;
-                         
-                        // clear counters
-                        rd_bias_num_locations_left <= '0;
-                        
+
+                        rd_bias_num_output_left <= rd_bias_num_output_left - 1;
                     end else begin
-                        // no more data to read
-                        ub_rd_bias_valid_1_out        <= 1'b0;
-                        ub_rd_bias_valid_2_out        <= 1'b0;
+                        rd_bias_state <= SECOND_COL;
                     end
+                end
+                
+                SECOND_COL: begin
+                    ub_rd_bias_data_1_out         <= '0; 
+                    ub_rd_bias_data_2_out         <= ub_memory[rd_bias_address + 1]; // read last element of bias vector/matrix
+                    ub_rd_bias_valid_1_out        <= 1'b0;
+                    ub_rd_bias_valid_2_out        <= 1'b1;
+                    rd_bias_state <= FIRST_COL;
                 end
                 
                 default: begin
