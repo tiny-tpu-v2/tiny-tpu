@@ -33,7 +33,8 @@ SOURCES = src/pe.sv \
           src/vpu.sv \
           src/loss_parent.sv \
 		  src/loss_child.sv \
-		  src/tpu.sv
+		  src/tpu.sv \
+		  src/gradient_descent.sv
 
 # MODIFY 1) variable next to -s 
 # MODIFY 2) variable next to $(SOURCES)
@@ -160,6 +161,12 @@ test_tpu: $(SIM_BUILD_DIR)
 	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_tpu $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
 	! grep failure results.xml
 	mv tpu.vcd waveforms/ 2>/dev/null || true
+
+test_gradient_descent: $(SIM_BUILD_DIR)
+	$(IVERILOG) -o $(SIM_VVP) -s gradient_descent -s dump -g2012 $(SOURCES) test/dump_gradient_descent.sv
+	PYTHONOPTIMIZE=$(NOASSERT) MODULE=test_gradient_descent $(VVP) -M $(COCOTB_LIBS) -m libcocotbvpi_icarus $(SIM_VVP)
+	! grep failure results.xml
+	mv gradient_descent.vcd waveforms/ 2>/dev/null || true
 
 
 # ============ DO NOT MODIFY BELOW THIS LINE ==============

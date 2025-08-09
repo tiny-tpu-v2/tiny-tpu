@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Aug  9 14:12:12 2025
+[*]
+[dumpfile] "/Users/suryasure/projects/apex/waveforms/gradient_descent.vcd"
+[dumpfile_mtime] "Sat Aug  9 14:10:20 2025"
+[dumpfile_size] 815
+[savefile] "/Users/suryasure/projects/apex/waveforms/gradient_descent.gtkw"
+[timestart] 0
+[size] 1344 600
+[pos] -1 -1
+*-14.100000 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[sst_width] 255
+[signals_width] 202
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@40000421
+[fpshift_count] 8
+gradient_descent.clk
+[fpshift_count] 8
+gradient_descent.rst
+[fpshift_count] 8
+gradient_descent.W_old_in[15:0]
+[fpshift_count] 8
+gradient_descent.W_updated_out[15:0]
+[fpshift_count] 8
+gradient_descent.grad_descent_start_in
+[fpshift_count] 8
+gradient_descent.grad_descent_done_out
+[fpshift_count] 8
+gradient_descent.lr_in[15:0]
+[pattern_trace] 1
+[pattern_trace] 0
