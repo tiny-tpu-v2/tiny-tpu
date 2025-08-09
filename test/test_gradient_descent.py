@@ -15,8 +15,6 @@ def from_fixed(val, frac_bits=FRAC_BITS):
         val -= 1 << 16
     return float(val) / (1 << frac_bits)
 
-def compute_gradient_descent(old_weight, gradient, lr):
-    return old_weight - lr * gradient
 
 @cocotb.test()
 async def test_gradient_descent(dut):
@@ -24,11 +22,17 @@ async def test_gradient_descent(dut):
     cocotb.start_soon(clock.start())
     
 
-    old_weights = [5.8, 2.7, 3.5, 4.8]
-    gradients = [0.12, 0.91, 0.23, 0.11]
+    old_weights =[
+    [5.8, 2.7],
+    [3.5, 4.8]]
+
+    gradients = [
+    [0.12, 0.91],
+    [0.23, 0.11]
+    ]
 
     # learning rate
-    lr = to_fixed(0.01)
+    lr = to_fixed(0.1)
 
     # Reset
     dut.rst.value = 1
@@ -43,8 +47,8 @@ async def test_gradient_descent(dut):
     await RisingEdge(dut.clk)
 
     dut.lr_in.value = lr
-    dut.W_old_in.value = to_fixed(old_weights[0])
-    dut.grad_in.value = to_fixed(gradients[0])
+    dut.W_old_in.value = to_fixed(old_weights[0][0])
+    dut.grad_in.value = to_fixed(gradients[0][0])
     dut.grad_descent_start_in.value = 1
 
     # await RisingEdge(dut.clk)
@@ -55,8 +59,8 @@ async def test_gradient_descent(dut):
 
     await RisingEdge(dut.clk)
     dut.grad_descent_start_in.value = 1
-    dut.W_old_in.value = to_fixed(old_weights[1])
-    dut.grad_in.value = to_fixed(gradients[1])
+    dut.W_old_in.value = to_fixed(old_weights[0][1])
+    dut.grad_in.value = to_fixed(gradients[0][1])
 
     # await RisingEdge(dut.clk)
     # dut.grad_descent_start_in.value = 0
@@ -66,8 +70,8 @@ async def test_gradient_descent(dut):
 
     await RisingEdge(dut.clk)
     dut.grad_descent_start_in.value = 1
-    dut.W_old_in.value = to_fixed(old_weights[2])
-    dut.grad_in.value = to_fixed(gradients[2])
+    dut.W_old_in.value = to_fixed(old_weights[1][0])
+    dut.grad_in.value = to_fixed(gradients[1][0])
 
     # await RisingEdge(dut.clk)
     # dut.grad_descent_start_in.value = 0
@@ -77,8 +81,8 @@ async def test_gradient_descent(dut):
 
     await RisingEdge(dut.clk)
     dut.grad_descent_start_in.value = 1
-    dut.W_old_in.value = to_fixed(old_weights[3])
-    dut.grad_in.value = to_fixed(gradients[3])
+    dut.W_old_in.value = to_fixed(old_weights[1][1])
+    dut.grad_in.value = to_fixed(gradients[1][1])
 
     # await RisingEdge(dut.clk)
     # dut.grad_descent_start_in.value = 0
@@ -91,6 +95,3 @@ async def test_gradient_descent(dut):
 
     await ClockCycles(dut.clk, 10)
 
-    for i in range(len(old_weights)):
-        print(compute_gradient_descent(old_weights[i], gradients[i], lr))
-    

@@ -22,13 +22,31 @@ module gradient_descent (
     output logic grad_descent_done_out
 );
 
+logic [15:0] mul_out;
+logic [15:0] W_updated_reg;
+
+fxp_mul mul_inst (
+    .ina(grad_in),
+    .inb(lr_in),
+    .out(mul_out),
+    .overflow()
+);
+
+fxp_addsub sub_inst (
+    .ina(W_old_in),
+    .inb(mul_out),
+    .sub(1'b1),
+    .out(W_updated_reg),
+    .overflow()
+);
+
 always @(posedge clk or posedge rst) begin
     if (rst) begin
         W_updated_out <= 16'b0;
         grad_descent_done_out <= 0;
     end else begin
         if (grad_descent_start_in) begin
-            W_updated_out <= W_old_in - lr_in * grad_in;
+            W_updated_out <= W_updated_reg;
             grad_descent_done_out <= 1;
         end else begin
             grad_descent_done_out <= 0;
