@@ -1,12 +1,12 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Sat Aug  9 17:16:55 2025
+[*] Sat Aug  9 18:25:10 2025
 [*]
 [dumpfile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.vcd"
-[dumpfile_mtime] "Sat Aug  9 17:11:25 2025"
-[dumpfile_size] 18899
+[dumpfile_mtime] "Sat Aug  9 18:24:41 2025"
+[dumpfile_size] 18768
 [savefile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.gtkw"
-[timestart] 653900
+[timestart] 664100
 [size] 1504 816
 [pos] 0 73
 *-14.900000 750200 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -44,7 +44,7 @@
 @40000024
 [fpshift_count] 8
 unified_buffer.\ub_memory[0][15:0]
-@40000421
+@40000420
 [fpshift_count] 8
 unified_buffer.\ub_memory[1][15:0]
 @40000024
@@ -141,6 +141,9 @@ unified_buffer.rd_weight_ptr[5:0]
 @40000420
 [fpshift_count] 8
 unified_buffer.gradient_descent_inst.rst
+@28
+unified_buffer.gradient_descent_inst.grad_descent_valid_in
+@40000420
 [fpshift_count] 8
 unified_buffer.gradient_descent_inst.lr_in[15:0]
 [fpshift_count] 8
