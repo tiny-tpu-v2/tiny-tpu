@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Fri Aug  8 05:24:07 2025
+[*] Sat Aug  9 17:16:55 2025
 [*]
-[dumpfile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/unified_buffer.vcd"
-[dumpfile_mtime] "Fri Aug  8 05:20:54 2025"
-[dumpfile_size] 7262
-[savefile] "/Users/evanlin/Desktop/tinytpuv2/waveforms/unified_buffer.gtkw"
-[timestart] 207900
-[size] 1499 816
+[dumpfile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.vcd"
+[dumpfile_mtime] "Sat Aug  9 17:11:25 2025"
+[dumpfile_size] 18899
+[savefile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.gtkw"
+[timestart] 653900
+[size] 1504 816
 [pos] 0 73
-*-14.600000 226500 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+*-14.900000 750200 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -44,8 +44,10 @@
 @40000024
 [fpshift_count] 8
 unified_buffer.\ub_memory[0][15:0]
+@40000421
 [fpshift_count] 8
 unified_buffer.\ub_memory[1][15:0]
+@40000024
 [fpshift_count] 8
 unified_buffer.\ub_memory[2][15:0]
 [fpshift_count] 8
@@ -117,7 +119,7 @@ unified_buffer.ub_rd_input_data_2_out[15:0]
 @28
 unified_buffer.ub_rd_input_valid_1_out
 unified_buffer.ub_rd_input_valid_2_out
-@201
+@200
 -
 @28
 unified_buffer.ub_rd_weight_transpose
@@ -135,6 +137,28 @@ unified_buffer.ub_rd_weight_valid_2_out
 unified_buffer.rd_weight_ptr[5:0]
 @200
 -
+-gradient descent
+@40000420
+[fpshift_count] 8
+unified_buffer.gradient_descent_inst.rst
+[fpshift_count] 8
+unified_buffer.gradient_descent_inst.lr_in[15:0]
+[fpshift_count] 8
+unified_buffer.gradient_descent_inst.W_old_in[15:0]
+[fpshift_count] 8
+unified_buffer.gradient_descent_inst.grad_in[15:0]
+[fpshift_count] 8
+unified_buffer.gradient_descent_inst.W_updated_out[15:0]
+[fpshift_count] 8
+unified_buffer.gradient_descent_inst.grad_descent_done_out
+@200
 -
+-
+@28
+unified_buffer.wr_grad_descent_done_out
+@22
+unified_buffer.wr_grad_descent_w_updated_data_out[15:0]
+unified_buffer.ub_grad_descent_w_old_addr_in[5:0]
+unified_buffer.rd_grad_descent_w_old_ptr[5:0]
 [pattern_trace] 1
 [pattern_trace] 0
