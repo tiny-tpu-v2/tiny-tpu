@@ -23,20 +23,21 @@ async def test_gradient_descent(dut):
     
 
     old_weights =[
-    [5.8, 2.7],
-    [3.5, 4.8]]
+        [0.2985, -0.5792],
+        [0.0913, 0.4234]
+        ]
 
     gradients = [
-    [0.12, 0.91],
-    [0.23, 0.11]
-    ]
+        [0.0405, 0.023], 
+        [0.0455, 0.0258]
+        ]
 
     # learning rate
-    lr = to_fixed(0.1)
+    lr = to_fixed(0.75)
 
     # Reset
     dut.rst.value = 1
-    dut.grad_descent_start_in.value = 0
+    dut.grad_descent_valid_in.value = 0
     dut.lr_in.value = 0
     dut.W_old_in.value = 0
     dut.grad_in.value = 0
@@ -49,49 +50,25 @@ async def test_gradient_descent(dut):
     dut.lr_in.value = lr
     dut.W_old_in.value = to_fixed(old_weights[0][0])
     dut.grad_in.value = to_fixed(gradients[0][0])
-    dut.grad_descent_start_in.value = 1
-
-    # await RisingEdge(dut.clk)
-    # dut.grad_descent_start_in.value = 0
-
-    # assert dut.W_updated_out.value == compute_gradient_descent(old_weights[0], gradients[0], lr)
-    # assert dut.grad_descent_done_out.value == 1
+    dut.grad_descent_valid_in.value = 1
 
     await RisingEdge(dut.clk)
-    dut.grad_descent_start_in.value = 1
+    dut.grad_descent_valid_in.value = 1
     dut.W_old_in.value = to_fixed(old_weights[0][1])
     dut.grad_in.value = to_fixed(gradients[0][1])
 
-    # await RisingEdge(dut.clk)
-    # dut.grad_descent_start_in.value = 0
-
-    # assert dut.W_updated_out.value == compute_gradient_descent(old_weights[1], gradients[1], lr)
-    # assert dut.grad_descent_done_out.value == 1
-
     await RisingEdge(dut.clk)
-    dut.grad_descent_start_in.value = 1
+    dut.grad_descent_valid_in.value = 1
     dut.W_old_in.value = to_fixed(old_weights[1][0])
     dut.grad_in.value = to_fixed(gradients[1][0])
 
-    # await RisingEdge(dut.clk)
-    # dut.grad_descent_start_in.value = 0
-
-    # assert dut.W_updated_out.value == compute_gradient_descent(old_weights[2], gradients[2], lr)
-    # assert dut.grad_descent_done_out.value == 1
-
     await RisingEdge(dut.clk)
-    dut.grad_descent_start_in.value = 1
+    dut.grad_descent_valid_in.value = 1
     dut.W_old_in.value = to_fixed(old_weights[1][1])
     dut.grad_in.value = to_fixed(gradients[1][1])
 
-    # await RisingEdge(dut.clk)
-    # dut.grad_descent_start_in.value = 0
-
-    # assert dut.W_updated_out.value == compute_gradient_descent(old_weights[3], gradients[3], lr)
-    # assert dut.grad_descent_done_out.value == 1
-
     await RisingEdge(dut.clk)
-    dut.grad_descent_start_in.value = 0
+    dut.grad_descent_valid_in.value = 0
 
     await ClockCycles(dut.clk, 10)
 

@@ -15,7 +15,7 @@ module gradient_descent (
     input logic [15:0] grad_in,
 
     // start signal
-    input logic grad_descent_start_in,
+    input logic grad_descent_valid_in,
 
     // updated weight and done signal
     output logic [15:0] W_updated_out,
@@ -45,7 +45,7 @@ always @(posedge clk or posedge rst) begin
         W_updated_out <= 16'b0;
         grad_descent_done_out <= 0;
     end else begin
-        if (grad_descent_start_in) begin
+        if (grad_descent_valid_in) begin
             W_updated_out <= W_updated_reg;
             grad_descent_done_out <= 1;
         end else begin

@@ -81,7 +81,13 @@ module unified_buffer #(
     output logic [15:0] ub_rd_H_data_1_out,
     output logic [15:0] ub_rd_H_data_2_out,
     output logic        ub_rd_H_valid_1_out,
-    output logic        ub_rd_H_valid_2_out
+    output logic        ub_rd_H_valid_2_out,
+
+    input logic ub_grad_descent_start_in, // start gradient descent
+    input logic [15:0] ub_grad_descent_lr_in, // learning rate
+    input logic [5:0] ub_grad_descent_w_old_addr_in, // starting location of W_old
+    input logic [5:0] ub_grad_descent_grad_addr_in, // starting location of gradients
+    input logic [5:0] ub_grad_descent_loc_in // size of W and gradient matrices (they will be the same size)
 );
 
     // internal memory array
@@ -113,6 +119,34 @@ module unified_buffer #(
     logic [5:0] rd_H_ptr;
     logic [5:0] rd_H_num_locations_left;
 
+    // updated weights from gradient descent
+    logic [15:0] rd_grad_descent_w_old_data_out;
+    logic [15:0] rd_grad_descent_grad_data_out;
+
+    // pointers and counters for gradient descent (read only)
+    logic [5:0] rd_grad_descent_w_old_ptr;
+    logic [5:0] rd_grad_descent_grad_ptr;
+    logic [5:0] rd_grad_descent_num_locations_left;
+
+    logic [15:0] wr_grad_descent_w_updated_data_out;
+    logic wr_grad_descent_done_out;
+
+    logic [5:0] wr_grad_descent_weight_update_ptr; // pointer to the weight that is being updated
+
+    logic ub_grad_descent_valid_in; // valid signal for gradient descent (needs to be delayed by 1 cycle from the start signal)
+
+
+    gradient_descent gradient_descent_inst(
+        .clk(clk),
+        .rst(rst),
+        .lr_in(ub_grad_descent_lr_in),
+        .grad_descent_valid_in(ub_grad_descent_valid_in),
+        .W_old_in(rd_grad_descent_w_old_data_out),
+        .grad_in(rd_grad_descent_grad_data_out),
+        .W_updated_out(wr_grad_descent_w_updated_data_out),
+        .grad_descent_done_out(wr_grad_descent_done_out)
+    );
+
     
     // read state machine
     typedef enum logic [1:0] {
@@ -140,6 +174,9 @@ module unified_buffer #(
     
     // activation derivative read state machine
     read_write_state_t rd_H_state, rd_H_state_next;
+
+    // gradient descent read state machine
+    read_write_state_t rd_grad_descent_state, rd_grad_descent_state_next;
 
 
     // combinational logic for read state machine
@@ -277,6 +314,31 @@ module unified_buffer #(
         endcase
     end
 
+    // combinational logic for gradient descent read state machine
+    always_comb begin
+        case (rd_grad_descent_state)
+            READ_IDLE: begin
+                if (ub_grad_descent_start_in) begin
+                    rd_grad_descent_state_next = READ_ACTIVE;
+                end else begin
+                    rd_grad_descent_state_next = READ_IDLE;
+                end
+            end
+
+            READ_ACTIVE: begin
+                if (rd_grad_descent_num_locations_left <= 1) begin 
+                    rd_grad_descent_state_next = READ_IDLE;
+                end else begin
+                    rd_grad_descent_state_next = READ_ACTIVE;
+                end
+            end
+
+            default: begin
+                rd_grad_descent_state_next = READ_IDLE;
+            end
+        endcase
+    end
+
     // sequential logic
     always @(posedge clk or posedge rst) begin
 
@@ -310,6 +372,11 @@ module unified_buffer #(
             rd_H_ptr                <= '0;
             rd_H_num_locations_left <= '0;
             rd_H_state            <= READ_IDLE;
+
+            // reset gradient descent pointers and state (read only)
+            rd_grad_descent_w_old_ptr                <= '0;
+            rd_grad_descent_grad_ptr                <= '0;
+            rd_grad_descent_num_locations_left <= '0;
             
             // clear output registers
             ub_rd_input_data_1_out         <= '0;
@@ -340,7 +407,13 @@ module unified_buffer #(
             ub_rd_H_data_2_out    <= '0;
             ub_rd_H_valid_1_out   <= '0;
             ub_rd_H_valid_2_out   <= '0;
-            
+
+            // clear gradient descent output registers
+            // didn't add ub in the signal names because it's not a unified buffer output
+            rd_grad_descent_w_old_data_out <= '0;
+            rd_grad_descent_grad_data_out <= '0;
+            wr_grad_descent_weight_update_ptr <= '0;
+
             // clear memory array
             for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
                 ub_memory[i] <= '0;
@@ -354,7 +427,7 @@ module unified_buffer #(
             rd_weight_state <= rd_weight_state_next;
             rd_Y_state <= rd_Y_state_next;
             rd_H_state <= rd_H_state_next;
-            
+            rd_grad_descent_state <= rd_grad_descent_state_next;
             // reading logic
             case (rd_input_state)
                 READ_IDLE: begin
@@ -633,6 +706,47 @@ module unified_buffer #(
                     ub_rd_H_valid_2_out            <= 1'b0;
                 end
             endcase
+
+            // gradient descent reading logic
+            case (rd_grad_descent_state)
+                READ_IDLE: begin
+                    if (ub_grad_descent_start_in) begin
+                        rd_grad_descent_w_old_data_out <= ub_memory[ub_grad_descent_w_old_addr_in];
+                        rd_grad_descent_grad_data_out <= ub_memory[ub_grad_descent_grad_addr_in];
+                        rd_grad_descent_w_old_ptr <= ub_grad_descent_w_old_addr_in + 1;
+                        rd_grad_descent_grad_ptr <= ub_grad_descent_grad_addr_in + 1;
+                        rd_grad_descent_num_locations_left <= ub_grad_descent_loc_in - 1;
+                    end
+                end
+
+                READ_ACTIVE: begin
+                    if (rd_grad_descent_num_locations_left >= 1) begin
+                        rd_grad_descent_w_old_data_out <= ub_memory[rd_grad_descent_w_old_ptr];
+                        rd_grad_descent_grad_data_out <= ub_memory[rd_grad_descent_grad_ptr];
+                        rd_grad_descent_w_old_ptr <= rd_grad_descent_w_old_ptr + 1;
+                        rd_grad_descent_grad_ptr <= rd_grad_descent_grad_ptr + 1;
+                        rd_grad_descent_num_locations_left <= rd_grad_descent_num_locations_left - 1;
+                    end
+                end
+            endcase
+
+            // weight update logic
+            if (wr_grad_descent_done_out) begin
+                if (wr_grad_descent_weight_update_ptr == 0) begin
+                    ub_memory[ub_grad_descent_w_old_addr_in] <= wr_grad_descent_w_updated_data_out;
+                    wr_grad_descent_weight_update_ptr <= ub_grad_descent_w_old_addr_in + 1;
+                end else begin
+                    ub_memory[wr_grad_descent_weight_update_ptr] <= wr_grad_descent_w_updated_data_out;
+                    wr_grad_descent_weight_update_ptr <= wr_grad_descent_weight_update_ptr + 1;
+                end
+            end
+
+            if (ub_grad_descent_start_in) begin
+                ub_grad_descent_valid_in <= 1;
+            end else begin
+                ub_grad_descent_valid_in <= 0;
+            end
+
             
             // writing INTO unified buffer logic (can run concurrently with reading)
 
