@@ -254,17 +254,27 @@ async def test_unified_buffer(dut):
     
     dut.ub_grad_descent_lr_in.value = to_fixed(lr)
     dut.ub_grad_descent_w_old_addr_in.value = 0
-    dut.ub_grad_descent_grad_addr_in.value = 4
     dut.ub_grad_descent_loc_in = 4
 
     await RisingEdge(dut.clk)
 
     dut.ub_grad_descent_start_in.value = 1
-    
-    await ClockCycles(dut.clk, 4)
 
-    # Testing reading W1 from gradient descent
+    await RisingEdge(dut.clk)
+
+    dut.ub_grad_descent_grad_data_in.value = to_fixed(W1_grad[0][0])
+    await RisingEdge(dut.clk)
+
+    dut.ub_grad_descent_grad_data_in.value = to_fixed(W1_grad[0][1])
+    await RisingEdge(dut.clk)
+    
+    dut.ub_grad_descent_grad_data_in.value = to_fixed(W1_grad[1][0])
+    await RisingEdge(dut.clk)
+
+    dut.ub_grad_descent_grad_data_in.value = to_fixed(W1_grad[1][1])
     dut.ub_grad_descent_start_in.value = 0
+    await RisingEdge(dut.clk)
+
 
     # Compute and print updated weights in fixed point format
     lr_fixed = to_fixed(lr)

@@ -86,7 +86,7 @@ module unified_buffer #(
     input logic ub_grad_descent_start_in, // start gradient descent
     input logic [15:0] ub_grad_descent_lr_in, // learning rate
     input logic [5:0] ub_grad_descent_w_old_addr_in, // starting location of W_old
-    input logic [5:0] ub_grad_descent_grad_addr_in, // starting location of gradients
+    input logic [5:0] ub_grad_descent_grad_data_in, // incoming gradient data
     input logic [5:0] ub_grad_descent_loc_in // size of W and gradient matrices (they will be the same size)
 );
 
@@ -121,11 +121,9 @@ module unified_buffer #(
 
     // updated weights from gradient descent
     logic [15:0] rd_grad_descent_w_old_data_out;
-    logic [15:0] rd_grad_descent_grad_data_out;
 
     // pointers and counters for gradient descent (read only)
     logic [5:0] rd_grad_descent_w_old_ptr;
-    logic [5:0] rd_grad_descent_grad_ptr;
     logic [5:0] rd_grad_descent_num_locations_left;
 
     logic [15:0] wr_grad_descent_w_updated_data_out;
@@ -142,7 +140,7 @@ module unified_buffer #(
         .lr_in(ub_grad_descent_lr_in),
         .grad_descent_valid_in(ub_grad_descent_valid_in),
         .W_old_in(rd_grad_descent_w_old_data_out),
-        .grad_in(rd_grad_descent_grad_data_out),
+        .grad_in(ub_grad_descent_grad_data_in),
         .W_updated_out(wr_grad_descent_w_updated_data_out),
         .grad_descent_done_out(wr_grad_descent_done_out)
     );
@@ -375,7 +373,6 @@ module unified_buffer #(
 
             // reset gradient descent pointers and state (read only)
             rd_grad_descent_w_old_ptr                <= '0;
-            rd_grad_descent_grad_ptr                <= '0;
             rd_grad_descent_num_locations_left <= '0;
             
             // clear output registers
@@ -411,7 +408,6 @@ module unified_buffer #(
             // clear gradient descent output registers
             // didn't add ub in the signal names because it's not a unified buffer output
             rd_grad_descent_w_old_data_out <= '0;
-            rd_grad_descent_grad_data_out <= '0;
             wr_grad_descent_weight_update_ptr <= '0;
 
             // clear memory array
@@ -712,9 +708,7 @@ module unified_buffer #(
                 READ_IDLE: begin
                     if (ub_grad_descent_start_in) begin
                         rd_grad_descent_w_old_data_out <= ub_memory[ub_grad_descent_w_old_addr_in];
-                        rd_grad_descent_grad_data_out <= ub_memory[ub_grad_descent_grad_addr_in];
                         rd_grad_descent_w_old_ptr <= ub_grad_descent_w_old_addr_in + 1;
-                        rd_grad_descent_grad_ptr <= ub_grad_descent_grad_addr_in + 1;
                         rd_grad_descent_num_locations_left <= ub_grad_descent_loc_in - 1;
                     end
                 end
@@ -722,9 +716,7 @@ module unified_buffer #(
                 READ_ACTIVE: begin
                     if (rd_grad_descent_num_locations_left >= 1) begin
                         rd_grad_descent_w_old_data_out <= ub_memory[rd_grad_descent_w_old_ptr];
-                        rd_grad_descent_grad_data_out <= ub_memory[rd_grad_descent_grad_ptr];
                         rd_grad_descent_w_old_ptr <= rd_grad_descent_w_old_ptr + 1;
-                        rd_grad_descent_grad_ptr <= rd_grad_descent_grad_ptr + 1;
                         rd_grad_descent_num_locations_left <= rd_grad_descent_num_locations_left - 1;
                     end
                 end
