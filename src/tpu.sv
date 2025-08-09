@@ -9,7 +9,7 @@ module tpu (
     input logic rst,
 
     // UB wires
-    input logic [15:0] ub_wr_addr_in,
+    input logic [5:0] ub_wr_addr_in,
     input logic ub_wr_addr_valid_in,
 
     input logic [15:0] ub_wr_host_data_in_1,
@@ -31,8 +31,10 @@ module tpu (
     input logic [5:0] ub_rd_bias_addr_in,
     input logic [5:0] ub_rd_bias_loc_in,
 
+    input logic [4:0] vpu_data_pathway,
+
     input logic sys_switch_in,
-    input logic vpu_leak_factor_in        // use an input port for now
+    input logic [15:0] vpu_leak_factor_in        // use an input port for now
 );
     // UB internal output wires
     logic [15:0] ub_rd_input_data_1_out;
@@ -111,8 +113,8 @@ unified_buffer unified_buffer_inst (
 
     .ub_rd_bias_data_1_out(ub_rd_bias_data_1_out),
     .ub_rd_bias_data_2_out(ub_rd_bias_data_2_out),
-    .ub_rd_bias_valid_1_out(ub_rd_bias_valid_1_out),
-    .ub_rd_bias_valid_2_out(ub_rd_bias_valid_2_out),
+    .ub_rd_bias_valid_1_out(),
+    .ub_rd_bias_valid_2_out(),
 
     .ub_rd_Y_start_in(),
     .ub_rd_Y_addr_in(),

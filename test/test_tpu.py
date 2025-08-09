@@ -24,8 +24,13 @@ W1 = np.array([
 # bias 1
 B1 = [-0.4939, 0.189]
 
-# Calculating H1
-# Expected output:
+# Expected output from systolic array (Z1 pre bias):
+# [-0.5614  1.0294]
+# [-0.5792  0.4234]
+# [ 0.2985  0.0913]
+# [-0.2807  0.5147]
+
+# Expected output from VPU (H1):
 # [-0.5277  1.2184]
 # [-0.5366  0.6124]
 # [-0.0977  0.2803]
@@ -55,6 +60,10 @@ async def test_tpu(dut):
     dut.ub_rd_weight_loc_in.value = 0
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
+
+    # set forward pass data pathway
+    dut.vpu_data_pathway.value = 0b1100
+    dut.vpu_leak_factor_in.value = to_fixed(0.5)
 
     # Load X into UB
     dut.rst.value = 0
@@ -88,13 +97,13 @@ async def test_tpu(dut):
     await RisingEdge(dut.clk)
 
     # Load B1 into UB
-    dut.ub_wr_host_valid_in_1.value = to_fixed(B1[0])
+    dut.ub_wr_host_data_in_1.value = to_fixed(B1[0])
     dut.ub_wr_host_valid_in_1.value = 1
     dut.ub_wr_host_data_in_2.value = to_fixed(W1[1][1])
     dut.ub_wr_host_valid_in_2.value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_host_valid_in_1.value = 0
+    dut.ub_wr_host_data_in_1.value = 0
     dut.ub_wr_host_valid_in_1.value = 0
     dut.ub_wr_host_data_in_2.value = to_fixed(B1[1])
     dut.ub_wr_host_valid_in_2.value = 1
@@ -102,32 +111,59 @@ async def test_tpu(dut):
 
     # Load W1^T into systolic array (reading W1 from UB)
     dut.ub_rd_weight_start_in.value = 1
-    dut.ub_rd_weight_transpose = 1
-    dut.ub_rd_weight_addr_in.value = 8
+    dut.ub_rd_weight_transpose.value = 1
+    dut.ub_rd_weight_addr_in.value = 9
     dut.ub_rd_weight_loc_in.value = 4
+
+    dut.ub_wr_host_data_in_2.value = 0
+    dut.ub_wr_host_valid_in_2.value = 0
     await RisingEdge(dut.clk)
 
-    # dut.ub_rd_weight_start_in.value = 0
-    # dut.ub_rd_weight_addr_in.value = 0
-    # dut.ub_rd_weight_loc_in.value = 0
-    # await RisingEdge(dut.clk)
+    dut.ub_rd_weight_start_in.value = 0
+    dut.ub_rd_weight_addr_in.value = 0
+    dut.ub_rd_weight_loc_in.value = 0
+    await RisingEdge(dut.clk)
 
-    # dut.ub_rd_input_start_in.value = 1
-    # dut.ub_rd_input_addr_in.value = 0
-    # dut.ub_rd_input_loc_in.value = 8
-    # await RisingEdge(dut.clk)
+    dut.ub_rd_input_start_in.value = 1
+    dut.ub_rd_input_addr_in.value = 0
+    dut.ub_rd_input_loc_in.value = 8
+    await RisingEdge(dut.clk)
 
-    # dut.ub_rd_input_start_in.value = 0
-    # dut.sys_switch_in.value = 1
-    # await RisingEdge(dut.clk)
+    dut.ub_rd_input_start_in.value = 0
+    dut.ub_rd_input_addr_in.value = 0
+    dut.ub_rd_input_loc_in.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
 
-    # dut.sys_switch_in.value = 0
-    # await RisingEdge(dut.clk)
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
 
-    # await ClockCycles(dut.clk, 10)
+    # Read B1 from UB for 4 clock cycles
+    dut.ub_rd_bias_start_in.value = 1
+    dut.ub_rd_bias_addr_in.value = 12
+    dut.ub_rd_bias_loc_in.value = 2
+    await RisingEdge(dut.clk)
 
-    # Store X and W1 in UB
+    dut.ub_rd_bias_start_in.value = 1
+    dut.ub_rd_bias_addr_in.value = 12
+    dut.ub_rd_bias_loc_in.value = 2
+    await RisingEdge(dut.clk)
 
-    # Read X and W1 from UB to systolic array
+    dut.ub_rd_bias_start_in.value = 1
+    dut.ub_rd_bias_addr_in.value = 12
+    dut.ub_rd_bias_loc_in.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_bias_start_in.value = 1
+    dut.ub_rd_bias_addr_in.value = 12
+    dut.ub_rd_bias_loc_in.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_bias_start_in.value = 0
+    dut.ub_rd_bias_addr_in.value = 0
+    dut.ub_rd_bias_loc_in.value = 0
+    await RisingEdge(dut.clk)
+
+    await ClockCycles(dut.clk, 10)
 
     

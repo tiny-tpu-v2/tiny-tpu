@@ -184,7 +184,7 @@ module vpu (
         .lr_d_valid_2_out(lr_d_valid_2_out)     // output
     );
 
-    always_comb begin
+    always @(*) begin
         if (rst) begin
             vpu_data_out_1 = 16'b0;
             vpu_data_out_2 = 16'b0;

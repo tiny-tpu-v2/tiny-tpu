@@ -263,7 +263,7 @@ module unified_buffer #(
     // sequential logic
     always @(posedge clk or posedge rst) begin
 
-        for (int i = 0; i < 15; i++) begin
+        for (int i = 0; i < 30; i++) begin
             $dumpvars(0, ub_memory[i]);
         end
 
