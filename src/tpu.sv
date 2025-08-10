@@ -31,7 +31,7 @@ module tpu (
     input logic [5:0] ub_rd_bias_addr_in,
     input logic [5:0] ub_rd_bias_loc_in,
 
-    input logic [4:0] vpu_data_pathway,
+    input logic [3:0] vpu_data_pathway,
 
     input logic sys_switch_in,
     input logic [15:0] vpu_leak_factor_in        // use an input port for now

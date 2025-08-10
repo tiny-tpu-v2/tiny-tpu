@@ -50,7 +50,7 @@ module pe #(
     // That means inputs from the left side of the PE can load in on the same clock cycle that the switch flag is set
     always_comb begin
         if (pe_switch_in) begin
-            weight_reg_active <= weight_reg_inactive;
+            weight_reg_active = weight_reg_inactive;
         end
     end
 

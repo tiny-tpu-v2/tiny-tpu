@@ -3,6 +3,8 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge,  ClockCycles
 import numpy as np
 
+# For transposed weight matrices set the start address one address above where the first element of the weight matrix is stored in UB
+
 def to_fixed(val, frac_bits=8):
     """Convert a float to 16-bit fixed point with 8 fractional bits."""
     scaled = int(round(val * (1 << frac_bits)))
@@ -24,7 +26,7 @@ W1 = np.array([
 # weight layer 2
 W2 = np.array([
     [0.5266, 0.2958],
-    [0, 0]
+    [0, 0],
 ])
 
 # bias 1
@@ -52,6 +54,12 @@ learning_rate = 0.75
 # [-0.5366  0.6124]
 # [-0.0977  0.2803]
 # [-0.3873  0.7037]
+
+# H2:
+# [[0.7183]
+#  [0.5344]
+#  [0.6673]
+#  [0.64  ]]
 
 @cocotb.test()
 async def test_tpu(dut): 
@@ -170,9 +178,7 @@ async def test_tpu(dut):
     dut.ub_wr_host_valid_in_2.value = 1
     await RisingEdge(dut.clk)
 
-
-
-    # Load W1^T into systolic array (reading W1 from UB)
+    # Load W1^T into systolic array (reading W1 from UB to top of systolic array)
     dut.ub_rd_weight_start_in.value = 1
     dut.ub_rd_weight_transpose.value = 1
     dut.ub_rd_weight_addr_in.value = 9
@@ -183,10 +189,12 @@ async def test_tpu(dut):
     await RisingEdge(dut.clk)
 
     dut.ub_rd_weight_start_in.value = 0
+    dut.ub_rd_weight_transpose.value = 0
     dut.ub_rd_weight_addr_in.value = 0
     dut.ub_rd_weight_loc_in.value = 0
     await RisingEdge(dut.clk)
 
+    # Load X into systolic array (reading X from UB to left side of systolic array)
     dut.ub_rd_input_start_in.value = 1
     dut.ub_rd_input_addr_in.value = 0
     dut.ub_rd_input_loc_in.value = 8
@@ -207,10 +215,52 @@ async def test_tpu(dut):
 
     dut.ub_rd_bias_start_in.value = 0
     dut.ub_rd_bias_addr_in.value = 0
-    dut.ub_rd_bias_loc_in.value = 0             # Batch size of 4
+    dut.ub_rd_bias_loc_in.value = 0
+    dut.sys_switch_in.value = 0
+
+    await ClockCycles(dut.clk, 10)      # First layer of forward pass complete!
+
+    ### TODO (for everything below this line): optimize for clk cycles later: focus on functionality first
+
+    # Load in W2^T
+    dut.ub_rd_weight_start_in.value = 1
+    dut.ub_rd_weight_transpose.value = 1
+    dut.ub_rd_weight_addr_in.value = 15 ### lol lets do 15 CHANGE!!!
+    dut.ub_rd_weight_loc_in.value = 4
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_weight_start_in.value = 0
+    dut.ub_rd_weight_transpose.value = 0
+    dut.ub_rd_weight_addr_in.value = 0
+    dut.ub_rd_weight_loc_in.value = 0
+    await RisingEdge(dut.clk)
+
+
+    ### Load in H1 from UB --> systolic array
+    
+    dut.ub_rd_input_start_in.value = 1
+    dut.ub_rd_input_addr_in.value = 28      # change the address to 28
+    dut.ub_rd_input_loc_in.value = 8        # keep it 8 cus we have 8 values of H1
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_input_start_in.value = 0
+    dut.ub_rd_input_addr_in.value = 0
+    dut.ub_rd_input_loc_in.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read B2 from UB for 4 clock cycles because we have a batch size of 4
+    dut.ub_rd_bias_start_in.value = 1
+    dut.ub_rd_bias_addr_in.value = 18 # could be wrong ... but i think its 18?? 
+    dut.ub_rd_bias_loc_in.value = 4             # Batch size of 4
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
-    await ClockCycles(dut.clk, 10)
+    dut.ub_rd_bias_start_in.value = 0
+    dut.ub_rd_bias_addr_in.value = 0
+    dut.ub_rd_bias_loc_in.value = 0
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
 
-    
+
+    await ClockCycles(dut.clk, 10)      # Forward pass complete

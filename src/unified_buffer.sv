@@ -2,7 +2,7 @@
 `default_nettype none
 
 module unified_buffer #(
-    parameter int UNIFIED_BUFFER_WIDTH = 50
+    parameter int UNIFIED_BUFFER_WIDTH = 128
 )(
     input  logic        clk,
     input  logic        rst,
@@ -41,8 +41,8 @@ module unified_buffer #(
     // read interface for weights (W^T, W or H aka top inputs) from UB to systolic array
     input  logic        ub_rd_weight_transpose,
     input  logic        ub_rd_weight_start_in,
-    input  logic [5:0]  ub_rd_weight_addr_in,
-    input  logic [5:0]  ub_rd_weight_loc_in,
+    input  logic [15:0]  ub_rd_weight_addr_in,
+    input  logic [15:0]  ub_rd_weight_loc_in,
 
     // outputs for weights (W^T or H aka top inputs) from UB to systolic array
     output logic [15:0] ub_rd_weight_data_1_out,
@@ -86,7 +86,7 @@ module unified_buffer #(
     input logic ub_grad_descent_start_in, // start gradient descent
     input logic [15:0] ub_grad_descent_lr_in, // learning rate
     input logic [5:0] ub_grad_descent_w_old_addr_in, // starting location of W_old
-    input logic [5:0] ub_grad_descent_grad_data_in, // incoming gradient data
+    input logic [15:0] ub_grad_descent_grad_data_in, // incoming gradient data
     input logic [5:0] ub_grad_descent_loc_in // size of W and gradient matrices (they will be the same size)
 );
 
@@ -340,7 +340,7 @@ module unified_buffer #(
     // sequential logic
     always @(posedge clk or posedge rst) begin
 
-        for (int i = 0; i < 30; i++) begin
+        for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
             $dumpvars(0, ub_memory[i]);
         end
 
@@ -444,6 +444,8 @@ module unified_buffer #(
                     end else begin
                         ub_rd_input_valid_1_out        <= 1'b0;
                         ub_rd_input_valid_2_out        <= 1'b0;
+                        rd_input_ptr                   <= 0;
+                        rd_input_num_locations_left    <= 0;
                     end
                 end
                 
@@ -562,6 +564,8 @@ module unified_buffer #(
                     end else begin
                         ub_rd_weight_valid_1_out        <= 1'b0;
                         ub_rd_weight_valid_2_out        <= 1'b0;
+                        rd_weight_ptr                   <= 0;
+                        rd_weight_num_locations_left <= 0;
                     end
                 end
                 
