@@ -1,8 +1,9 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge,  ClockCycles
+from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
 import numpy as np
 
+### TODO: optimize for clk cycles later: focus on functionality first
 # For transposed weight matrices set the start address one address above where the first element of the weight matrix is stored in UB
 
 def to_fixed(val, frac_bits=8):
@@ -61,6 +62,12 @@ learning_rate = 0.75
 #  [0.6673]
 #  [0.64  ]]
 
+# dL/dZ1:
+# [[ 0.0946  0.1062]
+#  [-0.0613 -0.0689]
+#  [-0.0438 -0.0492]
+#  [ 0.0843  0.0947]]
+
 @cocotb.test()
 async def test_tpu(dut): 
     
@@ -89,6 +96,7 @@ async def test_tpu(dut):
     # set forward pass data pathway
     dut.vpu_data_pathway.value = 0b1100
     dut.vpu_leak_factor_in.value = to_fixed(0.5)
+    dut.inv_batch_size_times_two_in = to_fixed(2/4)
 
     # Load X into UB (columns are staggered by 1 clock cycle)
     dut.rst.value = 0
@@ -218,9 +226,7 @@ async def test_tpu(dut):
     dut.ub_rd_bias_loc_in.value = 0
     dut.sys_switch_in.value = 0
 
-    await ClockCycles(dut.clk, 10)      # First layer of forward pass complete!
-
-    ### TODO (for everything below this line): optimize for clk cycles later: focus on functionality first
+    await FallingEdge(dut.vpu_valid_out_1)  # Specifies when the last inputs of the layer have finished being calculated, therefore we can start loading in the weights for the next layer
 
     # Load in W2^T
     dut.ub_rd_weight_start_in.value = 1
@@ -235,9 +241,8 @@ async def test_tpu(dut):
     dut.ub_rd_weight_loc_in.value = 0
     await RisingEdge(dut.clk)
 
-
     ### Load in H1 from UB --> systolic array
-    
+    dut.vpu_data_pathway.value = 0b1111         # Switch vpu datapath to the transition datapath (combinational) (set after the falling edge of the last column of the vpu is detected)
     dut.ub_rd_input_start_in.value = 1
     dut.ub_rd_input_addr_in.value = 28      # change the address to 28
     dut.ub_rd_input_loc_in.value = 8        # keep it 8 cus we have 8 values of H1
@@ -251,7 +256,7 @@ async def test_tpu(dut):
 
     # Read B2 from UB for 4 clock cycles because we have a batch size of 4
     dut.ub_rd_bias_start_in.value = 1
-    dut.ub_rd_bias_addr_in.value = 18 # could be wrong ... but i think its 18?? 
+    dut.ub_rd_bias_addr_in.value = 18 
     dut.ub_rd_bias_loc_in.value = 4             # Batch size of 4
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
@@ -262,5 +267,57 @@ async def test_tpu(dut):
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
+    dut.ub_rd_Y_start_in.value = 1
+    dut.ub_rd_Y_addr_in.value = 20
+    dut.ub_rd_Y_loc_in.value = 8        # 8 because 4 elements are zero padded
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
 
-    await ClockCycles(dut.clk, 10)      # Forward pass complete
+    dut.ub_rd_Y_start_in.value = 0
+    dut.ub_rd_Y_addr_in.value = 0
+    dut.ub_rd_Y_loc_in.value = 0
+    dut.sys_switch_in.value = 0
+
+    await FallingEdge(dut.vpu_valid_out_1)  # THIS IS LIKE AN EVENT LISTENER DEPENDENT ON vpu_valid_out_1. Number of clk cycles are variable!!! Specifies when the last inputs of the layer have finished being calculated, therefore we can start loading in the weights for the next layer
+
+    # Load in W2
+    dut.ub_rd_weight_start_in.value = 1
+    dut.ub_rd_weight_transpose.value = 0
+    dut.ub_rd_weight_addr_in.value = 16 ### READ 16 instead of 15 now BECAUSE WE'RE NOT DOING A TRANSPOSE. 
+    dut.ub_rd_weight_loc_in.value = 4
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_weight_start_in.value = 0
+    dut.ub_rd_weight_transpose.value = 0
+    dut.ub_rd_weight_addr_in.value = 0
+    dut.ub_rd_weight_loc_in.value = 0
+    await RisingEdge(dut.clk)
+    
+    ### Load in dL/dZ from UB --> systolic array
+    dut.vpu_data_pathway.value = 0b0001         # Switch vpu datapath to the transition datapath (combinational) (set after the falling edge of the last column of the vpu is detected)
+    dut.ub_rd_input_start_in.value = 1
+    dut.ub_rd_input_addr_in.value = 36      # make it address 36 cus thats where dL/dZ[2] gets stored in first
+    dut.ub_rd_input_loc_in.value = 8        # because of zero padding! we read 8. NOT 4!!!
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_input_start_in.value = 0
+    dut.ub_rd_input_addr_in.value = 0
+    dut.ub_rd_input_loc_in.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read H1 from UB to VPU for 4 clock cycles
+    dut.ub_rd_H_start_in.value = 1
+    dut.ub_rd_H_addr_in.value = 28
+    dut.ub_rd_H_loc_in.value = 8             # Batch size of 4, with zero padding
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_H_start_in.value = 0
+    dut.ub_rd_H_addr_in.value = 0
+    dut.ub_rd_H_loc_in.value = 0
+    dut.sys_switch_in.value = 0
+    
+    await ClockCycles(dut.clk, 10)
+
+    

@@ -36,7 +36,7 @@ module vpu (
     input logic signed [15:0] Y_in_2,                       // For loss modules
     input logic signed [15:0] inv_batch_size_times_two_in,  // For loss modules
     input logic signed [15:0] H_in_1,                       // For leaky relu derivative modules
-    input logic signed [15:0] H_in_2,                       // For leaky relu derivative modules
+    input logic signed [15:0] H_in_2,                       // For leaky relu derivative modules 
 
     // Outputs to UB
     output logic signed [15:0] vpu_data_out_1,
@@ -147,7 +147,7 @@ module vpu (
         .lr_valid_2_out(lr_valid_2_out)             // output
     );
 
-    loss_parent loss_parent_inst (
+    loss_parent loss_parent_inst ( // TODO: THIS SHOULD BE RENAMED TO LOSS DERIVATIVE MODULE. WE DONT HAVE A MODULE TO COMPUTE THE LOSS
         .clk(clk),
         .rst(rst),
         .H_1_in(loss_data_1_in),        // input

@@ -9,7 +9,7 @@ module tpu (
     input logic rst,
 
     // UB wires
-    input logic [5:0] ub_wr_addr_in,
+    input logic [15:0] ub_wr_addr_in,
     input logic ub_wr_addr_valid_in,
 
     input logic [15:0] ub_wr_host_data_in_1,
@@ -17,24 +17,38 @@ module tpu (
     input logic ub_wr_host_valid_in_1,
     input logic ub_wr_host_valid_in_2,
 
+    // UB to left side of systolic array
     input logic ub_rd_input_transpose,
     input logic ub_rd_input_start_in,
-    input logic [5:0] ub_rd_input_addr_in,
-    input logic [5:0] ub_rd_input_loc_in,
+    input logic [15:0] ub_rd_input_addr_in,
+    input logic [15:0] ub_rd_input_loc_in,
 
+    // UB to top of systolic array
     input logic ub_rd_weight_transpose,
     input logic ub_rd_weight_start_in,
-    input logic [5:0] ub_rd_weight_addr_in,
-    input logic [5:0] ub_rd_weight_loc_in,
+    input logic [15:0] ub_rd_weight_addr_in,
+    input logic [15:0] ub_rd_weight_loc_in,
 
+    // UB to bias modules in VPU
     input logic ub_rd_bias_start_in,
-    input logic [5:0] ub_rd_bias_addr_in,
-    input logic [5:0] ub_rd_bias_loc_in,
+    input logic [15:0] ub_rd_bias_addr_in,
+    input logic [15:0] ub_rd_bias_loc_in,
+
+    // UB to loss modules in VPU
+    input logic ub_rd_Y_start_in,
+    input logic [15:0] ub_rd_Y_addr_in,
+    input logic [15:0] ub_rd_Y_loc_in,
+
+    // UB to activation derivative modules in VPU
+    input logic ub_rd_H_start_in,
+    input logic [15:0] ub_rd_H_addr_in,
+    input logic [15:0] ub_rd_H_loc_in,
 
     input logic [3:0] vpu_data_pathway,
 
     input logic sys_switch_in,
-    input logic [15:0] vpu_leak_factor_in        // use an input port for now
+    input logic [15:0] vpu_leak_factor_in,        // use an input port for now
+    input logic [15:0] inv_batch_size_times_two_in
 );
     // UB internal output wires
     logic [15:0] ub_rd_input_data_1_out;
@@ -62,10 +76,17 @@ module tpu (
     logic [15:0] vpu_data_out_2;
     logic vpu_valid_out_1;
     logic vpu_valid_out_2;
-
     
+    logic [15:0] ub_rd_Y_data_1_out; 
+    logic [15:0] ub_rd_Y_data_2_out; 
+    logic ub_rd_Y_valid_1_out;
+    logic ub_rd_Y_valid_2_out;
 
-
+    logic [15:0] ub_rd_H_data_1_out; 
+    logic [15:0] ub_rd_H_data_2_out; 
+    logic ub_rd_H_valid_1_out;
+    logic ub_rd_H_valid_2_out;
+    
 
 // TODO: add writing functionality from Host to UB to write X (input values) and W (weights) matrices into UB memory
 unified_buffer unified_buffer_inst (
@@ -116,23 +137,23 @@ unified_buffer unified_buffer_inst (
     .ub_rd_bias_valid_1_out(),
     .ub_rd_bias_valid_2_out(),
 
-    .ub_rd_Y_start_in(),
-    .ub_rd_Y_addr_in(),
-    .ub_rd_Y_loc_in(),
+    .ub_rd_Y_start_in(ub_rd_Y_start_in),
+    .ub_rd_Y_addr_in(ub_rd_Y_addr_in),
+    .ub_rd_Y_loc_in(ub_rd_Y_loc_in),
 
-    .ub_rd_Y_data_1_out(),
-    .ub_rd_Y_data_2_out(),
-    .ub_rd_Y_valid_1_out(),
-    .ub_rd_Y_valid_2_out(),
+    .ub_rd_Y_data_1_out(ub_rd_Y_data_1_out),
+    .ub_rd_Y_data_2_out(ub_rd_Y_data_2_out),
+    .ub_rd_Y_valid_1_out(ub_rd_Y_valid_1_out),
+    .ub_rd_Y_valid_2_out(ub_rd_Y_valid_2_out),
 
-    .ub_rd_H_start_in(),
-    .ub_rd_H_addr_in(),
-    .ub_rd_H_loc_in(),
+    .ub_rd_H_start_in(ub_rd_H_start_in),
+    .ub_rd_H_addr_in(ub_rd_H_addr_in),
+    .ub_rd_H_loc_in(ub_rd_H_loc_in),
 
-    .ub_rd_H_data_1_out(),
-    .ub_rd_H_data_2_out(),
-    .ub_rd_H_valid_1_out(),
-    .ub_rd_H_valid_2_out()
+    .ub_rd_H_data_1_out(ub_rd_H_data_1_out),
+    .ub_rd_H_data_2_out(ub_rd_H_data_2_out),
+    .ub_rd_H_valid_1_out(ub_rd_H_valid_1_out),
+    .ub_rd_H_valid_2_out(ub_rd_H_valid_2_out)
 );
 
 systolic systolic_inst (
@@ -176,11 +197,11 @@ vpu vpu_inst (
     .bias_scalar_in_1(ub_rd_bias_data_1_out),               // For bias modules
     .bias_scalar_in_2(ub_rd_bias_data_2_out),               // For bias modules
     .lr_leak_factor_in(vpu_leak_factor_in),                 // For leaky relu modules
-    .Y_in_1(),                                  // For loss modules
-    .Y_in_2(),                                  // For loss modules
-    .inv_batch_size_times_two_in(),             // For loss modules
-    .H_in_1(),                                  // For leaky relu derivative modules
-    .H_in_2(),                                  // For leaky relu derivative modules
+    .Y_in_1(ub_rd_Y_data_1_out),                                  // For loss modules
+    .Y_in_2(ub_rd_Y_data_2_out),                                  // For loss modules
+    .inv_batch_size_times_two_in(inv_batch_size_times_two_in),             // For loss modules
+    .H_in_1(ub_rd_H_data_1_out),                                  // For leaky relu derivative modules (WE ONLY NEED THIS PORT FOR EVERY dL/dH after the first node)
+    .H_in_2(ub_rd_H_data_2_out),                                  // For leaky relu derivative modules (WE ONLY NEED THIS PORT FOR EVERY dL/dH after the first node)
 
     // Outputs to UB
     .vpu_data_out_1(vpu_data_out_1),

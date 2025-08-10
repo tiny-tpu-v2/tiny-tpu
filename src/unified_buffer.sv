@@ -9,8 +9,8 @@ module unified_buffer #(
     
     // WRITING!!!
     // inputs from VPU to UB
-    input  logic        ub_wr_addr_valid_in,
-    input  logic [5:0]  ub_wr_addr_in,          // address to start at
+    input  logic            ub_wr_addr_valid_in,
+    input  logic [15:0]     ub_wr_addr_in,          // address to start at
 
     // inputs from VPU to UB
     input  logic [15:0] ub_wr_data_in_1, 
@@ -29,8 +29,8 @@ module unified_buffer #(
     // read interface for left inputs (X's, H's, or dL/dZ^T) from UB to systolic array
     input  logic        ub_rd_input_transpose,         // FLAG EXCLUSIVE TO LEFT SIDE OF SYSTOLIC ARRAY
     input  logic        ub_rd_input_start_in,
-    input  logic [5:0]  ub_rd_input_addr_in,
-    input  logic [5:0]  ub_rd_input_loc_in,
+    input  logic [15:0]  ub_rd_input_addr_in,
+    input  logic [15:0]  ub_rd_input_loc_in,
 
     // outputs for left inputs (X's, H's, or dL/dZ^T) from UB to systolic array
     output logic [15:0] ub_rd_input_data_1_out,
@@ -52,8 +52,8 @@ module unified_buffer #(
     
     // bias read interface for biases from UB to VPU bias module
     input  logic        ub_rd_bias_start_in,
-    input  logic [5:0]  ub_rd_bias_addr_in,
-    input  logic [5:0]  ub_rd_bias_loc_in,
+    input  logic [15:0]  ub_rd_bias_addr_in,
+    input  logic [15:0]  ub_rd_bias_loc_in,
     
     // outputs for biases from UB to VPU bias module
     output logic [15:0] ub_rd_bias_data_1_out,
@@ -63,8 +63,8 @@ module unified_buffer #(
     
     // loss read interface for Y's from UB to VPU loss module
     input  logic        ub_rd_Y_start_in,
-    input  logic [5:0]  ub_rd_Y_addr_in,
-    input  logic [5:0]  ub_rd_Y_loc_in,
+    input  logic [15:0]  ub_rd_Y_addr_in,
+    input  logic [15:0]  ub_rd_Y_loc_in,
 
     // outputs for outputs (Y's) from UB to VPU loss module
     output logic [15:0] ub_rd_Y_data_1_out,
@@ -74,8 +74,8 @@ module unified_buffer #(
 
     // activation derivative read interface for H's from UB to VPU activation derivative module
     input  logic        ub_rd_H_start_in,
-    input  logic [5:0]  ub_rd_H_addr_in,
-    input  logic [5:0]  ub_rd_H_loc_in,
+    input  logic [15:0]  ub_rd_H_addr_in,
+    input  logic [15:0]  ub_rd_H_loc_in,
 
     // outputs for H's from UB to VPU activation derivative module
     output logic [15:0] ub_rd_H_data_1_out,
@@ -85,51 +85,51 @@ module unified_buffer #(
 
     input logic ub_grad_descent_start_in, // start gradient descent
     input logic [15:0] ub_grad_descent_lr_in, // learning rate
-    input logic [5:0] ub_grad_descent_w_old_addr_in, // starting location of W_old
+    input logic [15:0] ub_grad_descent_w_old_addr_in, // starting location of W_old
     input logic [15:0] ub_grad_descent_grad_data_in, // incoming gradient data
-    input logic [5:0] ub_grad_descent_loc_in // size of W and gradient matrices (they will be the same size)
+    input logic [15:0] ub_grad_descent_loc_in // size of W and gradient matrices (they will be the same size)
 );
 
     // internal memory array
     logic [15:0] ub_memory [0:UNIFIED_BUFFER_WIDTH-1];
     
     // internal pointers and counters
-    logic [5:0] wr_ptr;                         // write pointer (from VPU to UB and host to UB)
+    logic [15:0] wr_ptr;                         // write pointer (from VPU to UB and host to UB)
 
-    logic [5:0] wr_num_locations_left;          // remaining locations to write to
+    logic [15:0] wr_num_locations_left;          // remaining locations to write to
     
-    logic [5:0] rd_input_ptr;                    // read pointer for UB to left side inputs of systolic array
-    logic [5:0] rd_input_num_locations_left;     // remaining locations to read
+    logic [15:0] rd_input_ptr;                    // read pointer for UB to left side inputs of systolic array
+    logic [15:0] rd_input_num_locations_left;     // remaining locations to read
 
     // pointers and counters for bias (read only)
-    logic [5:0] rd_bias_ptr;
-    logic [5:0] rd_bias_num_output_left;
-    logic [5:0] rd_bias_address;
+    logic [15:0] rd_bias_ptr;
+    logic [15:0] rd_bias_num_output_left;
+    logic [15:0] rd_bias_address;
 
     // pointers and counters for activation (read only)
-    logic [5:0] rd_weight_ptr;
-    logic [5:0] rd_weight_num_locations_left;
+    logic [15:0] rd_weight_ptr;
+    logic [15:0] rd_weight_num_locations_left;
     logic rd_weight_transpose;
 
     // pointers and counters for loss (read only)
-    logic [5:0] rd_Y_ptr;
-    logic [5:0] rd_Y_num_locations_left;
+    logic [15:0] rd_Y_ptr;
+    logic [15:0] rd_Y_num_locations_left;
 
     // pointers and counters for activation derivative (read only)
-    logic [5:0] rd_H_ptr;
-    logic [5:0] rd_H_num_locations_left;
+    logic [15:0] rd_H_ptr;
+    logic [15:0] rd_H_num_locations_left;
 
     // updated weights from gradient descent
     logic [15:0] rd_grad_descent_w_old_data_out;
 
     // pointers and counters for gradient descent (read only)
-    logic [5:0] rd_grad_descent_w_old_ptr;
-    logic [5:0] rd_grad_descent_num_locations_left;
+    logic [15:0] rd_grad_descent_w_old_ptr;
+    logic [15:0] rd_grad_descent_num_locations_left;
 
     logic [15:0] wr_grad_descent_w_updated_data_out;
     logic wr_grad_descent_done_out;
 
-    logic [5:0] wr_grad_descent_weight_update_ptr; // pointer to the weight that is being updated
+    logic [15:0] wr_grad_descent_weight_update_ptr; // pointer to the weight that is being updated
 
     logic ub_grad_descent_valid_in; // valid signal for gradient descent (needs to be delayed by 1 cycle from the start signal)
 
