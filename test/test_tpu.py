@@ -8,21 +8,38 @@ def to_fixed(val, frac_bits=8):
     scaled = int(round(val * (1 << frac_bits)))
     return scaled & 0xFFFF
 
-# X -> H1
 
 # input:
 X = np.array([[2., 2.],
               [0., 1.],
               [1., 0.],
               [1., 1.]])
-# weight 1
+
+# weight layer 1
 W1 = np.array([
     [0.2985, -0.5792], 
     [0.0913, 0.4234]
 ])
 
+# weight layer 2
+W2 = np.array([
+    [0.5266, 0.2958],
+    [0, 0]
+])
+
 # bias 1
 B1 = [-0.4939, 0.189]
+
+
+B2 = np.array([0.6358, 0])
+
+Y = np.array([[0., 0],
+              [1., 0],
+              [1., 0],
+              [0., 0]])
+
+# learning rate 
+learning_rate = 0.75
 
 # Expected output from systolic array (Z1 pre bias):
 # [-0.5614  1.0294]
@@ -65,7 +82,7 @@ async def test_tpu(dut):
     dut.vpu_data_pathway.value = 0b1100
     dut.vpu_leak_factor_in.value = to_fixed(0.5)
 
-    # Load X into UB
+    # Load X into UB (columns are staggered by 1 clock cycle)
     dut.rst.value = 0
     dut.ub_wr_addr_in.value = 0
     dut.ub_wr_addr_valid_in.value = 1
@@ -103,11 +120,57 @@ async def test_tpu(dut):
     dut.ub_wr_host_valid_in_2.value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_host_data_in_1.value = 0
-    dut.ub_wr_host_valid_in_1.value = 0
+    # Load W2 into UB
+    dut.ub_wr_host_data_in_1.value = to_fixed(W2[0][0])
+    dut.ub_wr_host_valid_in_1.value = 1
     dut.ub_wr_host_data_in_2.value = to_fixed(B1[1])
     dut.ub_wr_host_valid_in_2.value = 1
     await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in_1.value = to_fixed(W2[1][0])
+    dut.ub_wr_host_valid_in_1.value = 1
+    dut.ub_wr_host_data_in_2.value = to_fixed(W2[0][1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+    # Load B2 into UB
+    dut.ub_wr_host_data_in_1.value = to_fixed(B2[0])
+    dut.ub_wr_host_valid_in_1.value = 1
+    dut.ub_wr_host_data_in_2.value = to_fixed(W2[1][1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in_1.value = to_fixed(Y[0][0])
+    dut.ub_wr_host_valid_in_1.value = 1
+    dut.ub_wr_host_data_in_2.value = to_fixed(B2[1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in_1.value = to_fixed(Y[1][0])
+    dut.ub_wr_host_valid_in_1.value = 1
+    dut.ub_wr_host_data_in_2.value = to_fixed(Y[0][1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in_1.value = to_fixed(Y[2][0])
+    dut.ub_wr_host_valid_in_1.value = 1
+    dut.ub_wr_host_data_in_2.value = to_fixed(Y[1][1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in_1.value = to_fixed(Y[3][0])
+    dut.ub_wr_host_valid_in_1.value = 1
+    dut.ub_wr_host_data_in_2.value = to_fixed(Y[2][1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in_1.value = 0
+    dut.ub_wr_host_valid_in_1.value = 0
+    dut.ub_wr_host_data_in_2.value = to_fixed(Y[3][1])
+    dut.ub_wr_host_valid_in_2.value = 1
+    await RisingEdge(dut.clk)
+
+
 
     # Load W1^T into systolic array (reading W1 from UB)
     dut.ub_rd_weight_start_in.value = 1
