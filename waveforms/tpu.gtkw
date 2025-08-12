@@ -1,28 +1,27 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Sun Aug 10 03:46:02 2025
+[*] Tue Aug 12 12:14:53 2025
 [*]
 [dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/tpu.vcd"
-[dumpfile_mtime] "Sun Aug 10 03:33:10 2025"
-[dumpfile_size] 105938
+[dumpfile_mtime] "Tue Aug 12 12:13:05 2025"
+[dumpfile_size] 135009
 [savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/tpu.gtkw"
-[timestart] 278300
-[size] 1816 823
-[pos] -1 -1
-*-14.784813 358700 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 470800
+[size] 1892 979
+[pos] 486 0
+*-14.784813 631100 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tpu.
 [treeopen] tpu.systolic_inst.
 [treeopen] tpu.unified_buffer_inst.
 [treeopen] tpu.vpu_inst.
 [sst_width] 276
-[signals_width] 300
+[signals_width] 366
 [sst_expanded] 1
-[sst_vpaned_height] 418
+[sst_vpaned_height] 515
 @28
 tpu.clk
 tpu.rst
 @200
--
 -
 @28
 tpu.ub_wr_addr_valid_in
@@ -37,6 +36,35 @@ tpu.ub_wr_host_data_in_2[15:0]
 tpu.ub_wr_host_valid_in_2
 @200
 -
+@24
+tpu.ub_grad_descent_start_in
+@40000420
+[fpshift_count] 8
+tpu.unified_buffer_inst.grad_data_in_1[15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.grad_valid_in_1
+[fpshift_count] 8
+tpu.unified_buffer_inst.grad_data_in_2[15:0]
+@28
+tpu.unified_buffer_inst.grad_valid_in_2
+@40000420
+[fpshift_count] 8
+tpu.unified_buffer_inst.rd_grad_descent_w_old_data_out_1[15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.rd_grad_descent_w_old_data_out_2[15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.wr_grad_descent_w_updated_data_out_1[15:0]
+@28
+tpu.unified_buffer_inst.wr_grad_descent_done_out_1
+@40000420
+[fpshift_count] 8
+tpu.unified_buffer_inst.wr_grad_descent_w_updated_data_out_2[15:0]
+@28
+tpu.unified_buffer_inst.wr_grad_descent_done_out_2
+@200
+-
+@201
+-
 @40000420
 [fpshift_count] 8
 tpu.sys_data_out_21[15:0]
@@ -47,7 +75,6 @@ tpu.sys_data_out_22[15:0]
 [fpshift_count] 8
 tpu.sys_valid_out_22
 @200
--
 -
 @28
 tpu.unified_buffer_inst.ub_rd_weight_start_in
@@ -145,9 +172,7 @@ tpu.vpu_inst.vpu_valid_out_2
 @22
 tpu.vpu_inst.bias_z_data_out_1[15:0]
 tpu.vpu_inst.bias_z_data_out_2[15:0]
-@23
 tpu.vpu_inst.lr_data_1_out[15:0]
-@22
 tpu.vpu_inst.lr_data_2_out[15:0]
 tpu.vpu_inst.loss_data_1_out[15:0]
 tpu.vpu_inst.loss_data_2_out[15:0]
@@ -300,5 +325,25 @@ tpu.unified_buffer_inst.\ub_memory[48][15:0]
 tpu.unified_buffer_inst.\ub_memory[49][15:0]
 [fpshift_count] 8
 tpu.unified_buffer_inst.\ub_memory[50][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[51][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[52][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[53][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[54][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[55][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[56][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[57][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[58][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[59][15:0]
+[fpshift_count] 8
+tpu.unified_buffer_inst.\ub_memory[60][15:0]
 [pattern_trace] 1
 [pattern_trace] 0

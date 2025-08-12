@@ -44,11 +44,18 @@ module tpu (
     input logic [15:0] ub_rd_H_addr_in,
     input logic [15:0] ub_rd_H_loc_in,
 
+    // UB to gradient descent modules in UB
+    input logic ub_grad_descent_start_in,
+    input logic [15:0] ub_grad_descent_lr_in,
+    input logic [15:0] ub_grad_descent_w_old_addr_in,
+    input logic [15:0] ub_grad_descent_loc_in,
+
     input logic [3:0] vpu_data_pathway,
 
     input logic sys_switch_in,
     input logic [15:0] vpu_leak_factor_in,        // use an input port for now
     input logic [15:0] inv_batch_size_times_two_in
+
 );
     // UB internal output wires
     logic [15:0] ub_rd_input_data_1_out;
@@ -153,7 +160,12 @@ unified_buffer unified_buffer_inst (
     .ub_rd_H_data_1_out(ub_rd_H_data_1_out),
     .ub_rd_H_data_2_out(ub_rd_H_data_2_out),
     .ub_rd_H_valid_1_out(ub_rd_H_valid_1_out),
-    .ub_rd_H_valid_2_out(ub_rd_H_valid_2_out)
+    .ub_rd_H_valid_2_out(ub_rd_H_valid_2_out),
+
+    .ub_grad_descent_start_in(ub_grad_descent_start_in),
+    .ub_grad_descent_lr_in(ub_grad_descent_lr_in),
+    .ub_grad_descent_w_old_addr_in(ub_grad_descent_w_old_addr_in),
+    .ub_grad_descent_loc_in(ub_grad_descent_loc_in)
 );
 
 systolic systolic_inst (

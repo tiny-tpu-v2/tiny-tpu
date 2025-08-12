@@ -96,7 +96,8 @@ async def test_tpu(dut):
     # set forward pass data pathway
     dut.vpu_data_pathway.value = 0b1100
     dut.vpu_leak_factor_in.value = to_fixed(0.5)
-    dut.inv_batch_size_times_two_in = to_fixed(2/4)
+    dut.inv_batch_size_times_two_in.value = to_fixed(2/4)
+    dut.ub_grad_descent_lr_in.value = to_fixed(learning_rate)
 
     # Load X into UB (columns are staggered by 1 clock cycle)
     dut.rst.value = 0
@@ -306,7 +307,7 @@ async def test_tpu(dut):
     dut.sys_switch_in.value = 1
     await RisingEdge(dut.clk)
 
-    # Read H1 from UB to VPU for 4 clock cycles
+    # Read H1 from UB to VPU (activation derivative modules) for 4 clock cycles
     dut.ub_rd_H_start_in.value = 1
     dut.ub_rd_H_addr_in.value = 28
     dut.ub_rd_H_loc_in.value = 8             # Batch size of 4, with zero padding
@@ -317,7 +318,50 @@ async def test_tpu(dut):
     dut.ub_rd_H_addr_in.value = 0
     dut.ub_rd_H_loc_in.value = 0
     dut.sys_switch_in.value = 0
-    
+
+    await FallingEdge(dut.vpu_valid_out_1)  # THIS IS LIKE AN EVENT LISTENER DEPENDENT ON vpu_valid_out_1. Number of clk cycles are variable!!! Specifies when the last inputs of the layer have finished being calculated, therefore we can start loading in the weights for the next layer
+
+    # NOW CALCULATING LEAF NODES (Requires Tiling)
+
+    # Load first H1 tile into top of systolic array
+    dut.ub_rd_weight_transpose.value = 0
+    dut.ub_rd_weight_start_in.value = 1
+    dut.ub_rd_weight_addr_in.value = 2
+    dut.ub_rd_weight_loc_in.value = 4
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_weight_transpose.value = 0
+    dut.ub_rd_weight_start_in.value = 0
+    dut.ub_rd_weight_addr_in.value = 0
+    dut.ub_rd_weight_loc_in.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load first dL/dZ tile
+    dut.vpu_data_pathway.value = 0b0000
+    dut.ub_rd_input_transpose.value = 1
+    dut.ub_rd_input_start_in.value = 1
+    dut.ub_rd_input_addr_in.value = 44
+    dut.ub_rd_input_loc_in.value = 4
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_input_transpose.value = 0
+    dut.ub_rd_input_start_in.value = 0
+    dut.ub_rd_input_addr_in.value = 0
+    dut.ub_rd_input_loc_in.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    dut.sys_switch_in.value = 0
+    dut.ub_grad_descent_start_in.value = 1
+    dut.ub_grad_descent_w_old_addr_in.value = 8
+    dut.ub_grad_descent_loc_in.value = 4
+    await RisingEdge(dut.clk)
+
+    dut.ub_grad_descent_start_in.value = 0
+    dut.ub_grad_descent_w_old_addr_in.value = 0
+    dut.ub_grad_descent_loc_in.value = 0
+    await RisingEdge(dut.clk)
+
     await ClockCycles(dut.clk, 10)
 
     

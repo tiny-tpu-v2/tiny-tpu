@@ -27,8 +27,8 @@ module unified_buffer #(
     
     // READING!!!!
     // read interface for left inputs (X's, H's, or dL/dZ^T) from UB to systolic array
-    input  logic        ub_rd_input_transpose,         // FLAG EXCLUSIVE TO LEFT SIDE OF SYSTOLIC ARRAY
-    input  logic        ub_rd_input_start_in,
+    input  logic         ub_rd_input_transpose,         // FLAG EXCLUSIVE TO LEFT SIDE OF SYSTOLIC ARRAY
+    input  logic         ub_rd_input_start_in,
     input  logic [15:0]  ub_rd_input_addr_in,
     input  logic [15:0]  ub_rd_input_loc_in,
 
@@ -86,7 +86,6 @@ module unified_buffer #(
     input logic ub_grad_descent_start_in, // start gradient descent
     input logic [15:0] ub_grad_descent_lr_in, // learning rate
     input logic [15:0] ub_grad_descent_w_old_addr_in, // starting location of W_old
-    input logic [15:0] ub_grad_descent_grad_data_in, // incoming gradient data
     input logic [15:0] ub_grad_descent_loc_in // size of W and gradient matrices (they will be the same size)
 );
 
@@ -100,6 +99,7 @@ module unified_buffer #(
     
     logic [15:0] rd_input_ptr;                    // read pointer for UB to left side inputs of systolic array
     logic [15:0] rd_input_num_locations_left;     // remaining locations to read
+    logic rd_input_transpose;
 
     // pointers and counters for bias (read only)
     logic [15:0] rd_bias_ptr;
@@ -120,29 +120,47 @@ module unified_buffer #(
     logic [15:0] rd_H_num_locations_left;
 
     // updated weights from gradient descent
-    logic [15:0] rd_grad_descent_w_old_data_out;
+    logic [15:0] rd_grad_descent_w_old_data_out_1;
+    logic [15:0] rd_grad_descent_w_old_data_out_2;
 
     // pointers and counters for gradient descent (read only)
     logic [15:0] rd_grad_descent_w_old_ptr;
     logic [15:0] rd_grad_descent_num_locations_left;
+    logic [15:0] rd_grad_descent_w_new_ptr;
+    
 
-    logic [15:0] wr_grad_descent_w_updated_data_out;
-    logic wr_grad_descent_done_out;
+    logic [15:0] wr_grad_descent_w_updated_data_out_1;
+    logic [15:0] wr_grad_descent_w_updated_data_out_2;
+    logic wr_grad_descent_done_out_1;
+    logic wr_grad_descent_done_out_2;
 
-    logic [15:0] wr_grad_descent_weight_update_ptr; // pointer to the weight that is being updated
+    logic grad_valid_in_1; // valid signal for gradient descent (needs to be delayed by 1 cycle from the start signal)
+    logic grad_valid_in_2; // valid signal for gradient descent (needs to be delayed by 1 cycle from the start signal)
+    logic [15:0] grad_data_in_1;
+    logic [15:0] grad_data_in_2;
 
-    logic ub_grad_descent_valid_in; // valid signal for gradient descent (needs to be delayed by 1 cycle from the start signal)
 
 
-    gradient_descent gradient_descent_inst(
+    gradient_descent gradient_descent_inst_1 (
         .clk(clk),
         .rst(rst),
         .lr_in(ub_grad_descent_lr_in),
-        .grad_descent_valid_in(ub_grad_descent_valid_in),
-        .W_old_in(rd_grad_descent_w_old_data_out),
-        .grad_in(ub_grad_descent_grad_data_in),
-        .W_updated_out(wr_grad_descent_w_updated_data_out),
-        .grad_descent_done_out(wr_grad_descent_done_out)
+        .grad_descent_valid_in(grad_valid_in_1),
+        .grad_in(grad_data_in_1),
+        .W_old_in(rd_grad_descent_w_old_data_out_1),
+        .W_updated_out(wr_grad_descent_w_updated_data_out_1),
+        .grad_descent_done_out(wr_grad_descent_done_out_1)
+    );
+
+    gradient_descent gradient_descent_inst_2 (
+        .clk(clk),
+        .rst(rst),
+        .lr_in(ub_grad_descent_lr_in),
+        .grad_descent_valid_in(grad_valid_in_2),
+        .grad_in(grad_data_in_2),
+        .W_old_in(rd_grad_descent_w_old_data_out_2),
+        .W_updated_out(wr_grad_descent_w_updated_data_out_2),
+        .grad_descent_done_out(wr_grad_descent_done_out_2)
     );
 
     
@@ -183,6 +201,7 @@ module unified_buffer #(
             READ_IDLE: begin
                 if (ub_rd_input_start_in) begin
                     rd_input_state_next = READ_ACTIVE;
+                    rd_input_transpose = ub_rd_input_transpose;
                 end else begin
                     rd_input_state_next = READ_IDLE;
                 end
@@ -337,6 +356,22 @@ module unified_buffer #(
         endcase
     end
 
+    // combinational logic connect wires from VPU to UB write ports to gradient descent module
+    always_comb begin
+        if(rd_grad_descent_num_locations_left > 0 || wr_grad_descent_done_out_1) begin      // Very very hacky but it works for now (will need to polish up later)
+            grad_valid_in_1 = ub_wr_valid_data_in_1;
+            grad_data_in_1 = ub_wr_data_in_1;
+            grad_valid_in_2 = ub_wr_valid_data_in_2;
+            grad_data_in_2 = ub_wr_data_in_2;
+        
+        end else begin
+            grad_valid_in_1 = '0;
+            grad_data_in_1 = '0;
+            grad_valid_in_2 = '0;
+            grad_data_in_2 = '0;
+        end
+    end
+
     // sequential logic
     always @(posedge clk or posedge rst) begin
 
@@ -407,8 +442,8 @@ module unified_buffer #(
 
             // clear gradient descent output registers
             // didn't add ub in the signal names because it's not a unified buffer output
-            rd_grad_descent_w_old_data_out <= '0;
-            wr_grad_descent_weight_update_ptr <= '0;
+            rd_grad_descent_w_old_data_out_1 <= '0;
+            rd_grad_descent_w_old_data_out_2 <= '0;
 
             // clear memory array
             for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
@@ -424,6 +459,8 @@ module unified_buffer #(
             rd_Y_state <= rd_Y_state_next;
             rd_H_state <= rd_H_state_next;
             rd_grad_descent_state <= rd_grad_descent_state_next;
+
+            rd_grad_descent_w_new_ptr <= rd_grad_descent_w_old_ptr;
             // reading logic
             case (rd_input_state)
                 READ_IDLE: begin
@@ -451,18 +488,14 @@ module unified_buffer #(
                 
                 READ_ACTIVE: begin
                     if (rd_input_num_locations_left > 1) begin 
-
-                        // perhaps write logic here to use ub_rd_input_transpose flag to determine if we want to transpose
-
-
                         // read two more locations
-                        if (ub_rd_input_transpose) begin // IF WE WANT TO TRANSPOSE (ub_rd_input_transpose is high)
+                        if (rd_input_transpose) begin // IF WE WANT TO TRANSPOSE (ub_rd_input_transpose is high)
                             ub_rd_input_data_1_out         <= ub_memory[rd_input_ptr]; // LINE A
                             ub_rd_input_data_2_out         <= ub_memory[rd_input_ptr + 1]; 
                        
                         end else begin  // IF WE DON'T WANT TO TRANSPOSE (ub_rd_input_transpose is low)
                             ub_rd_input_data_1_out         <= ub_memory[rd_input_ptr + 1]; // LINE A
-                            ub_rd_input_data_2_out         <= ub_memory[rd_input_ptr]; 
+                            ub_rd_input_data_2_out         <= ub_memory[rd_input_ptr];
                         end
 
                         ub_rd_input_valid_1_out        <= 1'b1;
@@ -711,41 +744,36 @@ module unified_buffer #(
             case (rd_grad_descent_state)
                 READ_IDLE: begin
                     if (ub_grad_descent_start_in) begin
-                        rd_grad_descent_w_old_data_out <= ub_memory[ub_grad_descent_w_old_addr_in];
+                        rd_grad_descent_w_old_data_out_1 <= ub_memory[ub_grad_descent_w_old_addr_in];
+                        rd_grad_descent_w_old_data_out_2 <= '0;
                         rd_grad_descent_w_old_ptr <= ub_grad_descent_w_old_addr_in + 1;
                         rd_grad_descent_num_locations_left <= ub_grad_descent_loc_in - 1;
+                    end else begin
+                        rd_grad_descent_w_old_data_out_1 <= '0;
+                        rd_grad_descent_w_old_data_out_2 <= '0;
+                        rd_grad_descent_w_old_ptr <= 0;
+                        rd_grad_descent_num_locations_left <= 0;
                     end
                 end
 
                 READ_ACTIVE: begin
-                    if (rd_grad_descent_num_locations_left >= 1) begin
-                        rd_grad_descent_w_old_data_out <= ub_memory[rd_grad_descent_w_old_ptr];
-                        rd_grad_descent_w_old_ptr <= rd_grad_descent_w_old_ptr + 1;
-                        rd_grad_descent_num_locations_left <= rd_grad_descent_num_locations_left - 1;
+                    if (rd_grad_descent_num_locations_left > 1) begin
+                        rd_grad_descent_w_old_data_out_1 <= ub_memory[rd_grad_descent_w_old_ptr + 1];
+                        rd_grad_descent_w_old_data_out_2 <= ub_memory[rd_grad_descent_w_old_ptr];
+                        rd_grad_descent_w_old_ptr <= rd_grad_descent_w_old_ptr + 2;
+                        rd_grad_descent_num_locations_left <= rd_grad_descent_num_locations_left - 2;
+                    end else if (rd_grad_descent_num_locations_left == 1) begin
+                        rd_grad_descent_w_old_data_out_1 <= 0;
+                        rd_grad_descent_w_old_data_out_2 <= ub_memory[rd_grad_descent_w_old_ptr];
+                        rd_grad_descent_num_locations_left <= 0;
+                    end else begin
+                        rd_grad_descent_w_old_data_out_1 <= 0;
+                        rd_grad_descent_w_old_data_out_2 <= 0;
                     end
                 end
             endcase
 
-            // weight update logic
-            if (wr_grad_descent_done_out) begin
-                if (wr_grad_descent_weight_update_ptr == 0) begin
-                    ub_memory[ub_grad_descent_w_old_addr_in] <= wr_grad_descent_w_updated_data_out;
-                    wr_grad_descent_weight_update_ptr <= ub_grad_descent_w_old_addr_in + 1;
-                end else begin
-                    ub_memory[wr_grad_descent_weight_update_ptr] <= wr_grad_descent_w_updated_data_out;
-                    wr_grad_descent_weight_update_ptr <= wr_grad_descent_weight_update_ptr + 1;
-                end
-            end
-
-            if (ub_grad_descent_start_in) begin
-                ub_grad_descent_valid_in <= 1;
-            end else begin
-                ub_grad_descent_valid_in <= 0;
-            end
-
-            
             // writing INTO unified buffer logic (can run concurrently with reading)
-
             if (ub_wr_host_valid_in_1 && ub_wr_host_valid_in_2) begin
                 // write both data inputs
                 ub_memory[wr_ptr+1]     <= ub_wr_host_data_in_1;
@@ -780,6 +808,15 @@ module unified_buffer #(
             if (ub_wr_addr_valid_in) begin
                 wr_ptr <= ub_wr_addr_in; 
             end 
+
+            if(wr_grad_descent_done_out_1 && wr_grad_descent_done_out_2) begin
+                ub_memory[rd_grad_descent_w_new_ptr - 1] <= wr_grad_descent_w_updated_data_out_1;
+                ub_memory[rd_grad_descent_w_new_ptr - 2] <= wr_grad_descent_w_updated_data_out_2;
+            end else if(wr_grad_descent_done_out_1) begin
+                ub_memory[rd_grad_descent_w_new_ptr - 1] <= wr_grad_descent_w_updated_data_out_1;
+            end else if(wr_grad_descent_done_out_2) begin
+                ub_memory[rd_grad_descent_w_new_ptr] <= wr_grad_descent_w_updated_data_out_2;
+            end
             
         end
     end
