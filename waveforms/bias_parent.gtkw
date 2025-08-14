@@ -1,0 +1,45 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Aug  5 04:57:03 2025
+[*]
+[dumpfile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/bias_parent.vcd"
+[dumpfile_mtime] "Tue Aug  5 04:55:28 2025"
+[dumpfile_size] 11917
+[savefile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/bias_parent.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-14.000000 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] bias_parent.
+[sst_width] 255
+[signals_width] 226
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@28
+bias_parent.clk
+bias_parent.rst
+@40000420
+[fpshift_count] 8
+bias_parent.bias_sys_valid_in_1
+[fpshift_count] 8
+bias_parent.bias_sys_valid_in_2
+[fpshift_count] 8
+bias_parent.bias_Z_valid_out_1
+[fpshift_count] 8
+bias_parent.bias_Z_valid_out_2
+[fpshift_count] 8
+bias_parent.bias_scalar_in_1[15:0]
+@40000421
+[fpshift_count] 8
+bias_parent.bias_sys_data_in_1[15:0]
+@40000420
+[fpshift_count] 8
+bias_parent.bias_scalar_in_2[15:0]
+[fpshift_count] 8
+bias_parent.bias_sys_data_in_2[15:0]
+[fpshift_count] 8
+bias_parent.bias_z_data_out_1[15:0]
+[fpshift_count] 8
+bias_parent.bias_z_data_out_2[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

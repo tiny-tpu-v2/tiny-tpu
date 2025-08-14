@@ -1,0 +1,36 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Aug  5 01:51:24 2025
+[*]
+[dumpfile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/loss_parent.vcd"
+[dumpfile_mtime] "Tue Aug  5 01:50:40 2025"
+[dumpfile_size] 20856
+[savefile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/loss_parent.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-1.000000 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[treeopen] loss_parent.
+[sst_width] 255
+[signals_width] 193
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@28
+loss_parent.clk
+loss_parent.rst
+@22
+loss_parent.H_1_in[15:0]
+loss_parent.H_2_in[15:0]
+loss_parent.Y_1_in[15:0]
+loss_parent.Y_2_in[15:0]
+@28
+loss_parent.valid_1_in
+loss_parent.valid_1_out
+loss_parent.valid_2_in
+loss_parent.valid_2_out
+@22
+loss_parent.gradient_1_out[15:0]
+loss_parent.gradient_2_out[15:0]
+loss_parent.inv_batch_size[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

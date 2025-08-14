@@ -1,0 +1,59 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Aug  5 04:25:27 2025
+[*]
+[dumpfile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/bias_child.vcd"
+[dumpfile_mtime] "Tue Aug  5 04:25:04 2025"
+[dumpfile_size] 4887
+[savefile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/bias_child.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-15.000000 11600 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[markername] AA
+[markername] BB
+[markername] CC
+[markername] DD
+[markername] EE
+[markername] FF
+[markername] GG
+[markername] HH
+[markername] II
+[markername] JJ
+[markername] KK
+[markername] LL
+[markername] MM
+[markername] NN
+[markername] OO
+[markername] PP
+[markername] QQ
+[markername] RR
+[markername] SS
+[markername] TT
+[markername] UU
+[markername] VV
+[markername] WW
+[markername] XX
+[markername] YY
+[markername] ZZ
+[treeopen] bias_child.
+[sst_width] 255
+[signals_width] 210
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@28
+bias_child.clk
+bias_child.rst
+@40000420
+[fpshift_count] 8
+bias_child.bias_Z_valid_out
+[fpshift_count] 8
+bias_child.bias_scalar_in[15:0]
+[fpshift_count] 8
+bias_child.bias_sys_data_in[15:0]
+[fpshift_count] 8
+bias_child.bias_sys_valid_in
+[fpshift_count] 8
+bias_child.bias_z_data_out[15:0]
+[pattern_trace] 1
+[pattern_trace] 0

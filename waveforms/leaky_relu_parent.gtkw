@@ -1,0 +1,41 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Tue Aug  5 04:22:13 2025
+[*]
+[dumpfile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/leaky_relu_parent.vcd"
+[dumpfile_mtime] "Tue Aug  5 04:20:52 2025"
+[dumpfile_size] 8733
+[savefile] "/Users/kenny/Developer/vscode/tiny-tpu/waveforms/leaky_relu_parent.gtkw"
+[timestart] 0
+[size] 1336 600
+[pos] -1 -1
+*-15.000000 9600 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[sst_width] 255
+[signals_width] 218
+[sst_expanded] 1
+[sst_vpaned_height] 159
+@28
+leaky_relu_parent.clk
+leaky_relu_parent.rst
+@40000421
+[fpshift_count] 8
+leaky_relu_parent.lr_data_1_in[15:0]
+[fpshift_count] 8
+leaky_relu_parent.lr_data_2_in[15:0]
+@40000420
+[fpshift_count] 8
+leaky_relu_parent.lr_data_1_out[15:0]
+[fpshift_count] 8
+leaky_relu_parent.lr_data_2_out[15:0]
+[fpshift_count] 8
+leaky_relu_parent.lr_leak_factor_in[15:0]
+[fpshift_count] 8
+leaky_relu_parent.lr_valid_1_in
+[fpshift_count] 8
+leaky_relu_parent.lr_valid_1_out
+[fpshift_count] 8
+leaky_relu_parent.lr_valid_2_in
+[fpshift_count] 8
+leaky_relu_parent.lr_valid_2_out
+[pattern_trace] 1
+[pattern_trace] 0
