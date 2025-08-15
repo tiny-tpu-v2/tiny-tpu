@@ -1,32 +1,38 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Tue Aug 12 01:11:55 2025
+[*] Fri Aug 15 05:51:02 2025
 [*]
 [dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/gradient_descent.vcd"
-[dumpfile_mtime] "Tue Aug 12 01:10:57 2025"
-[dumpfile_size] 7026
+[dumpfile_mtime] "Fri Aug 15 05:50:56 2025"
+[dumpfile_size] 10293
 [savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/gradient_descent.gtkw"
 [timestart] 0
-[size] 1344 600
-[pos] -367 -149
-*-14.100000 -1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[size] 1765 871
+[pos] -1 -1
+*-15.100000 111100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [sst_width] 276
-[signals_width] 202
+[signals_width] 214
 [sst_expanded] 1
-[sst_vpaned_height] 159
+[sst_vpaned_height] 253
 @40000420
 [fpshift_count] 8
 gradient_descent.clk
 [fpshift_count] 8
 gradient_descent.rst
+@28
+gradient_descent.grad_bias_or_weight
+@40000420
 [fpshift_count] 8
 gradient_descent.lr_in[15:0]
 [fpshift_count] 8
 gradient_descent.grad_in[15:0]
+@28
+gradient_descent.grad_descent_valid_in
+@40000420
 [fpshift_count] 8
-gradient_descent.W_old_in[15:0]
+gradient_descent.value_old_in[15:0]
 [fpshift_count] 8
-gradient_descent.W_updated_out[15:0]
+gradient_descent.value_updated_out[15:0]
 [fpshift_count] 8
 gradient_descent.grad_descent_done_out
 [pattern_trace] 1

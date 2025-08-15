@@ -1,15 +1,15 @@
 [*]
-[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Sat Aug  9 18:25:10 2025
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Fri Aug 15 00:59:00 2025
 [*]
-[dumpfile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.vcd"
-[dumpfile_mtime] "Sat Aug  9 18:24:41 2025"
-[dumpfile_size] 18768
-[savefile] "/Users/suryasure/projects/apex/waveforms/unified_buffer.gtkw"
-[timestart] 664100
-[size] 1504 816
-[pos] 0 73
-*-14.900000 750200 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/unified_buffer.vcd"
+[dumpfile_mtime] "Fri Aug 15 00:58:48 2025"
+[dumpfile_size] 60310
+[savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/unified_buffer.gtkw"
+[timestart] 191600
+[size] 2186 1039
+[pos] 31 0
+*-14.900000 394600 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 [markername] AA
 [markername] BB
 [markername] CC
@@ -37,17 +37,119 @@
 [markername] YY
 [markername] ZZ
 [treeopen] unified_buffer.
-[sst_width] 255
+[sst_width] 276
 [signals_width] 365
 [sst_expanded] 1
-[sst_vpaned_height] 227
-@40000024
-[fpshift_count] 8
-unified_buffer.\ub_memory[0][15:0]
+[sst_vpaned_height] 304
+@28
+unified_buffer.clk
+unified_buffer.rst
+@24
+unified_buffer.wr_ptr[15:0]
+@200
+-
+@28
+unified_buffer.ub_rd_start_in
+unified_buffer.ub_rd_transpose
+@24
+unified_buffer.ub_ptr_select[8:0]
+unified_buffer.ub_rd_col_size[15:0]
+unified_buffer.ub_rd_row_size[15:0]
+@22
+unified_buffer.ub_rd_addr_in[15:0]
+@200
+-
+-
 @40000420
 [fpshift_count] 8
+unified_buffer.\ub_rd_input_data_out[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_input_data_out[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_input_data_out[2][15:0]
+@28
+unified_buffer.\ub_rd_input_valid_out[0]
+unified_buffer.\ub_rd_input_valid_out[1]
+unified_buffer.\ub_rd_input_valid_out[2]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_rd_weight_data_out[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_weight_data_out[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_weight_data_out[2][15:0]
+@28
+unified_buffer.\ub_rd_weight_valid_out[0]
+unified_buffer.\ub_rd_weight_valid_out[1]
+unified_buffer.\ub_rd_weight_valid_out[2]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_rd_bias_data_out[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_bias_data_out[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_bias_data_out[2][15:0]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_rd_Y_data_out[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_Y_data_out[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_Y_data_out[2][15:0]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_rd_H_data_out[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_H_data_out[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_rd_H_data_out[2][15:0]
+@200
+-
+@22
+unified_buffer.learning_rate_in[15:0]
+unified_buffer.\value_old_in[0][15:0]
+unified_buffer.\value_old_in[1][15:0]
+@40000420
+[fpshift_count] 8
+unified_buffer.\value_updated_out[0][15:0]
+@28
+unified_buffer.\grad_descent_done_out[0]
+@40000420
+[fpshift_count] 8
+unified_buffer.\value_updated_out[1][15:0]
+@28
+unified_buffer.\grad_descent_done_out[1]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_wr_data_in[0][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_wr_valid_in[0]
+@28
+unified_buffer.\grad_descent_valid_in[0]
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_wr_data_in[1][15:0]
+[fpshift_count] 8
+unified_buffer.\ub_wr_valid_in[1]
+@28
+unified_buffer.\grad_descent_valid_in[1]
+@200
+-
+@40000420
+[fpshift_count] 8
+unified_buffer.\ub_memory[0][15:0]
+[fpshift_count] 8
 unified_buffer.\ub_memory[1][15:0]
-@40000024
 [fpshift_count] 8
 unified_buffer.\ub_memory[2][15:0]
 [fpshift_count] 8
@@ -60,108 +162,14 @@ unified_buffer.\ub_memory[5][15:0]
 unified_buffer.\ub_memory[6][15:0]
 [fpshift_count] 8
 unified_buffer.\ub_memory[7][15:0]
-[fpshift_count] 8
-unified_buffer.\ub_memory[8][15:0]
-[fpshift_count] 8
-unified_buffer.\ub_memory[9][15:0]
-@40000420
-[fpshift_count] 8
-unified_buffer.\ub_memory[10][15:0]
-[fpshift_count] 8
-unified_buffer.\ub_memory[11][15:0]
-[fpshift_count] 8
-unified_buffer.\ub_memory[12][15:0]
-@40c00420
-[fpshift_count] 8
-unified_buffer.\ub_memory[13][15:0]
-@28
-(0)unified_buffer.\ub_memory[13][15:0]
-(1)unified_buffer.\ub_memory[13][15:0]
-(2)unified_buffer.\ub_memory[13][15:0]
-(3)unified_buffer.\ub_memory[13][15:0]
-(4)unified_buffer.\ub_memory[13][15:0]
-(5)unified_buffer.\ub_memory[13][15:0]
-(6)unified_buffer.\ub_memory[13][15:0]
-(7)unified_buffer.\ub_memory[13][15:0]
-(8)unified_buffer.\ub_memory[13][15:0]
-(9)unified_buffer.\ub_memory[13][15:0]
-(10)unified_buffer.\ub_memory[13][15:0]
-(11)unified_buffer.\ub_memory[13][15:0]
-(12)unified_buffer.\ub_memory[13][15:0]
-(13)unified_buffer.\ub_memory[13][15:0]
-(14)unified_buffer.\ub_memory[13][15:0]
-(15)unified_buffer.\ub_memory[13][15:0]
-@1401200
--group_end
-@40000420
-[fpshift_count] 8
-unified_buffer.\ub_memory[14][15:0]
-@24
-unified_buffer.wr_ptr[5:0]
-unified_buffer.ub_wr_addr_in[5:0]
-@28
-unified_buffer.ub_wr_addr_valid_in
-@40000420
-[fpshift_count] 8
-unified_buffer.ub_wr_data_in_1[15:0]
-[fpshift_count] 8
-unified_buffer.ub_wr_data_in_2[15:0]
-@28
-unified_buffer.ub_wr_valid_data_in_1
-unified_buffer.ub_wr_valid_data_in_2
-@200
--
-@40000420
-[fpshift_count] 8
-unified_buffer.ub_rd_input_data_1_out[15:0]
-[fpshift_count] 8
-unified_buffer.ub_rd_input_data_2_out[15:0]
-@28
-unified_buffer.ub_rd_input_valid_1_out
-unified_buffer.ub_rd_input_valid_2_out
-@200
--
-@28
-unified_buffer.ub_rd_weight_transpose
-@24
-unified_buffer.ub_rd_weight_addr_in[5:0]
-@40000420
-[fpshift_count] 8
-unified_buffer.ub_rd_weight_data_1_out[15:0]
-[fpshift_count] 8
-unified_buffer.ub_rd_weight_data_2_out[15:0]
-@28
-unified_buffer.ub_rd_weight_valid_1_out
-unified_buffer.ub_rd_weight_valid_2_out
-@420
-unified_buffer.rd_weight_ptr[5:0]
-@200
--
--gradient descent
-@40000420
-[fpshift_count] 8
-unified_buffer.gradient_descent_inst.rst
-@28
-unified_buffer.gradient_descent_inst.grad_descent_valid_in
-@40000420
-[fpshift_count] 8
-unified_buffer.gradient_descent_inst.lr_in[15:0]
-[fpshift_count] 8
-unified_buffer.gradient_descent_inst.W_old_in[15:0]
-[fpshift_count] 8
-unified_buffer.gradient_descent_inst.grad_in[15:0]
-[fpshift_count] 8
-unified_buffer.gradient_descent_inst.W_updated_out[15:0]
-[fpshift_count] 8
-unified_buffer.gradient_descent_inst.grad_descent_done_out
-@200
--
--
-@28
-unified_buffer.wr_grad_descent_done_out
 @22
-unified_buffer.wr_grad_descent_w_updated_data_out[15:0]
-unified_buffer.ub_grad_descent_w_old_addr_in[5:0]
-unified_buffer.rd_grad_descent_w_old_ptr[5:0]
+unified_buffer.\ub_memory[8][15:0]
+unified_buffer.\ub_memory[9][15:0]
+unified_buffer.\ub_memory[10][15:0]
+unified_buffer.\ub_memory[11][15:0]
+unified_buffer.\ub_memory[12][15:0]
+unified_buffer.\ub_memory[13][15:0]
+unified_buffer.\ub_memory[14][15:0]
+unified_buffer.\ub_memory[15][15:0]
 [pattern_trace] 1
 [pattern_trace] 0

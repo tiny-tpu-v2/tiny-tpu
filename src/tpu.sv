@@ -96,77 +96,77 @@ module tpu (
     
 
 // TODO: add writing functionality from Host to UB to write X (input values) and W (weights) matrices into UB memory
-unified_buffer unified_buffer_inst (
-    .clk(clk),
-    .rst(rst),
+// unified_buffer unified_buffer_inst (
+//     .clk(clk),
+//     .rst(rst),
 
-    .ub_wr_addr_in(ub_wr_addr_in),
-    .ub_wr_addr_valid_in(ub_wr_addr_valid_in),
+//     .ub_wr_addr_in(ub_wr_addr_in),
+//     .ub_wr_addr_valid_in(ub_wr_addr_valid_in),
 
-    .ub_wr_data_in_1(vpu_data_out_1), // VPU data to UB connection
-    .ub_wr_data_in_2(vpu_data_out_2), // VPU data to UB connection
-    .ub_wr_valid_data_in_1(vpu_valid_out_1), // VPU valid signal to UB 
-    .ub_wr_valid_data_in_2(vpu_valid_out_2), // VPU valid signal to UB 
+//     .ub_wr_data_in_1(vpu_data_out_1), // VPU data to UB connection
+//     .ub_wr_data_in_2(vpu_data_out_2), // VPU data to UB connection
+//     .ub_wr_valid_data_in_1(vpu_valid_out_1), // VPU valid signal to UB 
+//     .ub_wr_valid_data_in_2(vpu_valid_out_2), // VPU valid signal to UB 
 
-    .ub_wr_host_data_in_1(ub_wr_host_data_in_1),
-    .ub_wr_host_data_in_2(ub_wr_host_data_in_2),
-    .ub_wr_host_valid_in_1(ub_wr_host_valid_in_1),
-    .ub_wr_host_valid_in_2(ub_wr_host_valid_in_2),
+//     .ub_wr_host_data_in_1(ub_wr_host_data_in_1),
+//     .ub_wr_host_data_in_2(ub_wr_host_data_in_2),
+//     .ub_wr_host_valid_in_1(ub_wr_host_valid_in_1),
+//     .ub_wr_host_valid_in_2(ub_wr_host_valid_in_2),
 
-    // for left side input of systolic array
-    .ub_rd_input_transpose(ub_rd_input_transpose),
-    .ub_rd_input_start_in(ub_rd_input_start_in),
-    .ub_rd_input_addr_in(ub_rd_input_addr_in),
-    .ub_rd_input_loc_in(ub_rd_input_loc_in),
+//     // for left side input of systolic array
+//     .ub_rd_input_transpose(ub_rd_input_transpose),
+//     .ub_rd_input_start_in(ub_rd_input_start_in),
+//     .ub_rd_input_addr_in(ub_rd_input_addr_in),
+//     .ub_rd_input_loc_in(ub_rd_input_loc_in),
 
-    .ub_rd_input_data_1_out(ub_rd_input_data_1_out),
-    .ub_rd_input_data_2_out(ub_rd_input_data_2_out),
-    .ub_rd_input_valid_1_out(ub_rd_input_valid_1_out),
-    .ub_rd_input_valid_2_out(ub_rd_input_valid_2_out),
+//     .ub_rd_input_data_1_out(ub_rd_input_data_1_out),
+//     .ub_rd_input_data_2_out(ub_rd_input_data_2_out),
+//     .ub_rd_input_valid_1_out(ub_rd_input_valid_1_out),
+//     .ub_rd_input_valid_2_out(ub_rd_input_valid_2_out),
 
-    // for top input of systolic array
-    .ub_rd_weight_start_in(ub_rd_weight_start_in),
-    .ub_rd_weight_transpose(ub_rd_weight_transpose),
-    .ub_rd_weight_addr_in(ub_rd_weight_addr_in),
-    .ub_rd_weight_loc_in(ub_rd_weight_loc_in),
+//     // for top input of systolic array
+//     .ub_rd_weight_start_in(ub_rd_weight_start_in),
+//     .ub_rd_weight_transpose(ub_rd_weight_transpose),
+//     .ub_rd_weight_addr_in(ub_rd_weight_addr_in),
+//     .ub_rd_weight_loc_in(ub_rd_weight_loc_in),
 
-    .ub_rd_weight_data_1_out(ub_rd_weight_data_1_out),
-    .ub_rd_weight_data_2_out(ub_rd_weight_data_2_out),
-    .ub_rd_weight_valid_1_out(ub_rd_weight_valid_1_out),
-    .ub_rd_weight_valid_2_out(ub_rd_weight_valid_2_out),
+//     .ub_rd_weight_data_1_out(ub_rd_weight_data_1_out),
+//     .ub_rd_weight_data_2_out(ub_rd_weight_data_2_out),
+//     .ub_rd_weight_valid_1_out(ub_rd_weight_valid_1_out),
+//     .ub_rd_weight_valid_2_out(ub_rd_weight_valid_2_out),
 
-    .ub_rd_bias_start_in(ub_rd_bias_start_in),
-    .ub_rd_bias_addr_in(ub_rd_bias_addr_in),
-    .ub_rd_bias_loc_in(ub_rd_bias_loc_in),
+//     .ub_rd_bias_start_in(ub_rd_bias_start_in),
+//     .ub_rd_bias_addr_in(ub_rd_bias_addr_in),
+//     .ub_rd_bias_loc_in(ub_rd_bias_loc_in),
 
-    .ub_rd_bias_data_1_out(ub_rd_bias_data_1_out),
-    .ub_rd_bias_data_2_out(ub_rd_bias_data_2_out),
-    .ub_rd_bias_valid_1_out(),
-    .ub_rd_bias_valid_2_out(),
+//     .ub_rd_bias_data_1_out(ub_rd_bias_data_1_out),
+//     .ub_rd_bias_data_2_out(ub_rd_bias_data_2_out),
+//     .ub_rd_bias_valid_1_out(),
+//     .ub_rd_bias_valid_2_out(),
 
-    .ub_rd_Y_start_in(ub_rd_Y_start_in),
-    .ub_rd_Y_addr_in(ub_rd_Y_addr_in),
-    .ub_rd_Y_loc_in(ub_rd_Y_loc_in),
+//     .ub_rd_Y_start_in(ub_rd_Y_start_in),
+//     .ub_rd_Y_addr_in(ub_rd_Y_addr_in),
+//     .ub_rd_Y_loc_in(ub_rd_Y_loc_in),
 
-    .ub_rd_Y_data_1_out(ub_rd_Y_data_1_out),
-    .ub_rd_Y_data_2_out(ub_rd_Y_data_2_out),
-    .ub_rd_Y_valid_1_out(ub_rd_Y_valid_1_out),
-    .ub_rd_Y_valid_2_out(ub_rd_Y_valid_2_out),
+//     .ub_rd_Y_data_1_out(ub_rd_Y_data_1_out),
+//     .ub_rd_Y_data_2_out(ub_rd_Y_data_2_out),
+//     .ub_rd_Y_valid_1_out(ub_rd_Y_valid_1_out),
+//     .ub_rd_Y_valid_2_out(ub_rd_Y_valid_2_out),
 
-    .ub_rd_H_start_in(ub_rd_H_start_in),
-    .ub_rd_H_addr_in(ub_rd_H_addr_in),
-    .ub_rd_H_loc_in(ub_rd_H_loc_in),
+//     .ub_rd_H_start_in(ub_rd_H_start_in),
+//     .ub_rd_H_addr_in(ub_rd_H_addr_in),
+//     .ub_rd_H_loc_in(ub_rd_H_loc_in),
 
-    .ub_rd_H_data_1_out(ub_rd_H_data_1_out),
-    .ub_rd_H_data_2_out(ub_rd_H_data_2_out),
-    .ub_rd_H_valid_1_out(ub_rd_H_valid_1_out),
-    .ub_rd_H_valid_2_out(ub_rd_H_valid_2_out),
+//     .ub_rd_H_data_1_out(ub_rd_H_data_1_out),
+//     .ub_rd_H_data_2_out(ub_rd_H_data_2_out),
+//     .ub_rd_H_valid_1_out(ub_rd_H_valid_1_out),
+//     .ub_rd_H_valid_2_out(ub_rd_H_valid_2_out),
 
-    .ub_grad_descent_start_in(ub_grad_descent_start_in),
-    .ub_grad_descent_lr_in(ub_grad_descent_lr_in),
-    .ub_grad_descent_w_old_addr_in(ub_grad_descent_w_old_addr_in),
-    .ub_grad_descent_loc_in(ub_grad_descent_loc_in)
-);
+//     .ub_grad_descent_start_in(ub_grad_descent_start_in),
+//     .ub_grad_descent_lr_in(ub_grad_descent_lr_in),
+//     .ub_grad_descent_w_old_addr_in(ub_grad_descent_w_old_addr_in),
+//     .ub_grad_descent_loc_in(ub_grad_descent_loc_in)
+// );
 
 systolic systolic_inst (
     .clk(clk),
