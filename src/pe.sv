@@ -16,6 +16,7 @@ module pe #(
     input logic signed [15:0] pe_input_in, 
     input logic pe_valid_in, 
     input logic pe_switch_in, 
+    input logic pe_enabled,
 
     // South wires of the PE
     output logic signed [15:0] pe_psum_out,
@@ -55,7 +56,7 @@ module pe #(
     end
 
     always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
+        if (rst || !pe_enabled) begin
             pe_input_out <= 16'b0;
             weight_reg_active <= 16'b0;
             weight_reg_inactive <= 16'b0;

@@ -5,7 +5,7 @@
 
 module unified_buffer #(
     parameter int UNIFIED_BUFFER_WIDTH = 128,
-    parameter int SYSTOLIC_ARRAY_WIDTH = 3
+    parameter int SYSTOLIC_ARRAY_WIDTH = 2
 )(
     input logic clk,
     input logic rst,
@@ -30,24 +30,44 @@ module unified_buffer #(
     input logic [15:0] learning_rate_in,
 
     // Read ports from UB to left side of systolic array
-    output logic [15:0] ub_rd_input_data_out [SYSTOLIC_ARRAY_WIDTH],
-    output logic ub_rd_input_valid_out [SYSTOLIC_ARRAY_WIDTH],
+    // (I had trouble connecting arrays of ports to other modules in the tpu.sv file for some reason so I had to split them like so)
+    output logic [15:0] ub_rd_input_data_out_0,
+    output logic [15:0] ub_rd_input_data_out_1,
+    output logic ub_rd_input_valid_out_0,
+    output logic ub_rd_input_valid_out_1,
 
     // Read ports from UB to top of systolic array
-    output logic [15:0] ub_rd_weight_data_out [SYSTOLIC_ARRAY_WIDTH],
-    output logic ub_rd_weight_valid_out [SYSTOLIC_ARRAY_WIDTH],
+    output logic [15:0] ub_rd_weight_data_out_0,
+    output logic [15:0] ub_rd_weight_data_out_1,
+    output logic ub_rd_weight_valid_out_0,
+    output logic ub_rd_weight_valid_out_1,
 
     // Read ports from UB to bias modules in VPU
-    output logic [15:0] ub_rd_bias_data_out [SYSTOLIC_ARRAY_WIDTH],
+    output logic [15:0] ub_rd_bias_data_out_0,
+    output logic [15:0] ub_rd_bias_data_out_1,
 
     // Read ports from UB to loss modules (Y matrices) in VPU
-    output logic [15:0] ub_rd_Y_data_out [SYSTOLIC_ARRAY_WIDTH],
+    output logic [15:0] ub_rd_Y_data_out_0,
+    output logic [15:0] ub_rd_Y_data_out_1,
 
     // Read ports from UB to activation derivative modules (H matrices) in VPU
-    output logic [15:0] ub_rd_H_data_out [SYSTOLIC_ARRAY_WIDTH]
+    output logic [15:0] ub_rd_H_data_out_0,
+    output logic [15:0] ub_rd_H_data_out_1,
+
+    // Outputs to send number of columns to systolic array
+    output logic [15:0] ub_rd_col_size_out,
+    output logic ub_rd_col_size_valid_out
 );
 
     logic [15:0] ub_memory [0:UNIFIED_BUFFER_WIDTH-1];
+
+    logic [15:0] ub_rd_input_data_out [SYSTOLIC_ARRAY_WIDTH];
+    logic ub_rd_input_valid_out [SYSTOLIC_ARRAY_WIDTH];
+    logic [15:0] ub_rd_weight_data_out [SYSTOLIC_ARRAY_WIDTH];
+    logic ub_rd_weight_valid_out [SYSTOLIC_ARRAY_WIDTH];
+    logic [15:0] ub_rd_bias_data_out [SYSTOLIC_ARRAY_WIDTH];
+    logic [15:0] ub_rd_Y_data_out [SYSTOLIC_ARRAY_WIDTH];
+    logic [15:0] ub_rd_H_data_out [SYSTOLIC_ARRAY_WIDTH];
 
     logic [15:0] wr_ptr;
 
@@ -97,7 +117,6 @@ module unified_buffer #(
     logic [15:0] rd_grad_weight_time_counter; 
 
     // Internal logic for gradient descent inputs from UB to gradient descent modules
-    logic [15:0] grad_in [SYSTOLIC_ARRAY_WIDTH];
     logic [15:0] value_old_in [SYSTOLIC_ARRAY_WIDTH];
     logic grad_descent_valid_in [SYSTOLIC_ARRAY_WIDTH];
     logic [15:0] value_updated_out [SYSTOLIC_ARRAY_WIDTH];
@@ -126,6 +145,26 @@ module unified_buffer #(
         end
     endgenerate
 
+    // (I had trouble connecting arrays of ports to other modules in the tpu.sv file for some reason, so I had to connect them to split up output ports like so)
+    assign ub_rd_input_data_out_0 = ub_rd_input_data_out[0];
+    assign ub_rd_input_data_out_1 = ub_rd_input_data_out[1];
+    assign ub_rd_input_valid_out_0 = ub_rd_input_valid_out[0];
+    assign ub_rd_input_valid_out_1 = ub_rd_input_valid_out[1];
+
+    assign ub_rd_weight_data_out_0 = ub_rd_weight_data_out[0];
+    assign ub_rd_weight_data_out_1 = ub_rd_weight_data_out[1];
+    assign ub_rd_weight_valid_out_0 = ub_rd_weight_valid_out[0];
+    assign ub_rd_weight_valid_out_1 = ub_rd_weight_valid_out[1];
+
+    assign ub_rd_bias_data_out_0 = ub_rd_bias_data_out[0];
+    assign ub_rd_bias_data_out_1 = ub_rd_bias_data_out[1];
+
+    assign ub_rd_Y_data_out_0 = ub_rd_Y_data_out[0];
+    assign ub_rd_Y_data_out_1 = ub_rd_Y_data_out[1];
+
+    assign ub_rd_H_data_out_0 = ub_rd_H_data_out[0];
+    assign ub_rd_H_data_out_1 = ub_rd_H_data_out[1];
+
     always_comb begin
         //READING LOGIC (UB to left side of systolic array)
         if (ub_rd_start_in) begin
@@ -151,14 +190,17 @@ module unified_buffer #(
                         rd_weight_row_size = ub_rd_col_size;
                         rd_weight_col_size = ub_rd_row_size;
                         rd_weight_ptr = ub_rd_addr_in + ub_rd_col_size - 1;
+                        ub_rd_col_size_out = ub_rd_row_size;
                     end else begin
                         rd_weight_row_size = ub_rd_row_size;
                         rd_weight_col_size = ub_rd_col_size;
-                        rd_weight_ptr = ub_rd_row_size*ub_rd_col_size - ub_rd_col_size;
+                        rd_weight_ptr = ub_rd_addr_in + ub_rd_row_size*ub_rd_col_size - ub_rd_col_size;
+                        ub_rd_col_size_out = ub_rd_col_size;
                     end
 
                     rd_weight_skip_size = ub_rd_col_size + 1;
                     rd_weight_time_counter = '0;
+                    ub_rd_col_size_valid_out = 1'b1;
                 end
                 2: begin
                     rd_bias_ptr = ub_rd_addr_in;
@@ -195,10 +237,13 @@ module unified_buffer #(
                     grad_descent_ptr = ub_rd_addr_in;
                 end
             endcase
+        end else begin
+            ub_rd_col_size_out = 0;
+            ub_rd_col_size_valid_out = 1'b0;
         end
     end
 
-    always_comb begin
+    always_comb begin   // Automatically turn on gradient descent modules when bias or weight gradient descent pointers have been set by a read command
         if (
             rd_grad_bias_time_counter < rd_grad_bias_row_size + rd_grad_bias_col_size ||
             rd_grad_weight_time_counter < rd_grad_weight_row_size + rd_grad_weight_col_size

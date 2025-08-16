@@ -99,6 +99,4 @@ async def test_gradient_descent(dut):
     dut.value_old_in.value = 0
     await RisingEdge(dut.clk)
 
-    await ClockCycles(dut.clk, 10)
-
 

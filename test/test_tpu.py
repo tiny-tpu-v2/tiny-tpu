@@ -18,6 +18,8 @@ X = np.array([[2., 2.],
               [1., 0.],
               [1., 1.]])
 
+Y = np.array([0, 1, 1, 0])
+
 # weight layer 1
 W1 = np.array([
     [0.2985, -0.5792], 
@@ -25,24 +27,17 @@ W1 = np.array([
 ])
 
 # weight layer 2
-W2 = np.array([
-    [0.5266, 0.2958],
-    [0, 0],
-])
+W2 = np.array([0.5266, 0.2958])
 
 # bias 1
 B1 = [-0.4939, 0.189]
 
 
-B2 = np.array([0.6358, 0])
-
-Y = np.array([[0., 0],
-              [1., 0],
-              [1., 0],
-              [0., 0]])
+B2 = np.array([0.6358])
 
 # learning rate 
 learning_rate = 0.75
+leak_factor = 0.5
 
 # Expected output from systolic array (Z1 pre bias):
 # [-0.5614  1.0294]
@@ -77,291 +72,521 @@ async def test_tpu(dut):
 
     # rst the DUT (device under test)
     dut.rst.value = 1
-    dut.ub_wr_addr_in.value = 0
-    dut.ub_wr_addr_valid_in.value = 0
-    dut.ub_wr_host_data_in_1.value = 0
-    dut.ub_wr_host_data_in_2.value = 0
-    dut.ub_wr_host_valid_in_1.value = 0
-    dut.ub_wr_host_valid_in_2.value = 0
-    dut.ub_rd_input_transpose.value = 0
-    dut.ub_rd_input_start_in.value = 0
-    dut.ub_rd_input_addr_in.value = 0
-    dut.ub_rd_input_loc_in.value = 0
-    dut.ub_rd_weight_start_in.value = 0
-    dut.ub_rd_weight_addr_in.value = 0
-    dut.ub_rd_weight_loc_in.value = 0
+    dut.ub_wr_host_data_in[0].value = 0
+    dut.ub_wr_host_data_in[1].value = 0
+    dut.ub_wr_host_valid_in[0].value = 0
+    dut.ub_wr_host_valid_in[1].value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    dut.learning_rate_in.value = 0
+    dut.vpu_data_pathway.value = 0
     dut.sys_switch_in.value = 0
+    dut.vpu_leak_factor_in.value = 0
+    dut.inv_batch_size_times_two_in.value = 0
     await RisingEdge(dut.clk)
 
-    # set forward pass data pathway
-    dut.vpu_data_pathway.value = 0b1100
-    dut.vpu_leak_factor_in.value = to_fixed(0.5)
-    dut.inv_batch_size_times_two_in.value = to_fixed(2/4)
-    dut.ub_grad_descent_lr_in.value = to_fixed(learning_rate)
-
-    # Load X into UB (columns are staggered by 1 clock cycle)
     dut.rst.value = 0
-    dut.ub_wr_addr_in.value = 0
-    dut.ub_wr_addr_valid_in.value = 1
+    dut.learning_rate_in.value = to_fixed(learning_rate)
+    dut.vpu_leak_factor_in.value = to_fixed(leak_factor)
+    dut.inv_batch_size_times_two_in.value = to_fixed(2/len(X))
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_addr_valid_in.value = 0
-    dut.ub_wr_host_data_in_1.value = to_fixed(X[0][0])
-    dut.ub_wr_host_valid_in_1.value = 1
+    # Load X, Y, W1, B1, W2, B2 (in that order)
+    dut.ub_wr_host_data_in[0].value = to_fixed(X[0][0])
+    dut.ub_wr_host_valid_in[0].value = 1
     await RisingEdge(dut.clk)
 
-    for i in range(3):
-        dut.ub_wr_host_data_in_1.value = to_fixed(X[i+1][0])
-        dut.ub_wr_host_valid_in_1.value = 1
-        dut.ub_wr_host_data_in_2.value = to_fixed(X[i][1])
-        dut.ub_wr_host_valid_in_2.value = 1
+    for i in range(len(X) - 1):
+        dut.ub_wr_host_data_in[0].value = to_fixed(X[i + 1][0])
+        dut.ub_wr_host_valid_in[0].value = 1
+        dut.ub_wr_host_data_in[1].value = to_fixed(X[i][1])
+        dut.ub_wr_host_valid_in[1].value = 1
         await RisingEdge(dut.clk)
 
-    # Load W1 into UB
-    dut.ub_wr_host_data_in_1.value = to_fixed(W1[0][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(X[3][1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    dut.ub_wr_host_data_in[0].value = to_fixed(Y[0])
+    dut.ub_wr_host_valid_in[0].value = 1
+    dut.ub_wr_host_data_in[1].value = to_fixed(X[3][1])
+    dut.ub_wr_host_valid_in[1].value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_host_data_in_1.value = to_fixed(W1[1][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(W1[0][1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    for i in range(len(Y) - 1):
+        dut.ub_wr_host_data_in[0].value = to_fixed(Y[i + 1])
+        dut.ub_wr_host_valid_in[0].value = 1
+        dut.ub_wr_host_data_in[1].value = 0
+        dut.ub_wr_host_valid_in[1].value = 0
+        await RisingEdge(dut.clk)
+
+    dut.ub_wr_host_data_in[0].value = to_fixed(W1[0][0])
+    dut.ub_wr_host_valid_in[0].value = 1
+    dut.ub_wr_host_data_in[1].value = 0
+    dut.ub_wr_host_valid_in[1].value = 0
     await RisingEdge(dut.clk)
 
-    # Load B1 into UB
-    dut.ub_wr_host_data_in_1.value = to_fixed(B1[0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(W1[1][1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    dut.ub_wr_host_data_in[0].value = to_fixed(W1[1][0])
+    dut.ub_wr_host_valid_in[0].value = 1
+    dut.ub_wr_host_data_in[1].value = to_fixed(W1[0][1])
+    dut.ub_wr_host_valid_in[1].value = 1
     await RisingEdge(dut.clk)
 
-    # Load W2 into UB
-    dut.ub_wr_host_data_in_1.value = to_fixed(W2[0][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(B1[1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    dut.ub_wr_host_data_in[0].value = to_fixed(B1[0])
+    dut.ub_wr_host_valid_in[0].value = 1
+    dut.ub_wr_host_data_in[1].value = to_fixed(W1[1][1])
+    dut.ub_wr_host_valid_in[1].value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_host_data_in_1.value = to_fixed(W2[1][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(W2[0][1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    dut.ub_wr_host_data_in[0].value = to_fixed(W2[0])
+    dut.ub_wr_host_valid_in[0].value = 1
+    dut.ub_wr_host_data_in[1].value = to_fixed(B1[1])
+    dut.ub_wr_host_valid_in[1].value = 1
     await RisingEdge(dut.clk)
 
-    # Load B2 into UB
-    dut.ub_wr_host_data_in_1.value = to_fixed(B2[0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(W2[1][1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    dut.ub_wr_host_data_in[0].value = to_fixed(B2[0])
+    dut.ub_wr_host_valid_in[0].value = 1
+    dut.ub_wr_host_data_in[1].value = to_fixed(W2[1])
+    dut.ub_wr_host_valid_in[1].value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_host_data_in_1.value = to_fixed(Y[0][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(B2[1])
-    dut.ub_wr_host_valid_in_2.value = 1
+    dut.ub_wr_host_data_in[0].value = 0
+    dut.ub_wr_host_valid_in[0].value = 0
+    dut.ub_wr_host_data_in[1].value = 0
+    dut.ub_wr_host_valid_in[1].value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_wr_host_data_in_1.value = to_fixed(Y[1][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(Y[0][1])
-    dut.ub_wr_host_valid_in_2.value = 1
-    await RisingEdge(dut.clk)
-
-    dut.ub_wr_host_data_in_1.value = to_fixed(Y[2][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(Y[1][1])
-    dut.ub_wr_host_valid_in_2.value = 1
-    await RisingEdge(dut.clk)
-
-    dut.ub_wr_host_data_in_1.value = to_fixed(Y[3][0])
-    dut.ub_wr_host_valid_in_1.value = 1
-    dut.ub_wr_host_data_in_2.value = to_fixed(Y[2][1])
-    dut.ub_wr_host_valid_in_2.value = 1
-    await RisingEdge(dut.clk)
-
-    dut.ub_wr_host_data_in_1.value = 0
-    dut.ub_wr_host_valid_in_1.value = 0
-    dut.ub_wr_host_data_in_2.value = to_fixed(Y[3][1])
-    dut.ub_wr_host_valid_in_2.value = 1
-    await RisingEdge(dut.clk)
 
     # Load W1^T into systolic array (reading W1 from UB to top of systolic array)
-    dut.ub_rd_weight_start_in.value = 1
-    dut.ub_rd_weight_transpose.value = 1
-    dut.ub_rd_weight_addr_in.value = 9
-    dut.ub_rd_weight_loc_in.value = 4
-
-    dut.ub_wr_host_data_in_2.value = 0
-    dut.ub_wr_host_valid_in_2.value = 0
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 12
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_weight_start_in.value = 0
-    dut.ub_rd_weight_transpose.value = 0
-    dut.ub_rd_weight_addr_in.value = 0
-    dut.ub_rd_weight_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     await RisingEdge(dut.clk)
 
     # Load X into systolic array (reading X from UB to left side of systolic array)
-    dut.ub_rd_input_start_in.value = 1
-    dut.ub_rd_input_addr_in.value = 0
-    dut.ub_rd_input_loc_in.value = 8
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 2
+    dut.vpu_data_pathway.value = 0b1100     # Set VPU datapathway to do forward pass
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_input_start_in.value = 0
-    dut.ub_rd_input_addr_in.value = 0
-    dut.ub_rd_input_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     dut.sys_switch_in.value = 1
     await RisingEdge(dut.clk)
-
+    
     # Read B1 from UB for 4 clock cycles
-    dut.ub_rd_bias_start_in.value = 1
-    dut.ub_rd_bias_addr_in.value = 12
-    dut.ub_rd_bias_loc_in.value = 4             # Batch size of 4
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 2
+    dut.ub_rd_addr_in.value = 16
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 2
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_bias_start_in.value = 0
-    dut.ub_rd_bias_addr_in.value = 0
-    dut.ub_rd_bias_loc_in.value = 0
-    dut.sys_switch_in.value = 0
-
-    await FallingEdge(dut.vpu_valid_out_1)  # Specifies when the last inputs of the layer have finished being calculated, therefore we can start loading in the weights for the next layer
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_2)  # wait until last value of vpu is done
 
     # Load in W2^T
-    dut.ub_rd_weight_start_in.value = 1
-    dut.ub_rd_weight_transpose.value = 1
-    dut.ub_rd_weight_addr_in.value = 15 ### lol lets do 15 CHANGE!!!
-    dut.ub_rd_weight_loc_in.value = 4
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 18
+    dut.ub_rd_row_size.value = 1
+    dut.ub_rd_col_size.value = 2
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_weight_start_in.value = 0
-    dut.ub_rd_weight_transpose.value = 0
-    dut.ub_rd_weight_addr_in.value = 0
-    dut.ub_rd_weight_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     await RisingEdge(dut.clk)
 
-    ### Load in H1 from UB --> systolic array
-    dut.vpu_data_pathway.value = 0b1111         # Switch vpu datapath to the transition datapath (combinational) (set after the falling edge of the last column of the vpu is detected)
-    dut.ub_rd_input_start_in.value = 1
-    dut.ub_rd_input_addr_in.value = 28      # change the address to 28
-    dut.ub_rd_input_loc_in.value = 8        # keep it 8 cus we have 8 values of H1
+    # Load in H1
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 21
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 2
+    dut.vpu_data_pathway.value = 0b1111     # Set VPU datapathway to the transition pathway from forward pass to backward pass
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_input_start_in.value = 0
-    dut.ub_rd_input_addr_in.value = 0
-    dut.ub_rd_input_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     dut.sys_switch_in.value = 1
     await RisingEdge(dut.clk)
 
     # Read B2 from UB for 4 clock cycles because we have a batch size of 4
-    dut.ub_rd_bias_start_in.value = 1
-    dut.ub_rd_bias_addr_in.value = 18 
-    dut.ub_rd_bias_loc_in.value = 4             # Batch size of 4
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 2
+    dut.ub_rd_addr_in.value = 20
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 1
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_bias_start_in.value = 0
-    dut.ub_rd_bias_addr_in.value = 0
-    dut.ub_rd_bias_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Reading Y values for the loss modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 3
+    dut.ub_rd_addr_in.value = 8
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 1
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_Y_start_in.value = 1
-    dut.ub_rd_Y_addr_in.value = 20
-    dut.ub_rd_Y_loc_in.value = 8        # 8 because 4 elements are zero padded
-    dut.sys_switch_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_Y_start_in.value = 0
-    dut.ub_rd_Y_addr_in.value = 0
-    dut.ub_rd_Y_loc_in.value = 0
-    dut.sys_switch_in.value = 0
-
-    await FallingEdge(dut.vpu_valid_out_1)  # THIS IS LIKE AN EVENT LISTENER DEPENDENT ON vpu_valid_out_1. Number of clk cycles are variable!!! Specifies when the last inputs of the layer have finished being calculated, therefore we can start loading in the weights for the next layer
-
-    # Load in W2
-    dut.ub_rd_weight_start_in.value = 1
-    dut.ub_rd_weight_transpose.value = 0
-    dut.ub_rd_weight_addr_in.value = 16 ### READ 16 instead of 15 now BECAUSE WE'RE NOT DOING A TRANSPOSE. 
-    dut.ub_rd_weight_loc_in.value = 4
+    # Read biases (B2) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 5
+    dut.ub_rd_addr_in.value = 20
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 1
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_weight_start_in.value = 0
-    dut.ub_rd_weight_transpose.value = 0
-    dut.ub_rd_weight_addr_in.value = 0
-    dut.ub_rd_weight_loc_in.value = 0
-    await RisingEdge(dut.clk)
-    
-    ### Load in dL/dZ from UB --> systolic array
-    dut.vpu_data_pathway.value = 0b0001         # Switch vpu datapath to the transition datapath (combinational) (set after the falling edge of the last column of the vpu is detected)
-    dut.ub_rd_input_start_in.value = 1
-    dut.ub_rd_input_addr_in.value = 36      # make it address 36 cus thats where dL/dZ[2] gets stored in first
-    dut.ub_rd_input_loc_in.value = 8        # because of zero padding! we read 8. NOT 4!!!
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_input_start_in.value = 0
-    dut.ub_rd_input_addr_in.value = 0
-    dut.ub_rd_input_loc_in.value = 0
+    await FallingEdge(dut.vpu_valid_out_1)
+
+    # Load in W2 from UB to top of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 18
+    dut.ub_rd_row_size.value = 1
+    dut.ub_rd_col_size.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load in dL/dZ from UB to left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 29
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 1
+    dut.vpu_data_pathway.value = 0b0001
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     dut.sys_switch_in.value = 1
     await RisingEdge(dut.clk)
 
     # Read H1 from UB to VPU (activation derivative modules) for 4 clock cycles
-    dut.ub_rd_H_start_in.value = 1
-    dut.ub_rd_H_addr_in.value = 28
-    dut.ub_rd_H_loc_in.value = 8             # Batch size of 4, with zero padding
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 4
+    dut.ub_rd_addr_in.value = 21
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 2
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_H_start_in.value = 0
-    dut.ub_rd_H_addr_in.value = 0
-    dut.ub_rd_H_loc_in.value = 0
-    dut.sys_switch_in.value = 0
-
-    await FallingEdge(dut.vpu_valid_out_1)  # THIS IS LIKE AN EVENT LISTENER DEPENDENT ON vpu_valid_out_1. Number of clk cycles are variable!!! Specifies when the last inputs of the layer have finished being calculated, therefore we can start loading in the weights for the next layer
-
-    # NOW CALCULATING LEAF NODES (Requires Tiling)
-
-    # Load first H1 tile into top of systolic array
-    dut.ub_rd_weight_transpose.value = 0
-    dut.ub_rd_weight_start_in.value = 1
-    dut.ub_rd_weight_addr_in.value = 2
-    dut.ub_rd_weight_loc_in.value = 4
+    # Read biases (B1) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 5
+    dut.ub_rd_addr_in.value = 16
+    dut.ub_rd_row_size.value = 4
+    dut.ub_rd_col_size.value = 2
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_weight_transpose.value = 0
-    dut.ub_rd_weight_start_in.value = 0
-    dut.ub_rd_weight_addr_in.value = 0
-    dut.ub_rd_weight_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_2)
+
+    # NOW CALCULATING LEAF NODES (Weight gradients, requires tiling)
+    # Load first H1 tile into top of systolic array (we are calculating dL/dW2 first)
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 21
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
     await RisingEdge(dut.clk)
 
-    # Load first dL/dZ tile
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load first (dL/dZ2)^T tile into left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 29
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 1
     dut.vpu_data_pathway.value = 0b0000
-    dut.ub_rd_input_transpose.value = 1
-    dut.ub_rd_input_start_in.value = 1
-    dut.ub_rd_input_addr_in.value = 44
-    dut.ub_rd_input_loc_in.value = 4
     await RisingEdge(dut.clk)
 
-    dut.ub_rd_input_transpose.value = 0
-    dut.ub_rd_input_start_in.value = 0
-    dut.ub_rd_input_addr_in.value = 0
-    dut.ub_rd_input_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
     dut.sys_switch_in.value = 1
     await RisingEdge(dut.clk)
 
+    # Read weights (W2) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 6
+    dut.ub_rd_addr_in.value = 18
+    dut.ub_rd_row_size.value = 1
+    dut.ub_rd_col_size.value = 2
     dut.sys_switch_in.value = 0
-    dut.ub_grad_descent_start_in.value = 1
-    dut.ub_grad_descent_w_old_addr_in.value = 8
-    dut.ub_grad_descent_loc_in.value = 4
     await RisingEdge(dut.clk)
 
-    dut.ub_grad_descent_start_in.value = 0
-    dut.ub_grad_descent_w_old_addr_in.value = 0
-    dut.ub_grad_descent_loc_in.value = 0
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_2)
+
+    # Load second H1 tile into top of systolic array (we are calculating dL/dW2 first)
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 25
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
     await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load second (dL/dZ2)^T tile into left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 31
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 1
+    dut.vpu_data_pathway.value = 0b0000
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read weights (W2) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 6
+    dut.ub_rd_addr_in.value = 18
+    dut.ub_rd_row_size.value = 1
+    dut.ub_rd_col_size.value = 2
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_2)
+
+    # Calculating W1 gradients
+    # Load first X inputs tile into top of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load first (dL/dZ1)^T tile into left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 33
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    dut.vpu_data_pathway.value = 0b0000
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read weights (W1) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 6
+    dut.ub_rd_addr_in.value = 12
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_2)
+
+    # Load second H1 tile into top of systolic array (we are calculating dL/dW2 first)
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 4
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load second (dL/dZ1)^T tile into left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 37
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    dut.vpu_data_pathway.value = 0b0000
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read weights (W1) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 6
+    dut.ub_rd_addr_in.value = 12
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_2)
+
+
 
     await ClockCycles(dut.clk, 10)
 
+    
+    
     
