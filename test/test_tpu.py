@@ -13,7 +13,7 @@ def to_fixed(val, frac_bits=8):
 
 
 # input:
-X = np.array([[2., 2.],
+X = np.array([[0., 0.],
               [0., 1.],
               [1., 0.],
               [1., 1.]])
@@ -209,7 +209,7 @@ async def test_tpu(dut):
     dut.ub_rd_addr_in.value = 0
     dut.ub_rd_row_size.value = 0
     dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_2)  # wait until last value of vpu is done
+    await FallingEdge(dut.vpu_valid_out_1)  # wait until last value of vpu is done
 
     # Load in W2^T
     dut.ub_rd_start_in.value = 1
@@ -363,7 +363,7 @@ async def test_tpu(dut):
     dut.ub_rd_addr_in.value = 0
     dut.ub_rd_row_size.value = 0
     dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_2)
+    await FallingEdge(dut.vpu_valid_out_1)
 
     # NOW CALCULATING LEAF NODES (Weight gradients, requires tiling)
     # Load first H1 tile into top of systolic array (we are calculating dL/dW2 first)
@@ -418,7 +418,7 @@ async def test_tpu(dut):
     dut.ub_rd_addr_in.value = 0
     dut.ub_rd_row_size.value = 0
     dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_2)
+    await FallingEdge(dut.vpu_valid_out_1)
 
     # Load second H1 tile into top of systolic array (we are calculating dL/dW2 first)
     dut.ub_rd_start_in.value = 1
@@ -472,7 +472,7 @@ async def test_tpu(dut):
     dut.ub_rd_addr_in.value = 0
     dut.ub_rd_row_size.value = 0
     dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_2)
+    await FallingEdge(dut.vpu_valid_out_1)
 
     # Calculating W1 gradients
     # Load first X inputs tile into top of systolic array
@@ -527,7 +527,7 @@ async def test_tpu(dut):
     dut.ub_rd_addr_in.value = 0
     dut.ub_rd_row_size.value = 0
     dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_2)
+    await FallingEdge(dut.vpu_valid_out_1)
 
     # Load second H1 tile into top of systolic array (we are calculating dL/dW2 first)
     dut.ub_rd_start_in.value = 1
@@ -581,7 +581,7 @@ async def test_tpu(dut):
     dut.ub_rd_addr_in.value = 0
     dut.ub_rd_row_size.value = 0
     dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_2)
+    await FallingEdge(dut.vpu_valid_out_1)
 
 
 
