@@ -73,7 +73,7 @@ module tpu #(
     assign ub_wr_data_in[1] = vpu_data_out_2;
     assign ub_wr_valid_in[0] = vpu_valid_out_1;
     assign ub_wr_valid_in[1] = vpu_valid_out_2;
-
+    
     unified_buffer #(
         .SYSTOLIC_ARRAY_WIDTH(SYSTOLIC_ARRAY_WIDTH)
     ) ub_inst(
