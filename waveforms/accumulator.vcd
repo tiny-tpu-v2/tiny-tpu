@@ -1,0 +1,243 @@
+$date
+	Fri May 23 22:57:13 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module accumulator $end
+$var wire 16 ! acc_data_in [15:0] $end
+$var wire 1 " acc_dequeue $end
+$var wire 1 # acc_enqueue $end
+$var wire 1 $ clk $end
+$var wire 1 % rst $end
+$var parameter 32 & ACC_WIDTH $end
+$var reg 16 ' acc_data_out [15:0] $end
+$var reg 1 ( acc_valid_out $end
+$var reg 8 ) counter [7:0] $end
+$var reg 8 * counter_reg [7:0] $end
+$scope begin $ivl_for_loop0 $end
+$var integer 32 + i [31:0] $end
+$upscope $end
+$scope begin $ivl_for_loop1 $end
+$var integer 32 , i [31:0] $end
+$upscope $end
+$upscope $end
+$scope module accumulator $end
+$var reg 16 - \acc_mem_reg[0] [15:0] $end
+$upscope $end
+$scope module accumulator $end
+$var reg 16 . \acc_mem_reg[1] [15:0] $end
+$upscope $end
+$scope module accumulator $end
+$var reg 16 / \acc_mem_reg[2] [15:0] $end
+$upscope $end
+$scope module accumulator $end
+$var reg 16 0 \acc_mem_reg[3] [15:0] $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b100 &
+$end
+#0
+$dumpvars
+b0 0
+b0 /
+b0 .
+b0 -
+b100 ,
+b100 +
+b0 *
+b0 )
+0(
+b0 '
+0%
+1$
+0#
+0"
+b0 !
+$end
+#5000
+0$
+#10000
+b10 !
+1#
+b100 +
+1$
+#15000
+0$
+#20000
+b100 !
+b1 )
+b10 -
+b100 +
+1$
+#25000
+0$
+#30000
+b111 !
+b1 *
+b10 )
+b100 .
+b100 +
+1$
+#35000
+0$
+#40000
+b11 !
+b10 *
+b11 )
+b111 /
+b100 +
+1$
+#45000
+0$
+#50000
+0#
+b11 *
+b100 )
+b11 0
+b100 +
+1$
+#55000
+0$
+#60000
+1"
+b100 +
+1$
+#65000
+0$
+#70000
+b10 '
+b11 )
+1(
+b100 +
+1$
+#75000
+0$
+#80000
+b100 '
+b10 )
+b100 +
+1$
+#85000
+0$
+#90000
+b111 '
+b1 )
+b100 +
+1$
+#95000
+0$
+#100000
+0"
+b11 '
+b0 )
+b100 +
+1$
+#105000
+0$
+#110000
+b0 '
+0(
+b100 +
+1$
+#115000
+0$
+#120000
+b100 +
+1$
+#125000
+0$
+#130000
+b100 +
+1$
+#135000
+0$
+#140000
+b100 +
+1$
+#145000
+0$
+#150000
+b100 +
+1$
+#155000
+0$
+#160000
+b100 +
+1$
+#165000
+0$
+#170000
+b100 +
+1$
+#175000
+0$
+#180000
+b100 +
+1$
+#185000
+0$
+#190000
+b100 +
+1$
+#195000
+0$
+#200000
+b100 +
+1$
+#205000
+0$
+#210000
+b100 +
+1$
+#215000
+0$
+#220000
+b100 +
+1$
+#225000
+0$
+#230000
+b100 +
+1$
+#235000
+0$
+#240000
+b100 +
+1$
+#245000
+0$
+#250000
+b100 +
+1$
+#255000
+0$
+#260000
+b100 +
+1$
+#265000
+0$
+#270000
+b100 +
+1$
+#275000
+0$
+#280000
+b100 +
+1$
+#285000
+0$
+#290000
+b100 +
+1$
+#295000
+0$
+#300000
+b100 +
+1$
+#300001

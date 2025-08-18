@@ -16,10 +16,6 @@ dist/
 build/
 *.egg-info/
 
-# Simulation and waveform files
-**/sim_build/
-*.vcd
-
 # IDE specific files
 .vscode/
 .idea/
