@@ -2,6 +2,14 @@
 
 A minimal tensor processing unit (TPU), reinvented from Google's TPU V2 and V1.
 
+
+<video width="640" height="360" controls>
+  <source src="./videos/tinytpu.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+
+
 ## Table of Contents
 
 - [Motivation](#motivation)
