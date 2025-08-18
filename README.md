@@ -54,9 +54,9 @@ The details of the TPU architecture is closed source. So is pretty much everythi
 ## Instruction Set
 Our ISA is 156 bits, and looks like this:
 
-<div style="overflow-x: auto; max-width: 100%; border: 1px solid #ccc; padding: 4px;">
-  <img src="images/instruction_set.svg" alt="TPU ISA" style="width: 200%; max-height: 400px;">
-</div>
+<iframe src="images/instruction_set.svg" 
+        style="width:1600px; height:800px; border:1px solid #ccc;" 
+        scrolling="auto"></iframe>
 
 
 It defines all of the necessary signals for transferring data, and interacting with our TPU. The implementation of the control unit (reads instructions) can be found at src/control_unit.sv.
