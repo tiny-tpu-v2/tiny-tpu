@@ -195,7 +195,7 @@ We are open source and appreciate any contributions! Here is our workflow and st
    sudo apt install iverilog
    ```
 
-## Adding a New Module to tiny-tpu
+## Adding Modules
 
 Follow these steps to add a new module to the project:
 
@@ -216,11 +216,11 @@ end
 endmodule
 ```
 
-### 3. Create the Test File
+### 3. Creating Tests
 
 Create `test_<MODULE_NAME>.py` in the `test/` directory.
 
-### 4. Update the Makefile
+### 4. Makefile Updates
 
 Add your module to the `SOURCES` variable and create a test target:
 
@@ -240,7 +240,7 @@ Run the following command to view the generated waveforms:
 gtkwave waveforms/<MODULE_NAME>.vcd
 ```
 
-## Running Commands from Makefile
+## Makefile Commands
 
 Run tests:
 ```bash
@@ -256,7 +256,7 @@ Or use the shorthand:
 make show_<MODULE_NAME>
 ```
 
-## Fixed Point Viewing in GTKWave
+## GTKWwave Setup
 
 1. Right-click all signals
 2. Navigate to: **Data Format** → **Fixed Point Shift** → **Specify**
