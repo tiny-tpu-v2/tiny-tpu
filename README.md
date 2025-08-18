@@ -4,6 +4,10 @@ A minimal tensor processing unit (TPU), reinvented from Google's TPU V2 and V1.
 
 
 
+https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
+
+
+
 ## Table of Contents
 
 - [Motivation](#motivation)
