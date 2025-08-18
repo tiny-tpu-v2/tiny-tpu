@@ -5,7 +5,7 @@ A minimal tensor processing unit (TPU), reinvented from Google's TPU V2 and V1.
 The details of the TPU architecture is closed source. So is pretty much everything else in chip design. We want this resource to be the ultimate guide to breaking into building chip accelerators, for all levels of technical expertise. No matter who you are, even if you just learned high school math and only know y = mx + b. Specifically before this project, none of us had any experience professionally in hardware architecture/design! We started this ambitious project as as a dedicated group of people wanting to break into hardware design. We've all collectively gained significant design experience from this project, and we hope that the "inventive" nature of the article at tinytpu.com, this README, and the code in this repository will help you walk back through our steps and learn how to approach problems with an inventive mindset!
 
 ## Architecture
-[![TPU Architecture](images/tpu.svg)](images/tpu.svg)
+![TPU Architecture](images/tpu.png)
 
 ### Processing Element (PE)
 - **Function**: performs a multiply-accumulate operation every clock cycle
@@ -52,13 +52,9 @@ The details of the TPU architecture is closed source. So is pretty much everythi
 - See [Instruction Set](#instruction-set) section below
 
 ## Instruction Set
-Our ISA is 156 bits, and looks like this:
+Our ISA is 156 bits. The full image of it is way too long to put on here! It can be found in the images folder.
 
-<div style="overflow: auto; max-height: 500px; max-width: 100%;">
-  <img src="images/instruction_set.png" alt="Instruction Set" style="max-width: none;">
-</div>
-
-It defines all of the necessary signals for transferring data, and interacting with our TPU. The implementation of the control unit (reads instructions) can be found at src/control_unit.sv.
+Our ISA defines all of the necessary signals for transferring data, and interacting with our TPU. The implementation of the control unit (reads instructions) can be found at src/control_unit.sv.
 
 The `instruction` bus is **94 bits wide** (`[93:0]`) and is divided into fields that directly control subsystems.
 
