@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
-[*] Sun Aug 17 03:34:45 2025
+[*] Sun Aug 17 11:34:20 2025
 [*]
 [dumpfile] "/home/xander/verilog/tpu/apex-tpu/waveforms/tpu.vcd"
-[dumpfile_mtime] "Sun Aug 17 00:28:26 2025"
-[dumpfile_size] 189859
+[dumpfile_mtime] "Sun Aug 17 11:30:04 2025"
+[dumpfile_size] 189763
 [savefile] "/home/xander/verilog/tpu/apex-tpu/waveforms/tpu.gtkw"
-[timestart] 186300
+[timestart] 142400
 [size] 1892 979
-[pos] 258 213
-*-14.784813 295200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] 807 138
+*-14.784813 174500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tpu.
 [treeopen] tpu.systolic_inst.
 [treeopen] tpu.vpu_inst.
@@ -51,17 +51,18 @@ tpu.ub_rd_input_valid_out_0
 tpu.ub_rd_input_data_out_1[15:0]
 @28
 tpu.ub_rd_input_valid_out_1
-@201
--
 @200
+-
 -UB to Top of Systolic Array
 @40000420
 [fpshift_count] 8
 tpu.sys_switch_in
 [fpshift_count] 8
 tpu.ub_rd_weight_data_out_0[15:0]
+@40000421
 [fpshift_count] 8
 tpu.ub_rd_weight_valid_out_0
+@40000420
 [fpshift_count] 8
 tpu.ub_rd_weight_data_out_1[15:0]
 [fpshift_count] 8

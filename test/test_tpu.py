@@ -366,115 +366,8 @@ async def test_tpu(dut):
     await FallingEdge(dut.vpu_valid_out_1)
 
     # NOW CALCULATING LEAF NODES (Weight gradients, requires tiling)
-    # Load first H1 tile into top of systolic array (we are calculating dL/dW2 first)
-    dut.ub_rd_start_in.value = 1
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 1
-    dut.ub_rd_addr_in.value = 21
-    dut.ub_rd_row_size.value = 2
-    dut.ub_rd_col_size.value = 2
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_start_in.value = 0
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 0
-    dut.ub_rd_row_size.value = 0
-    dut.ub_rd_col_size.value = 0
-    await RisingEdge(dut.clk)
-
-    # Load first (dL/dZ2)^T tile into left side of systolic array
-    dut.ub_rd_start_in.value = 1
-    dut.ub_rd_transpose.value = 1
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 29
-    dut.ub_rd_row_size.value = 2
-    dut.ub_rd_col_size.value = 1
-    dut.vpu_data_pathway.value = 0b0000
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_start_in.value = 0
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 0
-    dut.ub_rd_row_size.value = 0
-    dut.ub_rd_col_size.value = 0
-    dut.sys_switch_in.value = 1
-    await RisingEdge(dut.clk)
-
-    # Read weights (W2) from UB to gradient descent modules in VPU
-    dut.ub_rd_start_in.value = 1
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 6
-    dut.ub_rd_addr_in.value = 18
-    dut.ub_rd_row_size.value = 1
-    dut.ub_rd_col_size.value = 2
-    dut.sys_switch_in.value = 0
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_start_in.value = 0
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 0
-    dut.ub_rd_row_size.value = 0
-    dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_1)
-
-    # Load second H1 tile into top of systolic array (we are calculating dL/dW2 first)
-    dut.ub_rd_start_in.value = 1
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 1
-    dut.ub_rd_addr_in.value = 25
-    dut.ub_rd_row_size.value = 2
-    dut.ub_rd_col_size.value = 2
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_start_in.value = 0
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 0
-    dut.ub_rd_row_size.value = 0
-    dut.ub_rd_col_size.value = 0
-    await RisingEdge(dut.clk)
-
-    # Load second (dL/dZ2)^T tile into left side of systolic array
-    dut.ub_rd_start_in.value = 1
-    dut.ub_rd_transpose.value = 1
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 31
-    dut.ub_rd_row_size.value = 2
-    dut.ub_rd_col_size.value = 1
-    dut.vpu_data_pathway.value = 0b0000
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_start_in.value = 0
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 0
-    dut.ub_rd_row_size.value = 0
-    dut.ub_rd_col_size.value = 0
-    dut.sys_switch_in.value = 1
-    await RisingEdge(dut.clk)
-
-    # Read weights (W2) from UB to gradient descent modules in VPU
-    dut.ub_rd_start_in.value = 1
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 6
-    dut.ub_rd_addr_in.value = 18
-    dut.ub_rd_row_size.value = 1
-    dut.ub_rd_col_size.value = 2
-    dut.sys_switch_in.value = 0
-    await RisingEdge(dut.clk)
-
-    dut.ub_rd_start_in.value = 0
-    dut.ub_rd_transpose.value = 0
-    dut.ub_ptr_select.value = 0
-    dut.ub_rd_addr_in.value = 0
-    dut.ub_rd_row_size.value = 0
-    dut.ub_rd_col_size.value = 0
-    await FallingEdge(dut.vpu_valid_out_1)
-
-    # Calculating W1 gradients
+    
+    # Calculating W1 gradients (W1 before W2)
     # Load first X inputs tile into top of systolic array
     dut.ub_rd_start_in.value = 1
     dut.ub_rd_transpose.value = 0
@@ -571,6 +464,115 @@ async def test_tpu(dut):
     dut.ub_ptr_select.value = 6
     dut.ub_rd_addr_in.value = 12
     dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_1)
+
+    # Now calculating W2 gradients
+    # Load first H1 tile into top of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 21
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load first (dL/dZ2)^T tile into left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 29
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 1
+    dut.vpu_data_pathway.value = 0b0000
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read weights (W2) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 6
+    dut.ub_rd_addr_in.value = 18
+    dut.ub_rd_row_size.value = 1
+    dut.ub_rd_col_size.value = 2
+    dut.sys_switch_in.value = 0
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await FallingEdge(dut.vpu_valid_out_1)
+
+    # Load second H1 tile into top of systolic array (we are calculating dL/dW2 first)
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 1
+    dut.ub_rd_addr_in.value = 25
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 2
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    await RisingEdge(dut.clk)
+
+    # Load second (dL/dZ2)^T tile into left side of systolic array
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 1
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 31
+    dut.ub_rd_row_size.value = 2
+    dut.ub_rd_col_size.value = 1
+    dut.vpu_data_pathway.value = 0b0000
+    await RisingEdge(dut.clk)
+
+    dut.ub_rd_start_in.value = 0
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 0
+    dut.ub_rd_addr_in.value = 0
+    dut.ub_rd_row_size.value = 0
+    dut.ub_rd_col_size.value = 0
+    dut.sys_switch_in.value = 1
+    await RisingEdge(dut.clk)
+
+    # Read weights (W2) from UB to gradient descent modules in VPU
+    dut.ub_rd_start_in.value = 1
+    dut.ub_rd_transpose.value = 0
+    dut.ub_ptr_select.value = 6
+    dut.ub_rd_addr_in.value = 18
+    dut.ub_rd_row_size.value = 1
     dut.ub_rd_col_size.value = 2
     dut.sys_switch_in.value = 0
     await RisingEdge(dut.clk)
