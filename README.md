@@ -1,8 +1,31 @@
 # tiny-tpu
 A minimal tensor processing unit (TPU), reinvented from Google's TPU V2 and V1.
 
-## Motivation
-The details of the TPU architecture is closed source. So is pretty much everything else in chip design. We want this resource to be the ultimate guide to breaking into building chip accelerators, for all levels of technical expertise. No matter who you are, even if you just learned high school math and only know y = mx + b. Specifically before this project, none of us had any experience professionally in hardware architecture/design! We started this ambitious project as as a dedicated group of people wanting to break into hardware design. We've all collectively gained significant design experience from this project, and we hope that the "inventive" nature of the article at tinytpu.com, this README, and the code in this repository will help you walk back through our steps and learn how to approach problems with an inventive mindset!
+
+## Contents
+
+- [Motivation](#motivation)
+- [Architecture](#architecture)
+  - [Processing Element (PE)](#processing-element-pe)
+  - [Systolic Array](#systolic-array)
+  - [Vector Processing Unit (VPU)](#vector-processing-unit-vpu)
+  - [Unified Buffer (UB)](#unified-buffer-ub)
+  - [Control Unit](#control-unit)
+- [Instruction Set](#instruction-set)
+- [Example Instruction Sequence](#example-instruction-sequence)
+- [Future Steps](#future-steps)
+- [Setup](#setup)
+  - [MacOS specific](#macos-specific)
+  - [Ubuntu specific](#ubuntu-specific)
+- [Adding a new module to the tiny-tpu](#adding-a-new-module-to-the-tiny-tpu)
+  - [1. Create the module file](#1-create-the-module-file)
+  - [2. Create the dump file](#2-create-the-dump-file)
+  - [3. Create the test file](#3-create-the-test-file)
+  - [4. Update the Makefile](#4-update-the-makefile)
+  - [5. View waveforms](#5-view-waveforms)
+- [Running commands from Makefile](#running-commands-from-makefile)
+- [Fixed point viewing in gtkwave](#fixed-point-viewing-in-gtkwave)
+- [What is a gtkw file?](#what-is-a-gtkw-file)
 
 ## Architecture
 ![TPU Architecture](images/tpu.png)
@@ -233,3 +256,6 @@ Data Format -> Fixed Point Shift -> ON
 
 ## What is a gtkw file?
 Stores the signals for make show_<MODULE_NAME>. Only need to save it once, after running gtkwave waveforms/<MODULE_NAME>.vcd
+
+## Motivation
+The details of the TPU architecture is closed source. So is pretty much everything else in chip design. We want this resource to be the ultimate guide to breaking into building chip accelerators, for all levels of technical expertise. No matter who you are, even if you just learned high school math and only know y = mx + b. Specifically before this project, none of us had any experience professionally in hardware architecture/design! We started this ambitious project as as a dedicated group of people wanting to break into hardware design. We've all collectively gained significant design experience from this project, and we hope that the "inventive" nature of the article at tinytpu.com, this README, and the code in this repository will help you walk back through our steps and learn how to approach problems with an inventive mindset!
