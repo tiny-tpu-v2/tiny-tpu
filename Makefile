@@ -22,13 +22,10 @@ SOURCES = src/pe.sv \
           src/leaky_relu_derivative_child.sv \
           src/leaky_relu_derivative_parent.sv \
           src/systolic.sv \
-          src/nn.sv \
           src/bias_child.sv \
           src/bias_parent.sv \
           src/fixedpoint.sv \
           src/control_unit.sv \
-          src/input_acc.sv \
-          src/weight_acc.sv \
           src/unified_buffer.sv \
           src/vpu.sv \
           src/loss_parent.sv \
