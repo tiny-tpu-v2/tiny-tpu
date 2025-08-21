@@ -46,7 +46,7 @@ https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
 
 ### Systolic Array
 
-- **Architecture**: A grid of processing elements, starting from 2x2
+- **Architecture**: A 2D grid of processing elements
 - **Data Movement**:
   - Input values flow horizontally across the array
   - Partial sums flow vertically down the array
@@ -162,7 +162,7 @@ The `instruction` bus is **94 bits wide** (`[93:0]`) and is divided into fields 
 
 Instructions are directly loaded into an instruction buffer on the chip from a testbench file.
 
-- See `tests/tpu.v` for our forward and backward pass instruction sequence
+- See `tests/test_tpu.py` for our forward and backward pass instruction sequence
 - See the [Setup](#setup) section on how to run this testbench 
 
 ## Future Steps
