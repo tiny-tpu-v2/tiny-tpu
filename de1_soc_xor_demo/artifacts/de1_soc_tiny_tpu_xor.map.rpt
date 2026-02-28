@@ -1,5 +1,5 @@
 Analysis & Synthesis report for de1_soc_tiny_tpu_xor
-Sat Feb 28 14:49:15 2026
+Sat Feb 28 15:45:49 2026
 Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
 
 
@@ -93,7 +93,7 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                      ;
 +---------------------------------+-------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sat Feb 28 14:49:15 2026           ;
+; Analysis & Synthesis Status     ; Successful - Sat Feb 28 15:45:48 2026           ;
 ; Quartus Prime Version           ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
 ; Revision Name                   ; de1_soc_tiny_tpu_xor                            ;
 ; Top-level Entity Name           ; de1_soc_tiny_tpu_xor_top                        ;
@@ -208,41 +208,41 @@ on the Quartus Prime software download page.
 ; Number detected on machine ; 20          ;
 ; Maximum allowed            ; 14          ;
 ;                            ;             ;
-; Average used               ; 1.42        ;
+; Average used               ; 2.05        ;
 ; Maximum used               ; 14          ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;  15.1%      ;
-;     Processor 3            ;  10.5%      ;
-;     Processor 4            ;  10.4%      ;
-;     Processor 5            ;   5.3%      ;
+;     Processor 2            ;  29.0%      ;
+;     Processor 3            ;  28.9%      ;
+;     Processor 4            ;  28.8%      ;
+;     Processor 5            ;  17.7%      ;
 ;     Processors 6-14        ;   0.0%      ;
 +----------------------------+-------------+
 
 
-+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Analysis & Synthesis Source Files Read                                                                                                                                                           ;
-+-----------------------------------------------------+-----------------+------------------------+---------------------------------------------------------------------------------------+---------+
-; File Name with User-Entered Path                    ; Used in Netlist ; File Type              ; File Name with Absolute Path                                                          ; Library ;
-+-----------------------------------------------------+-----------------+------------------------+---------------------------------------------------------------------------------------+---------+
-; de1_soc_tiny_tpu_xor_top.v                          ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/de1_soc_tiny_tpu_xor_top.v      ;         ;
-; ../tiny-tpu-hardened/fixedpoint_simple.v            ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/fixedpoint_simple.v            ;         ;
-; ../tiny-tpu-hardened/loss_child.v                   ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_child.v                   ;         ;
-; ../tiny-tpu-hardened/loss_parent.v                  ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_parent.v                  ;         ;
-; ../tiny-tpu-hardened/leaky_relu_derivative_child.v  ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_child.v  ;         ;
-; ../tiny-tpu-hardened/leaky_relu_derivative_parent.v ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_parent.v ;         ;
-; ../tiny-tpu-hardened/leaky_relu_child.v             ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_child.v             ;         ;
-; ../tiny-tpu-hardened/leaky_relu_parent.v            ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_parent.v            ;         ;
-; ../tiny-tpu-hardened/bias_child.v                   ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_child.v                   ;         ;
-; ../tiny-tpu-hardened/bias_parent.v                  ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_parent.v                  ;         ;
-; ../tiny-tpu-hardened/vpu.v                          ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v                          ;         ;
-; ../tiny-tpu-hardened/gradient_descent.v             ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/gradient_descent.v             ;         ;
-; ../tiny-tpu-hardened/unified_buffer.v               ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v               ;         ;
-; ../tiny-tpu-hardened/pe.v                           ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/pe.v                           ;         ;
-; ../tiny-tpu-hardened/systolic.v                     ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/systolic.v                     ;         ;
-; ../tiny-tpu-hardened/tpu.v                          ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/tpu.v                          ;         ;
-+-----------------------------------------------------+-----------------+------------------------+---------------------------------------------------------------------------------------+---------+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                             ;
++------------------------------------+-----------------+------------------------+------------------------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path   ; Used in Netlist ; File Type              ; File Name with Absolute Path                                                             ; Library ;
++------------------------------------+-----------------+------------------------+------------------------------------------------------------------------------------------+---------+
+; de1_soc_tiny_tpu_xor_top.v         ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/de1_soc_tiny_tpu_xor_top.v         ;         ;
+; rtl/fixedpoint_simple.v            ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/fixedpoint_simple.v            ;         ;
+; rtl/loss_child.v                   ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/loss_child.v                   ;         ;
+; rtl/loss_parent.v                  ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/loss_parent.v                  ;         ;
+; rtl/leaky_relu_derivative_child.v  ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_derivative_child.v  ;         ;
+; rtl/leaky_relu_derivative_parent.v ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_derivative_parent.v ;         ;
+; rtl/leaky_relu_child.v             ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_child.v             ;         ;
+; rtl/leaky_relu_parent.v            ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_parent.v            ;         ;
+; rtl/bias_child.v                   ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/bias_child.v                   ;         ;
+; rtl/bias_parent.v                  ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/bias_parent.v                  ;         ;
+; rtl/vpu.v                          ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/vpu.v                          ;         ;
+; rtl/gradient_descent.v             ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/gradient_descent.v             ;         ;
+; rtl/unified_buffer.v               ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/unified_buffer.v               ;         ;
+; rtl/pe.v                           ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/pe.v                           ;         ;
+; rtl/systolic.v                     ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/systolic.v                     ;         ;
+; rtl/tpu.v                          ; yes             ; User Verilog HDL File  ; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/tpu.v                          ;         ;
++------------------------------------+-----------------+------------------------+------------------------------------------------------------------------------------------+---------+
 
 
 +--------------------------------------------------------------+
@@ -1402,7 +1402,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:19     ;
+; Top            ; 00:00:17     ;
 +----------------+--------------+
 
 
@@ -1426,69 +1426,69 @@ Info: Running Quartus Prime Analysis & Synthesis
     Info: Altera and sold by Altera or its authorized distributors.  Please
     Info: refer to the Altera Software License Subscription Agreements 
     Info: on the Quartus Prime software download page.
-    Info: Processing started: Sat Feb 28 14:48:47 2026
+    Info: Processing started: Sat Feb 28 15:45:24 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off de1_soc_tiny_tpu_xor -c de1_soc_tiny_tpu_xor
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 14 of the 14 processors detected
 Info (12021): Found 1 design units, including 1 entities, in source file de1_soc_tiny_tpu_xor_top.v
     Info (12023): Found entity 1: de1_soc_tiny_tpu_xor_top File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/de1_soc_tiny_tpu_xor_top.v Line: 6
-Info (12021): Found 3 design units, including 3 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/fixedpoint_simple.v
-    Info (12023): Found entity 1: fxp_add File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/fixedpoint_simple.v Line: 8
-    Info (12023): Found entity 2: fxp_mul File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/fixedpoint_simple.v Line: 38
-    Info (12023): Found entity 3: fxp_addsub File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/fixedpoint_simple.v Line: 69
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/control_unit.v
-    Info (12023): Found entity 1: control_unit File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/control_unit.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_child.v
-    Info (12023): Found entity 1: loss_child File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_child.v Line: 6
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_parent.v
-    Info (12023): Found entity 1: loss_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_parent.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_child.v
-    Info (12023): Found entity 1: leaky_relu_derivative_child File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_child.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_parent.v
-    Info (12023): Found entity 1: leaky_relu_derivative_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_parent.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_child.v
-    Info (12023): Found entity 1: leaky_relu_child File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_child.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_parent.v
-    Info (12023): Found entity 1: leaky_relu_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_parent.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_child.v
-    Info (12023): Found entity 1: bias_child File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_child.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_parent.v
-    Info (12023): Found entity 1: bias_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_parent.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v
-    Info (12023): Found entity 1: vpu File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v Line: 19
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/gradient_descent.v
-    Info (12023): Found entity 1: gradient_descent File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/gradient_descent.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v
-    Info (12023): Found entity 1: unified_buffer File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v Line: 6
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/pe.v
-    Info (12023): Found entity 1: pe File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/pe.v Line: 4
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/systolic.v
-    Info (12023): Found entity 1: systolic File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/systolic.v Line: 5
-Info (12021): Found 1 design units, including 1 entities, in source file /fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/tpu.v
-    Info (12023): Found entity 1: tpu File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/tpu.v Line: 4
+Info (12021): Found 3 design units, including 3 entities, in source file rtl/fixedpoint_simple.v
+    Info (12023): Found entity 1: fxp_add File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/fixedpoint_simple.v Line: 8
+    Info (12023): Found entity 2: fxp_mul File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/fixedpoint_simple.v Line: 38
+    Info (12023): Found entity 3: fxp_addsub File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/fixedpoint_simple.v Line: 69
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/control_unit.v
+    Info (12023): Found entity 1: control_unit File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/control_unit.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/loss_child.v
+    Info (12023): Found entity 1: loss_child File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/loss_child.v Line: 6
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/loss_parent.v
+    Info (12023): Found entity 1: loss_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/loss_parent.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/leaky_relu_derivative_child.v
+    Info (12023): Found entity 1: leaky_relu_derivative_child File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_derivative_child.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/leaky_relu_derivative_parent.v
+    Info (12023): Found entity 1: leaky_relu_derivative_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_derivative_parent.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/leaky_relu_child.v
+    Info (12023): Found entity 1: leaky_relu_child File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_child.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/leaky_relu_parent.v
+    Info (12023): Found entity 1: leaky_relu_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_parent.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/bias_child.v
+    Info (12023): Found entity 1: bias_child File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/bias_child.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/bias_parent.v
+    Info (12023): Found entity 1: bias_parent File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/bias_parent.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/vpu.v
+    Info (12023): Found entity 1: vpu File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/vpu.v Line: 19
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/gradient_descent.v
+    Info (12023): Found entity 1: gradient_descent File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/gradient_descent.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/unified_buffer.v
+    Info (12023): Found entity 1: unified_buffer File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/unified_buffer.v Line: 6
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/pe.v
+    Info (12023): Found entity 1: pe File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/pe.v Line: 4
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/systolic.v
+    Info (12023): Found entity 1: systolic File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/systolic.v Line: 5
+Info (12021): Found 1 design units, including 1 entities, in source file rtl/tpu.v
+    Info (12023): Found entity 1: tpu File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/tpu.v Line: 4
 Info (12127): Elaborating entity "de1_soc_tiny_tpu_xor_top" for the top level hierarchy
 Info (10264): Verilog HDL Case Statement information at de1_soc_tiny_tpu_xor_top.v(161): all case item expressions in this case statement are onehot File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/de1_soc_tiny_tpu_xor_top.v Line: 161
 Info (12128): Elaborating entity "tpu" for hierarchy "tpu:dut" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/de1_soc_tiny_tpu_xor_top.v Line: 145
-Info (12128): Elaborating entity "unified_buffer" for hierarchy "tpu:dut|unified_buffer:ub_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/tpu.v Line: 130
-Warning (10230): Verilog HDL assignment warning at unified_buffer.v(262): truncated value with size 32 to match size of target (16) File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v Line: 262
-Warning (10230): Verilog HDL assignment warning at unified_buffer.v(271): truncated value with size 32 to match size of target (16) File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v Line: 271
-Warning (10240): Verilog HDL Always Construct warning at unified_buffer.v(171): inferring latch(es) for variable "i", which holds its previous value in one or more paths through the always construct File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v Line: 171
-Info (12128): Elaborating entity "gradient_descent" for hierarchy "tpu:dut|unified_buffer:ub_inst|gradient_descent:gradient_descent_inst_0" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v Line: 140
-Info (12128): Elaborating entity "fxp_mul" for hierarchy "tpu:dut|unified_buffer:ub_inst|gradient_descent:gradient_descent_inst_0|fxp_mul:mul_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/gradient_descent.v Line: 38
-Info (12128): Elaborating entity "fxp_addsub" for hierarchy "tpu:dut|unified_buffer:ub_inst|gradient_descent:gradient_descent_inst_0|fxp_addsub:sub_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/gradient_descent.v Line: 46
-Info (12128): Elaborating entity "systolic" for hierarchy "tpu:dut|systolic:systolic_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/tpu.v Line: 156
-Warning (10230): Verilog HDL assignment warning at systolic.v(141): truncated value with size 32 to match size of target (2) File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/systolic.v Line: 141
-Info (12128): Elaborating entity "pe" for hierarchy "tpu:dut|systolic:systolic_inst|pe:pe11" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/systolic.v Line: 74
-Info (12128): Elaborating entity "fxp_add" for hierarchy "tpu:dut|systolic:systolic_inst|pe:pe11|fxp_add:adder" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/pe.v Line: 48
-Info (12128): Elaborating entity "vpu" for hierarchy "tpu:dut|vpu:vpu_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/tpu.v Line: 185
-Info (12128): Elaborating entity "bias_parent" for hierarchy "tpu:dut|vpu:vpu_inst|bias_parent:bias_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v Line: 130
-Info (12128): Elaborating entity "bias_child" for hierarchy "tpu:dut|vpu:vpu_inst|bias_parent:bias_parent_inst|bias_child:column_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/bias_parent.v Line: 34
-Info (12128): Elaborating entity "leaky_relu_parent" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_parent:leaky_relu_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v Line: 148
-Info (12128): Elaborating entity "leaky_relu_child" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_parent:leaky_relu_parent_inst|leaky_relu_child:leaky_relu_col_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_parent.v Line: 30
-Info (12128): Elaborating entity "loss_parent" for hierarchy "tpu:dut|vpu:vpu_inst|loss_parent:loss_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v Line: 166
-Info (12128): Elaborating entity "loss_child" for hierarchy "tpu:dut|vpu:vpu_inst|loss_parent:loss_parent_inst|loss_child:first_column" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/loss_parent.v Line: 33
-Info (12128): Elaborating entity "leaky_relu_derivative_parent" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_derivative_parent:leaky_relu_derivative_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/vpu.v Line: 185
-Info (12128): Elaborating entity "leaky_relu_derivative_child" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_derivative_parent:leaky_relu_derivative_parent_inst|leaky_relu_derivative_child:lr_d_col_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/leaky_relu_derivative_parent.v Line: 34
+Info (12128): Elaborating entity "unified_buffer" for hierarchy "tpu:dut|unified_buffer:ub_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/tpu.v Line: 130
+Warning (10230): Verilog HDL assignment warning at unified_buffer.v(262): truncated value with size 32 to match size of target (16) File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/unified_buffer.v Line: 262
+Warning (10230): Verilog HDL assignment warning at unified_buffer.v(271): truncated value with size 32 to match size of target (16) File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/unified_buffer.v Line: 271
+Warning (10240): Verilog HDL Always Construct warning at unified_buffer.v(171): inferring latch(es) for variable "i", which holds its previous value in one or more paths through the always construct File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/unified_buffer.v Line: 171
+Info (12128): Elaborating entity "gradient_descent" for hierarchy "tpu:dut|unified_buffer:ub_inst|gradient_descent:gradient_descent_inst_0" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/unified_buffer.v Line: 140
+Info (12128): Elaborating entity "fxp_mul" for hierarchy "tpu:dut|unified_buffer:ub_inst|gradient_descent:gradient_descent_inst_0|fxp_mul:mul_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/gradient_descent.v Line: 38
+Info (12128): Elaborating entity "fxp_addsub" for hierarchy "tpu:dut|unified_buffer:ub_inst|gradient_descent:gradient_descent_inst_0|fxp_addsub:sub_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/gradient_descent.v Line: 46
+Info (12128): Elaborating entity "systolic" for hierarchy "tpu:dut|systolic:systolic_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/tpu.v Line: 156
+Warning (10230): Verilog HDL assignment warning at systolic.v(141): truncated value with size 32 to match size of target (2) File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/systolic.v Line: 141
+Info (12128): Elaborating entity "pe" for hierarchy "tpu:dut|systolic:systolic_inst|pe:pe11" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/systolic.v Line: 74
+Info (12128): Elaborating entity "fxp_add" for hierarchy "tpu:dut|systolic:systolic_inst|pe:pe11|fxp_add:adder" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/pe.v Line: 48
+Info (12128): Elaborating entity "vpu" for hierarchy "tpu:dut|vpu:vpu_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/tpu.v Line: 185
+Info (12128): Elaborating entity "bias_parent" for hierarchy "tpu:dut|vpu:vpu_inst|bias_parent:bias_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/vpu.v Line: 130
+Info (12128): Elaborating entity "bias_child" for hierarchy "tpu:dut|vpu:vpu_inst|bias_parent:bias_parent_inst|bias_child:column_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/bias_parent.v Line: 34
+Info (12128): Elaborating entity "leaky_relu_parent" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_parent:leaky_relu_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/vpu.v Line: 148
+Info (12128): Elaborating entity "leaky_relu_child" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_parent:leaky_relu_parent_inst|leaky_relu_child:leaky_relu_col_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_parent.v Line: 30
+Info (12128): Elaborating entity "loss_parent" for hierarchy "tpu:dut|vpu:vpu_inst|loss_parent:loss_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/vpu.v Line: 166
+Info (12128): Elaborating entity "loss_child" for hierarchy "tpu:dut|vpu:vpu_inst|loss_parent:loss_parent_inst|loss_child:first_column" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/loss_parent.v Line: 33
+Info (12128): Elaborating entity "leaky_relu_derivative_parent" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_derivative_parent:leaky_relu_derivative_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/vpu.v Line: 185
+Info (12128): Elaborating entity "leaky_relu_derivative_child" for hierarchy "tpu:dut|vpu:vpu_inst|leaky_relu_derivative_parent:leaky_relu_derivative_parent_inst|leaky_relu_derivative_child:lr_d_col_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/rtl/leaky_relu_derivative_parent.v Line: 34
 Warning (12241): 3 hierarchies have connectivity warnings - see the Connectivity Checks report folder
 Warning (13024): Output pins are stuck at VCC or GND
     Warning (13410): Pin "HEX0[6]" is stuck at VCC File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/de1_soc_tiny_tpu_xor_top.v Line: 12
@@ -1555,10 +1555,10 @@ Info (21057): Implemented 7588 device resources after synthesis - the final reso
     Info (21061): Implemented 7514 logic cells
     Info (21062): Implemented 7 DSP elements
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 60 warnings
-    Info: Peak virtual memory: 5040 megabytes
-    Info: Processing ended: Sat Feb 28 14:49:15 2026
-    Info: Elapsed time: 00:00:28
-    Info: Total CPU time (on all processors): 00:00:45
+    Info: Peak virtual memory: 5036 megabytes
+    Info: Processing ended: Sat Feb 28 15:45:49 2026
+    Info: Elapsed time: 00:00:25
+    Info: Total CPU time (on all processors): 00:00:43
 
 
 +------------------------------------------+

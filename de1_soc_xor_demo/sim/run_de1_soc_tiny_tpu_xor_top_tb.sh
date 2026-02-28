@@ -5,7 +5,7 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 RTL_DIR="$PROJECT_DIR/rtl"
-MODELSIM_DIR="/mnt/c/intelFPGA/18.1/modelsim_ase/win32aloem"
+MODELSIM_DIR=${MODELSIM_DIR:-/mnt/c/intelFPGA/18.1/modelsim_ase/win32aloem}
 WORK_DIR="/tmp/de1_soc_tiny_tpu_xor_top_tb_$$"
 LOG_FILE="$WORK_DIR/vsim.log"
 

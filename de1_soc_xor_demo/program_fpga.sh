@@ -9,8 +9,9 @@ SOF_FILE="$STAGING_PROJECT_DIR/output_files/de1_soc_tiny_tpu_xor.sof"
 CABLE_NAME=${QUARTUS_CABLE:-"DE-SoC [USB-1]"}
 BYPASS_DEVICE=${QUARTUS_BYPASS_DEVICE:-"SOCVHPS"}
 FPGA_DEVICE_INDEX=${QUARTUS_FPGA_DEVICE_INDEX:-2}
-JTAGCONFIG="/mnt/c/altera_lite/25.1std/quartus/bin64/jtagconfig.exe"
-QUARTUS_PGM="/mnt/c/altera_lite/25.1std/quartus/bin64/quartus_pgm.exe"
+QUARTUS_BIN=${QUARTUS_BIN:-/mnt/c/altera_lite/25.1std/quartus/bin64}
+JTAGCONFIG="$QUARTUS_BIN/jtagconfig.exe"
+QUARTUS_PGM="$QUARTUS_BIN/quartus_pgm.exe"
 
 if [ ! -f "$SOF_FILE" ]; then
     echo "missing bitstream: $SOF_FILE" >&2

@@ -5,9 +5,9 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 STAGING_ROOT=${QUARTUS_BUILD_ROOT:-/mnt/c/fpga_builds/tiny-tpu-fpga-staging}
 STAGING_PROJECT_DIR="$STAGING_ROOT/de1_soc_xor_demo"
-QUARTUS_BIN="/mnt/c/altera_lite/25.1std/quartus/bin64"
+QUARTUS_BIN=${QUARTUS_BIN:-/mnt/c/altera_lite/25.1std/quartus/bin64}
 
-"$SCRIPT_DIR/stage_quartus_project.sh"
+bash "$SCRIPT_DIR/stage_quartus_project.sh"
 cd "$STAGING_PROJECT_DIR"
 
 "$QUARTUS_BIN/quartus_map.exe" \

@@ -4,6 +4,18 @@ This directory contains the working DE1-SoC FPGA port of the tiny-tpu XOR demo.
 
 This final deliverable folder is self-contained for normal use: it includes the top-level design, the final RTL dependency set, the simulation script, the Quartus project, the build/program helpers, and a captured artifact bundle.
 
+The only external requirements are the tool installations and the board hardware:
+
+- Quartus Prime Lite for build/program
+- ModelSim/Questa Intel Edition for simulation
+- a DE1-SoC board with USB-Blaster access
+
+The scripts are override-friendly:
+
+- `QUARTUS_BIN` can point at a different Quartus `bin64` directory
+- `MODELSIM_DIR` can point at a different ModelSim directory
+- `QUARTUS_BUILD_ROOT` can move the disposable Windows staging tree
+
 The end result is a deterministic, press-to-run XOR inference on real hardware:
 
 - `SW[1:0]` selects the two XOR inputs.
