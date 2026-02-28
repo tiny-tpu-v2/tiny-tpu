@@ -22,6 +22,7 @@
 
 - I initially stopped on the dirty git state before Jesse explicitly allowed me to ignore uncommitted changes.
 - I ran `vlib` and `vlog` in parallel once even though the compile depended on the library being initialized first. For simulator checks, run setup steps sequentially.
+- I launched `quartus_sh.exe` once with a PTY. That left it hanging without spawning the normal compile children, so Quartus Windows CLI runs should stay non-interactive from WSL.
 
 ## Critical Findings
 
@@ -33,3 +34,4 @@
 - After the UB repair, `tiny-tpu-hardened/sim/run_unified_buffer_regression.sh` passes, the full hardened TPU still compiles cleanly in ModelSim, and Quartus analysis for `unified_buffer` and `tpu` remains successful with fewer warnings than before the patch.
 - `tiny-tpu-hardened/fixedpoint_simple.v` had a real Q8.8 multiplier scaling bug: `1.0 * 1.0` produced `0x0001` instead of `0x0100`. The fix is to align the product by `WIFA + WIFB - WOF`, and the new `run_fixedpoint_simple_regression.sh` passes.
 - The hardened TPU now passes a full forward-only XOR regression through the real host-write and UB-read interface in `run_tpu_xor_forward_regression.sh`, using the trained XOR weights, the quantized `0.01` leak factor (`0x0003`), and the expected final outputs `FFFF, 00FE, 00FE, FFFF` at UB addresses `29..32`.
+- Running Windows Quartus against `/home/...` from WSL puts the project on a `\\wsl.localhost\...` path. That is not a reliable build path: `cmd.exe` warns that UNC paths are unsupported, and the in-place build loop becomes difficult to trust. Stage Quartus builds onto `/mnt/c/...` first.
