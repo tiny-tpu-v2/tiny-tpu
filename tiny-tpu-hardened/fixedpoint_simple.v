@@ -56,8 +56,8 @@ module fxp_mul #(
 
     assign product = $signed(ina) * $signed(inb);
 
-    // Shift right by fractional bits (assuming WIF=WIFB=WOF=8)
-    assign shifted = product[(WIFA+WIFB)+:16];
+    // Align the product to the requested output fractional width.
+    assign shifted = product[(WIFA+WIFB-WOF)+:(WOI+WOF)];
 
     // Check overflow
     assign overflow = 1'b0; // Simplified - assume no overflow for now
