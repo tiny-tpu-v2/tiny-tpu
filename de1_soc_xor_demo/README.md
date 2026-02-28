@@ -2,6 +2,8 @@
 
 This directory contains the working DE1-SoC FPGA port of the tiny-tpu XOR demo.
 
+This final deliverable folder is self-contained for normal use: it includes the top-level design, the final RTL dependency set, the simulation script, the Quartus project, the build/program helpers, and a captured artifact bundle.
+
 The end result is a deterministic, press-to-run XOR inference on real hardware:
 
 - `SW[1:0]` selects the two XOR inputs.
@@ -11,6 +13,7 @@ The end result is a deterministic, press-to-run XOR inference on real hardware:
 ## Final Working Artifacts
 
 - Top-level FPGA wrapper: `de1_soc_tiny_tpu_xor_top.v`
+- Final RTL snapshot used by the demo: `rtl/`
 - Quartus project: `de1_soc_tiny_tpu_xor.qpf`, `de1_soc_tiny_tpu_xor.qsf`, `de1_soc_tiny_tpu_xor.sdc`
 - WSL-to-Windows staging helper: `stage_quartus_project.sh`
 - WSL CLI build helper: `build_quartus.sh`
@@ -57,27 +60,24 @@ The FPGA wrapper does not bypass the TPU. It drives the real TPU interface and r
 
 ## How To Run It From WSL
 
-### 1. Run The ModelSim Regressions
+### 1. Run The Self-Contained ModelSim Check
 
-From `/home/surya/tiny-tpu`:
+From `/home/surya/tiny-tpu/de1_soc_xor_demo`:
 
 ```bash
-bash tiny-tpu-hardened/sim/run_unified_buffer_regression.sh
-bash tiny-tpu-hardened/sim/run_fixedpoint_simple_regression.sh
-bash tiny-tpu-hardened/sim/run_tpu_xor_forward_regression.sh
-bash de1_soc_xor_demo/sim/run_de1_soc_tiny_tpu_xor_top_tb.sh
+bash sim/run_de1_soc_tiny_tpu_xor_top_tb.sh
 ```
 
-These check, in order:
+This runs the final board-level regression using only files in this folder. It checks:
 
-- `unified_buffer` host-write and read sequencing
-- fixed-point multiply correctness
-- full TPU forward XOR flow through the real TPU interface
 - board wrapper behavior, including one-press execution and latched display behavior
+- the local `rtl/` snapshot wired into the real TPU path
+
+The lower-level development regressions used during bring-up still exist elsewhere in the repo history, but they are not required for the final day-to-day demo flow.
 
 ### 2. Stage The Quartus Project Onto Windows
 
-The canonical source lives in WSL, but Quartus should compile from a real Windows path.
+This folder is the canonical source for the final demo, but Quartus should compile from a real Windows path.
 
 Run:
 
@@ -91,10 +91,10 @@ This copies the project into:
 /mnt/c/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo
 ```
 
-That directory is the disposable Quartus staging tree. The canonical source remains the WSL repo at:
+That directory is the disposable Quartus staging tree. The canonical source remains this WSL project folder:
 
 ```text
-/home/surya/tiny-tpu
+/home/surya/tiny-tpu/de1_soc_xor_demo
 ```
 
 If you change the WSL source, rerun the staging script before using Quartus again.
@@ -393,7 +393,7 @@ The main milestones in git were:
 
 ## Practical Maintenance Rules
 
-- Treat `/home/surya/tiny-tpu` as the canonical source.
+- Treat `/home/surya/tiny-tpu/de1_soc_xor_demo` as the canonical source for the final demo.
 - Treat `C:\fpga_builds\tiny-tpu-fpga-staging` as disposable build output.
 - Rerun `stage_quartus_project.sh` after changing the WSL source and before using Quartus GUI.
 - Do not edit generated `db/`, `incremental_db/`, or `output_files/`.

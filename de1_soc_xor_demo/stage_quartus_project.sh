@@ -1,9 +1,8 @@
 # ABOUTME: Stages the DE1-SoC tiny-tpu XOR project onto a Windows-visible build path.
-# ABOUTME: It copies the WSL source tree into the disposable Quartus staging directory.
+# ABOUTME: It copies this self-contained project tree into the disposable Quartus staging directory.
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 STAGING_ROOT=${QUARTUS_BUILD_ROOT:-/mnt/c/fpga_builds/tiny-tpu-fpga-staging}
 STAGING_PROJECT_DIR="$STAGING_ROOT/de1_soc_xor_demo"
 
@@ -19,7 +18,3 @@ rsync -a --delete \
     --exclude incremental_db \
     --exclude output_files \
     "$SCRIPT_DIR/" "$STAGING_PROJECT_DIR/"
-
-rsync -a --delete \
-    --exclude sim \
-    "$ROOT_DIR/tiny-tpu-hardened/" "$STAGING_ROOT/tiny-tpu-hardened/"
