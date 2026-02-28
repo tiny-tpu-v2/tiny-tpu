@@ -7,6 +7,8 @@ STAGING_ROOT=${QUARTUS_BUILD_ROOT:-/mnt/c/fpga_builds/tiny-tpu-fpga-staging}
 STAGING_PROJECT_DIR="$STAGING_ROOT/de1_soc_xor_demo"
 SOF_FILE="$STAGING_PROJECT_DIR/output_files/de1_soc_tiny_tpu_xor.sof"
 CABLE_NAME=${QUARTUS_CABLE:-"DE-SoC [USB-1]"}
+BYPASS_DEVICE=${QUARTUS_BYPASS_DEVICE:-"SOCVHPS"}
+FPGA_DEVICE_INDEX=${QUARTUS_FPGA_DEVICE_INDEX:-2}
 JTAGCONFIG="/mnt/c/altera_lite/25.1std/quartus/bin64/jtagconfig.exe"
 QUARTUS_PGM="/mnt/c/altera_lite/25.1std/quartus/bin64/quartus_pgm.exe"
 
@@ -16,5 +18,9 @@ if [ ! -f "$SOF_FILE" ]; then
     exit 1
 fi
 
+SOF_FILE_WIN=$(wslpath -w "$SOF_FILE")
+
 "$JTAGCONFIG"
-"$QUARTUS_PGM" -m JTAG -c "$CABLE_NAME" -o "p;$SOF_FILE"
+"$QUARTUS_PGM" -m JTAG -c "$CABLE_NAME" \
+    -o "s;$BYPASS_DEVICE@1" \
+    -o "p;$SOF_FILE_WIN@$FPGA_DEVICE_INDEX"
