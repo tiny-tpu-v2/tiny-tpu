@@ -29,3 +29,5 @@
 - `tiny-tpu-hardened/unified_buffer.v` has a confirmed dual-write bug: if both host write valids are high in one cycle, both writes target the same `wr_ptr` address and `wr_ptr` advances only once.
 - A one-off ModelSim checkbench confirmed the bug: after a two-lane host write, `mem0=2222 mem1=0000 wr_ptr=1` instead of storing two distinct words.
 - The unified buffer uses the same shared-pointer update pattern in its read paths, so multi-lane reads also need to be treated as suspect until proven otherwise.
+- The new self-checking ModelSim regression in `tiny-tpu-hardened/sim/unified_buffer_regression.v` exposed a second root-cause issue: each read-path start pulse is overwritten in the same clock cycle by that path's inactive-state reset logic, so read transactions never latch at all in the current RTL.
+- After the UB repair, `tiny-tpu-hardened/sim/run_unified_buffer_regression.sh` passes, the full hardened TPU still compiles cleanly in ModelSim, and Quartus analysis for `unified_buffer` and `tpu` remains successful with fewer warnings than before the patch.

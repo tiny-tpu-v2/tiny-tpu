@@ -312,31 +312,34 @@ module unified_buffer #(
             // WRITING LOGIC
             // matrices are stored in row major format
             // if there are two columns, the first column will be stored at even indices and the second column will be stored at odd indices
-            if (ub_wr_valid_in_1) begin
-                ub_memory[wr_ptr] <= ub_wr_data_in_1;
-                wr_ptr <= wr_ptr + 1;
-            end else if (ub_wr_host_valid_in_1) begin
-                ub_memory[wr_ptr] <= ub_wr_host_data_in_1;
-                wr_ptr <= wr_ptr + 1;
-            end
+            if (ub_wr_valid_in_1 || ub_wr_host_valid_in_1) begin
+                ub_memory[wr_ptr] <= ub_wr_valid_in_1 ? ub_wr_data_in_1 : ub_wr_host_data_in_1;
 
-            if (ub_wr_valid_in_0) begin
-                ub_memory[wr_ptr] <= ub_wr_data_in_0;
-                wr_ptr <= wr_ptr + 1;
-            end else if (ub_wr_host_valid_in_0) begin
-                ub_memory[wr_ptr] <= ub_wr_host_data_in_0;
-                wr_ptr <= wr_ptr + 1;
+                if (ub_wr_valid_in_0 || ub_wr_host_valid_in_0) begin
+                    ub_memory[wr_ptr + 16'd1] <= ub_wr_valid_in_0 ? ub_wr_data_in_0 : ub_wr_host_data_in_0;
+                    wr_ptr <= wr_ptr + 16'd2;
+                end else begin
+                    wr_ptr <= wr_ptr + 16'd1;
+                end
+            end else if (ub_wr_valid_in_0 || ub_wr_host_valid_in_0) begin
+                ub_memory[wr_ptr] <= ub_wr_valid_in_0 ? ub_wr_data_in_0 : ub_wr_host_data_in_0;
+                wr_ptr <= wr_ptr + 16'd1;
             end
 
             //WRITING LOGIC (for gradient descent modules to UB)
             if (grad_bias_or_weight) begin
                 if (grad_descent_done_out_1) begin
                     ub_memory[grad_descent_ptr] <= value_updated_out_1;
-                    grad_descent_ptr <= grad_descent_ptr + 1;
-                end
-                if (grad_descent_done_out_0) begin
+
+                    if (grad_descent_done_out_0) begin
+                        ub_memory[grad_descent_ptr + 16'd1] <= value_updated_out_0;
+                        grad_descent_ptr <= grad_descent_ptr + 16'd2;
+                    end else begin
+                        grad_descent_ptr <= grad_descent_ptr + 16'd1;
+                    end
+                end else if (grad_descent_done_out_0) begin
                     ub_memory[grad_descent_ptr] <= value_updated_out_0;
-                    grad_descent_ptr <= grad_descent_ptr + 1;
+                    grad_descent_ptr <= grad_descent_ptr + 16'd1;
                 end
             end else begin
                 if (grad_descent_done_out_1) begin
@@ -348,51 +351,74 @@ module unified_buffer #(
             end
 
             // READING LOGIC (for input from UB to left side of systolic array)
-            if (rd_input_time_counter + 1 < rd_input_row_size + rd_input_col_size) begin
+            if (ub_rd_start_in && ub_ptr_select == 9'd0) begin
+                ub_rd_input_valid_out_0 <= 1'b0;
+                ub_rd_input_data_out_0 <= 16'b0;
+                ub_rd_input_valid_out_1 <= 1'b0;
+                ub_rd_input_data_out_1 <= 16'b0;
+            end else if (rd_input_time_counter + 16'd1 < rd_input_row_size + rd_input_col_size) begin
                 if(rd_input_transpose) begin
                     // For transposed matrices (for loop should increment)
-                    if(rd_input_time_counter >= 0 && rd_input_time_counter < rd_input_row_size + 0 && 0 < rd_input_col_size) begin
+                    if(rd_input_time_counter < rd_input_row_size && 16'd0 < rd_input_col_size) begin
                         ub_rd_input_valid_out_0 <= 1'b1;
                         ub_rd_input_data_out_0 <= ub_memory[rd_input_ptr];
-                        rd_input_ptr <= rd_input_ptr + 1;
+
+                        if(rd_input_time_counter >= 16'd1 && rd_input_time_counter < rd_input_row_size + 16'd1 && 16'd1 < rd_input_col_size) begin
+                            ub_rd_input_valid_out_1 <= 1'b1;
+                            ub_rd_input_data_out_1 <= ub_memory[rd_input_ptr + 16'd1];
+                            rd_input_ptr <= rd_input_ptr + 16'd2;
+                        end else begin
+                            ub_rd_input_valid_out_1 <= 1'b0;
+                            ub_rd_input_data_out_1 <= 16'b0;
+                            rd_input_ptr <= rd_input_ptr + 16'd1;
+                        end
                     end else begin
                         ub_rd_input_valid_out_0 <= 1'b0;
                         ub_rd_input_data_out_0 <= 16'b0;
-                    end
 
-                    if(rd_input_time_counter >= 1 && rd_input_time_counter < rd_input_row_size + 1 && 1 < rd_input_col_size) begin
-                        ub_rd_input_valid_out_1 <= 1'b1;
-                        ub_rd_input_data_out_1 <= ub_memory[rd_input_ptr];
-                        rd_input_ptr <= rd_input_ptr + 1;
-                    end else begin
-                        ub_rd_input_valid_out_1 <= 1'b0;
-                        ub_rd_input_data_out_1 <= 16'b0;
+                        if(rd_input_time_counter >= 16'd1 && rd_input_time_counter < rd_input_row_size + 16'd1 && 16'd1 < rd_input_col_size) begin
+                            ub_rd_input_valid_out_1 <= 1'b1;
+                            ub_rd_input_data_out_1 <= ub_memory[rd_input_ptr];
+                            rd_input_ptr <= rd_input_ptr + 16'd1;
+                        end else begin
+                            ub_rd_input_valid_out_1 <= 1'b0;
+                            ub_rd_input_data_out_1 <= 16'b0;
+                        end
                     end
                 end else begin
                     // For untransposed matrices (for loop should decrement)
-                    if(rd_input_time_counter >= 1 && rd_input_time_counter < rd_input_row_size + 1 && 1 < rd_input_col_size) begin
+                    if(rd_input_time_counter >= 16'd1 && rd_input_time_counter < rd_input_row_size + 16'd1 && 16'd1 < rd_input_col_size) begin
                         ub_rd_input_valid_out_1 <= 1'b1;
                         ub_rd_input_data_out_1 <= ub_memory[rd_input_ptr];
-                        rd_input_ptr <= rd_input_ptr + 1;
+
+                        if(rd_input_time_counter < rd_input_row_size && 16'd0 < rd_input_col_size) begin
+                            ub_rd_input_valid_out_0 <= 1'b1;
+                            ub_rd_input_data_out_0 <= ub_memory[rd_input_ptr + 16'd1];
+                            rd_input_ptr <= rd_input_ptr + 16'd2;
+                        end else begin
+                            ub_rd_input_valid_out_0 <= 1'b0;
+                            ub_rd_input_data_out_0 <= 16'b0;
+                            rd_input_ptr <= rd_input_ptr + 16'd1;
+                        end
                     end else begin
                         ub_rd_input_valid_out_1 <= 1'b0;
                         ub_rd_input_data_out_1 <= 16'b0;
-                    end
 
-                    if(rd_input_time_counter >= 0 && rd_input_time_counter < rd_input_row_size + 0 && 0 < rd_input_col_size) begin
-                        ub_rd_input_valid_out_0 <= 1'b1;
-                        ub_rd_input_data_out_0 <= ub_memory[rd_input_ptr];
-                        rd_input_ptr <= rd_input_ptr + 1;
-                    end else begin
-                        ub_rd_input_valid_out_0 <= 1'b0;
-                        ub_rd_input_data_out_0 <= 16'b0;
+                        if(rd_input_time_counter < rd_input_row_size && 16'd0 < rd_input_col_size) begin
+                            ub_rd_input_valid_out_0 <= 1'b1;
+                            ub_rd_input_data_out_0 <= ub_memory[rd_input_ptr];
+                            rd_input_ptr <= rd_input_ptr + 16'd1;
+                        end else begin
+                            ub_rd_input_valid_out_0 <= 1'b0;
+                            ub_rd_input_data_out_0 <= 16'b0;
+                        end
                     end
                 end
-                rd_input_time_counter <= rd_input_time_counter + 1;
+                rd_input_time_counter <= rd_input_time_counter + 16'd1;
             end else begin
-                rd_input_ptr <= 0;
-                rd_input_row_size <= 0;
-                rd_input_col_size <= 0;
+                rd_input_ptr <= 16'd0;
+                rd_input_row_size <= 16'd0;
+                rd_input_col_size <= 16'd0;
                 rd_input_time_counter <= 16'b0;
                 ub_rd_input_valid_out_0 <= 1'b0;
                 ub_rd_input_data_out_0 <= 16'b0;
@@ -401,177 +427,232 @@ module unified_buffer #(
             end
 
             // READING LOGIC (for weights from UB to top of systolic array)
-            if (rd_weight_time_counter + 1 < rd_weight_row_size + rd_weight_col_size) begin
+            if (ub_rd_start_in && ub_ptr_select == 9'd1) begin
+                ub_rd_weight_valid_out_0 <= 1'b0;
+                ub_rd_weight_data_out_0 <= 16'b0;
+                ub_rd_weight_valid_out_1 <= 1'b0;
+                ub_rd_weight_data_out_1 <= 16'b0;
+            end else if (rd_weight_time_counter + 16'd1 < rd_weight_row_size + rd_weight_col_size) begin
                 if(rd_weight_transpose) begin
                     // For transposed matrices (for loop should increment)
-                    if(rd_weight_time_counter >= 0 && rd_weight_time_counter < rd_weight_row_size + 0 && 0 < rd_weight_col_size) begin
+                    if(rd_weight_time_counter < rd_weight_row_size && 16'd0 < rd_weight_col_size) begin
                         ub_rd_weight_valid_out_0 <= 1'b1;
                         ub_rd_weight_data_out_0 <= ub_memory[rd_weight_ptr];
-                        rd_weight_ptr <= rd_weight_ptr + rd_weight_skip_size;
+
+                        if(rd_weight_time_counter >= 16'd1 && rd_weight_time_counter < rd_weight_row_size + 16'd1 && 16'd1 < rd_weight_col_size) begin
+                            ub_rd_weight_valid_out_1 <= 1'b1;
+                            ub_rd_weight_data_out_1 <= ub_memory[rd_weight_ptr + rd_weight_skip_size];
+                            rd_weight_ptr <= rd_weight_ptr + rd_weight_skip_size - 16'd1;
+                        end else begin
+                            ub_rd_weight_valid_out_1 <= 1'b0;
+                            ub_rd_weight_data_out_1 <= 16'b0;
+                            rd_weight_ptr <= rd_weight_ptr - 16'd1;
+                        end
                     end else begin
-                        ub_rd_weight_valid_out_0 <= 0;
+                        ub_rd_weight_valid_out_0 <= 1'b0;
                         ub_rd_weight_data_out_0 <= 16'b0;
-                    end
 
-                    if(rd_weight_time_counter >= 1 && rd_weight_time_counter < rd_weight_row_size + 1 && 1 < rd_weight_col_size) begin
-                        ub_rd_weight_valid_out_1 <= 1'b1;
-                        ub_rd_weight_data_out_1 <= ub_memory[rd_weight_ptr];
-                        rd_weight_ptr <= rd_weight_ptr + rd_weight_skip_size;
-                    end else begin
-                        ub_rd_weight_valid_out_1 <= 0;
-                        ub_rd_weight_data_out_1 <= 16'b0;
+                        if(rd_weight_time_counter >= 16'd1 && rd_weight_time_counter < rd_weight_row_size + 16'd1 && 16'd1 < rd_weight_col_size) begin
+                            ub_rd_weight_valid_out_1 <= 1'b1;
+                            ub_rd_weight_data_out_1 <= ub_memory[rd_weight_ptr];
+                            rd_weight_ptr <= rd_weight_ptr - 16'd1;
+                        end else begin
+                            ub_rd_weight_valid_out_1 <= 1'b0;
+                            ub_rd_weight_data_out_1 <= 16'b0;
+                        end
                     end
-
-                    rd_weight_ptr <= rd_weight_ptr - rd_weight_skip_size - 1;
                 end else begin
                     // For untransposed matrices (for loop should decrement)
-                    if(rd_weight_time_counter >= 1 && rd_weight_time_counter < rd_weight_row_size + 1 && 1 < rd_weight_col_size) begin
+                    if(rd_weight_time_counter >= 16'd1 && rd_weight_time_counter < rd_weight_row_size + 16'd1 && 16'd1 < rd_weight_col_size) begin
                         ub_rd_weight_valid_out_1 <= 1'b1;
                         ub_rd_weight_data_out_1 <= ub_memory[rd_weight_ptr];
-                        rd_weight_ptr <= rd_weight_ptr - rd_weight_skip_size;
+
+                        if(rd_weight_time_counter < rd_weight_row_size && 16'd0 < rd_weight_col_size) begin
+                            ub_rd_weight_valid_out_0 <= 1'b1;
+                            ub_rd_weight_data_out_0 <= ub_memory[rd_weight_ptr - rd_weight_skip_size];
+                            rd_weight_ptr <= rd_weight_ptr - rd_weight_skip_size + 16'd1;
+                        end else begin
+                            ub_rd_weight_valid_out_0 <= 1'b0;
+                            ub_rd_weight_data_out_0 <= 16'b0;
+                            rd_weight_ptr <= rd_weight_ptr + 16'd1;
+                        end
                     end else begin
-                        ub_rd_weight_valid_out_1 <= 0;
+                        ub_rd_weight_valid_out_1 <= 1'b0;
                         ub_rd_weight_data_out_1 <= 16'b0;
-                    end
 
-                    if(rd_weight_time_counter >= 0 && rd_weight_time_counter < rd_weight_row_size + 0 && 0 < rd_weight_col_size) begin
-                        ub_rd_weight_valid_out_0 <= 1'b1;
-                        ub_rd_weight_data_out_0 <= ub_memory[rd_weight_ptr];
-                        rd_weight_ptr <= rd_weight_ptr - rd_weight_skip_size;
-                    end else begin
-                        ub_rd_weight_valid_out_0 <= 0;
-                        ub_rd_weight_data_out_0 <= 16'b0;
+                        if(rd_weight_time_counter < rd_weight_row_size && 16'd0 < rd_weight_col_size) begin
+                            ub_rd_weight_valid_out_0 <= 1'b1;
+                            ub_rd_weight_data_out_0 <= ub_memory[rd_weight_ptr];
+                            rd_weight_ptr <= rd_weight_ptr + 16'd1;
+                        end else begin
+                            ub_rd_weight_valid_out_0 <= 1'b0;
+                            ub_rd_weight_data_out_0 <= 16'b0;
+                        end
                     end
-
-                    rd_weight_ptr <= rd_weight_ptr + rd_weight_skip_size + 1;
                 end
-                rd_weight_time_counter <= rd_weight_time_counter + 1;
+                rd_weight_time_counter <= rd_weight_time_counter + 16'd1;
             end else begin
-                rd_weight_ptr <= 0;
-                rd_weight_row_size <= 0;
-                rd_weight_col_size <= 0;
+                rd_weight_ptr <= 16'd0;
+                rd_weight_row_size <= 16'd0;
+                rd_weight_col_size <= 16'd0;
                 rd_weight_time_counter <= 16'b0;
-                ub_rd_weight_valid_out_0 <= 0;
+                ub_rd_weight_valid_out_0 <= 1'b0;
                 ub_rd_weight_data_out_0 <= 16'b0;
-                ub_rd_weight_valid_out_1 <= 0;
+                ub_rd_weight_valid_out_1 <= 1'b0;
                 ub_rd_weight_data_out_1 <= 16'b0;
             end
 
             // READING LOGIC (for bias inputs from UB to bias modules in VPU)
-            if (rd_bias_time_counter + 1 < rd_bias_row_size + rd_bias_col_size) begin
-                if(rd_bias_time_counter >= 0 && rd_bias_time_counter < rd_bias_row_size + 0 && 0 < rd_bias_col_size) begin
+            if (ub_rd_start_in && ub_ptr_select == 9'd2) begin
+                ub_rd_bias_data_out_0 <= 16'b0;
+                ub_rd_bias_data_out_1 <= 16'b0;
+            end else if (rd_bias_time_counter + 16'd1 < rd_bias_row_size + rd_bias_col_size) begin
+                if(rd_bias_time_counter < rd_bias_row_size && 16'd0 < rd_bias_col_size) begin
                     ub_rd_bias_data_out_0 <= ub_memory[rd_bias_ptr + 0];
                 end else begin
                     ub_rd_bias_data_out_0 <= 16'b0;
                 end
 
-                if(rd_bias_time_counter >= 1 && rd_bias_time_counter < rd_bias_row_size + 1 && 1 < rd_bias_col_size) begin
+                if(rd_bias_time_counter >= 16'd1 && rd_bias_time_counter < rd_bias_row_size + 16'd1 && 16'd1 < rd_bias_col_size) begin
                     ub_rd_bias_data_out_1 <= ub_memory[rd_bias_ptr + 1];
                 end else begin
                     ub_rd_bias_data_out_1 <= 16'b0;
                 end
 
-                rd_bias_time_counter <= rd_bias_time_counter + 1;
+                rd_bias_time_counter <= rd_bias_time_counter + 16'd1;
             end else begin
-                rd_bias_ptr <= 0;
-                rd_bias_row_size <= 0;
-                rd_bias_col_size <= 0;
+                rd_bias_ptr <= 16'd0;
+                rd_bias_row_size <= 16'd0;
+                rd_bias_col_size <= 16'd0;
                 rd_bias_time_counter <= 16'b0;
                 ub_rd_bias_data_out_0 <= 16'b0;
                 ub_rd_bias_data_out_1 <= 16'b0;
             end
 
             // READING LOGIC (for Y inputs from UB to loss modules in VPU)
-            if (rd_Y_time_counter + 1 < rd_Y_row_size + rd_Y_col_size) begin
-                if(rd_Y_time_counter >= 1 && rd_Y_time_counter < rd_Y_row_size + 1 && 1 < rd_Y_col_size) begin
+            if (ub_rd_start_in && ub_ptr_select == 9'd3) begin
+                ub_rd_Y_data_out_0 <= 16'b0;
+                ub_rd_Y_data_out_1 <= 16'b0;
+            end else if (rd_Y_time_counter + 16'd1 < rd_Y_row_size + rd_Y_col_size) begin
+                if(rd_Y_time_counter >= 16'd1 && rd_Y_time_counter < rd_Y_row_size + 16'd1 && 16'd1 < rd_Y_col_size) begin
                     ub_rd_Y_data_out_1 <= ub_memory[rd_Y_ptr];
-                    rd_Y_ptr <= rd_Y_ptr + 1;
+
+                    if(rd_Y_time_counter < rd_Y_row_size && 16'd0 < rd_Y_col_size) begin
+                        ub_rd_Y_data_out_0 <= ub_memory[rd_Y_ptr + 16'd1];
+                        rd_Y_ptr <= rd_Y_ptr + 16'd2;
+                    end else begin
+                        ub_rd_Y_data_out_0 <= 16'b0;
+                        rd_Y_ptr <= rd_Y_ptr + 16'd1;
+                    end
                 end else begin
                     ub_rd_Y_data_out_1 <= 16'b0;
+
+                    if(rd_Y_time_counter < rd_Y_row_size && 16'd0 < rd_Y_col_size) begin
+                        ub_rd_Y_data_out_0 <= ub_memory[rd_Y_ptr];
+                        rd_Y_ptr <= rd_Y_ptr + 16'd1;
+                    end else begin
+                        ub_rd_Y_data_out_0 <= 16'b0;
+                    end
                 end
 
-                if(rd_Y_time_counter >= 0 && rd_Y_time_counter < rd_Y_row_size + 0 && 0 < rd_Y_col_size) begin
-                    ub_rd_Y_data_out_0 <= ub_memory[rd_Y_ptr];
-                    rd_Y_ptr <= rd_Y_ptr + 1;
-                end else begin
-                    ub_rd_Y_data_out_0 <= 16'b0;
-                end
-
-                rd_Y_time_counter <= rd_Y_time_counter + 1;
+                rd_Y_time_counter <= rd_Y_time_counter + 16'd1;
             end else begin
-                rd_Y_ptr <= 0;
-                rd_Y_row_size <= 0;
-                rd_Y_col_size <= 0;
+                rd_Y_ptr <= 16'd0;
+                rd_Y_row_size <= 16'd0;
+                rd_Y_col_size <= 16'd0;
                 rd_Y_time_counter <= 16'b0;
                 ub_rd_Y_data_out_0 <= 16'b0;
                 ub_rd_Y_data_out_1 <= 16'b0;
             end
 
             // READING LOGIC (for H inputs from UB to activation derivative modules in VPU)
-            if (rd_H_time_counter + 1 < rd_H_row_size + rd_H_col_size) begin
-                if(rd_H_time_counter >= 1 && rd_H_time_counter < rd_H_row_size + 1 && 1 < rd_H_col_size) begin
+            if (ub_rd_start_in && ub_ptr_select == 9'd4) begin
+                ub_rd_H_data_out_0 <= 16'b0;
+                ub_rd_H_data_out_1 <= 16'b0;
+            end else if (rd_H_time_counter + 16'd1 < rd_H_row_size + rd_H_col_size) begin
+                if(rd_H_time_counter >= 16'd1 && rd_H_time_counter < rd_H_row_size + 16'd1 && 16'd1 < rd_H_col_size) begin
                     ub_rd_H_data_out_1 <= ub_memory[rd_H_ptr];
-                    rd_H_ptr <= rd_H_ptr + 1;
+
+                    if(rd_H_time_counter < rd_H_row_size && 16'd0 < rd_H_col_size) begin
+                        ub_rd_H_data_out_0 <= ub_memory[rd_H_ptr + 16'd1];
+                        rd_H_ptr <= rd_H_ptr + 16'd2;
+                    end else begin
+                        ub_rd_H_data_out_0 <= 16'b0;
+                        rd_H_ptr <= rd_H_ptr + 16'd1;
+                    end
                 end else begin
                     ub_rd_H_data_out_1 <= 16'b0;
+
+                    if(rd_H_time_counter < rd_H_row_size && 16'd0 < rd_H_col_size) begin
+                        ub_rd_H_data_out_0 <= ub_memory[rd_H_ptr];
+                        rd_H_ptr <= rd_H_ptr + 16'd1;
+                    end else begin
+                        ub_rd_H_data_out_0 <= 16'b0;
+                    end
                 end
 
-                if(rd_H_time_counter >= 0 && rd_H_time_counter < rd_H_row_size + 0 && 0 < rd_H_col_size) begin
-                    ub_rd_H_data_out_0 <= ub_memory[rd_H_ptr];
-                    rd_H_ptr <= rd_H_ptr + 1;
-                end else begin
-                    ub_rd_H_data_out_0 <= 16'b0;
-                end
-
-                rd_H_time_counter <= rd_H_time_counter + 1;
+                rd_H_time_counter <= rd_H_time_counter + 16'd1;
             end else begin
-                rd_H_ptr <= 0;
-                rd_H_row_size <= 0;
-                rd_H_col_size <= 0;
+                rd_H_ptr <= 16'd0;
+                rd_H_row_size <= 16'd0;
+                rd_H_col_size <= 16'd0;
                 rd_H_time_counter <= 16'b0;
                 ub_rd_H_data_out_0 <= 16'b0;
                 ub_rd_H_data_out_1 <= 16'b0;
             end
 
             // READING LOGIC (for bias and weight gradient descent inputs from UB to gradient descent modules)
-            if (rd_grad_bias_time_counter + 1 < rd_grad_bias_row_size + rd_grad_bias_col_size) begin
-                if(rd_grad_bias_time_counter >= 0 && rd_grad_bias_time_counter < rd_grad_bias_row_size + 0 && 0 < rd_grad_bias_col_size) begin
+            if (ub_rd_start_in && ub_ptr_select == 9'd5) begin
+                value_old_in_0 <= 16'b0;
+                value_old_in_1 <= 16'b0;
+            end else if (rd_grad_bias_time_counter + 16'd1 < rd_grad_bias_row_size + rd_grad_bias_col_size) begin
+                if(rd_grad_bias_time_counter < rd_grad_bias_row_size && 16'd0 < rd_grad_bias_col_size) begin
                     value_old_in_0 <= ub_memory[rd_grad_bias_ptr + 0];
                 end else begin
                     value_old_in_0 <= 16'b0;
                 end
 
-                if(rd_grad_bias_time_counter >= 1 && rd_grad_bias_time_counter < rd_grad_bias_row_size + 1 && 1 < rd_grad_bias_col_size) begin
+                if(rd_grad_bias_time_counter >= 16'd1 && rd_grad_bias_time_counter < rd_grad_bias_row_size + 16'd1 && 16'd1 < rd_grad_bias_col_size) begin
                     value_old_in_1 <= ub_memory[rd_grad_bias_ptr + 1];
                 end else begin
                     value_old_in_1 <= 16'b0;
                 end
 
-                rd_grad_bias_time_counter <= rd_grad_bias_time_counter + 1;
-            end else if (rd_grad_weight_time_counter + 1 < rd_grad_weight_row_size + rd_grad_weight_col_size) begin
-                if(rd_grad_weight_time_counter >= 1 && rd_grad_weight_time_counter < rd_grad_weight_row_size + 1 && 1 < rd_grad_weight_col_size) begin
+                rd_grad_bias_time_counter <= rd_grad_bias_time_counter + 16'd1;
+            end else if (ub_rd_start_in && ub_ptr_select == 9'd6) begin
+                value_old_in_0 <= 16'b0;
+                value_old_in_1 <= 16'b0;
+            end else if (rd_grad_weight_time_counter + 16'd1 < rd_grad_weight_row_size + rd_grad_weight_col_size) begin
+                if(rd_grad_weight_time_counter >= 16'd1 && rd_grad_weight_time_counter < rd_grad_weight_row_size + 16'd1 && 16'd1 < rd_grad_weight_col_size) begin
                     value_old_in_1 <= ub_memory[rd_grad_weight_ptr];
-                    rd_grad_weight_ptr <= rd_grad_weight_ptr + 1;
+
+                    if(rd_grad_weight_time_counter < rd_grad_weight_row_size && 16'd0 < rd_grad_weight_col_size) begin
+                        value_old_in_0 <= ub_memory[rd_grad_weight_ptr + 16'd1];
+                        rd_grad_weight_ptr <= rd_grad_weight_ptr + 16'd2;
+                    end else begin
+                        value_old_in_0 <= 16'b0;
+                        rd_grad_weight_ptr <= rd_grad_weight_ptr + 16'd1;
+                    end
                 end else begin
                     value_old_in_1 <= 16'b0;
+
+                    if(rd_grad_weight_time_counter < rd_grad_weight_row_size && 16'd0 < rd_grad_weight_col_size) begin
+                        value_old_in_0 <= ub_memory[rd_grad_weight_ptr];
+                        rd_grad_weight_ptr <= rd_grad_weight_ptr + 16'd1;
+                    end else begin
+                        value_old_in_0 <= 16'b0;
+                    end
                 end
 
-                if(rd_grad_weight_time_counter >= 0 && rd_grad_weight_time_counter < rd_grad_weight_row_size + 0 && 0 < rd_grad_weight_col_size) begin
-                    value_old_in_0 <= ub_memory[rd_grad_weight_ptr];
-                    rd_grad_weight_ptr <= rd_grad_weight_ptr + 1;
-                end else begin
-                    value_old_in_0 <= 16'b0;
-                end
-
-                rd_grad_weight_time_counter <= rd_grad_weight_time_counter + 1;
+                rd_grad_weight_time_counter <= rd_grad_weight_time_counter + 16'd1;
             end else begin
-                rd_grad_bias_ptr <= 0;
-                rd_grad_bias_row_size <= 0;
-                rd_grad_bias_col_size <= 0;
+                rd_grad_bias_ptr <= 16'd0;
+                rd_grad_bias_row_size <= 16'd0;
+                rd_grad_bias_col_size <= 16'd0;
                 rd_grad_bias_time_counter <= 16'b0;
-                rd_grad_weight_ptr <= 0;
-                rd_grad_weight_row_size <= 0;
-                rd_grad_weight_col_size <= 0;
+                rd_grad_weight_ptr <= 16'd0;
+                rd_grad_weight_row_size <= 16'd0;
+                rd_grad_weight_col_size <= 16'd0;
                 rd_grad_weight_time_counter <= 16'b0;
             end
         end
