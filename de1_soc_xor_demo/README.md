@@ -16,6 +16,7 @@ The end result is a deterministic, press-to-run XOR inference on real hardware:
 - WSL CLI build helper: `build_quartus.sh`
 - WSL CLI programming helper: `program_fpga.sh`
 - Board-level ModelSim testbench: `sim/de1_soc_tiny_tpu_xor_top_tb.v`
+- Captured Quartus build outputs: `artifacts/`
 
 ## What The Original Design Was
 
@@ -117,6 +118,12 @@ The generated bitstream is:
 
 ```text
 /mnt/c/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/output_files/de1_soc_tiny_tpu_xor.sof
+```
+
+The repo also keeps a captured copy of the most recent generated programming and report files in:
+
+```text
+/home/surya/tiny-tpu/de1_soc_xor_demo/artifacts
 ```
 
 ### 4. Program The FPGA From WSL

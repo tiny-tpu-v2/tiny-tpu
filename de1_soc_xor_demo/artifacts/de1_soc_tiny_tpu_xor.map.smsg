@@ -1,0 +1,1 @@
+Warning (10268): Verilog HDL information at unified_buffer.v(171): always construct contains both blocking and non-blocking assignments File: C:/fpga_builds/tiny-tpu-fpga-staging/tiny-tpu-hardened/unified_buffer.v Line: 171
