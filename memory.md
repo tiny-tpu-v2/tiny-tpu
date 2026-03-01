@@ -40,3 +40,6 @@
 - A `2048`-word unified buffer costs about `32768` bits, roughly `4` Cyclone V M10Ks, which is a modest FPGA memory cost.
 - With a `2048`-word unified buffer, realistic single-sample working sets such as `8x8 -> 16 -> 10` (`1300` words) or `7x7 -> 16 -> 10` (`1045` words) fit in one inference pass while preserving the append-only host write model used by the existing TPU flow.
 - Direct Arduino Uno to DE1-SoC FPGA wiring must treat voltage levels carefully: Uno TX is `5V`, DE1-SoC FPGA GPIO is `3.3V`, so the Uno TX line must pass through a level shifter or resistor divider before entering an FPGA input.
+- For full `28x28` MNIST on the existing Tiny-TPU, the correct schedule is to tile the K dimension in chunks of `2`. The unified buffer reader logic is fundamentally two-lane, so treating a `1x784` input as one long untransposed row produces incorrect accumulation.
+- The corrected `mnist_classifier_core` uses the Tiny-TPU in pass-through mode for each `K=2` chunk, accumulates raw partial sums in the controller, and applies controller-side bias plus ReLU to match the trained `sklearn` model.
+- The end-to-end toy serial path is now proven in ModelSim: a framed UART packet reaches `mnist_uart_ingress`, populates the packed frame buffer, and drives `mnist_serial_classifier` to the expected class result.
