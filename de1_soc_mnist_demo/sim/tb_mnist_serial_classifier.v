@@ -81,13 +81,13 @@ module tb_mnist_serial_classifier;
         dut.classifier_inst.b2_mem[1] = 16'h0000;
 
         dut.classifier_inst.w1_mem[0] = 16'h0100;
-        dut.classifier_inst.w1_mem[1] = 16'h0000;
-        dut.classifier_inst.w1_mem[2] = 16'h0000;
-        dut.classifier_inst.w1_mem[3] = 16'h0100;
-        dut.classifier_inst.w1_mem[4] = 16'h0100;
+        dut.classifier_inst.w1_mem[1] = 16'h0200;
+        dut.classifier_inst.w1_mem[2] = 16'h0400;
+        dut.classifier_inst.w1_mem[3] = 16'h0800;
+        dut.classifier_inst.w1_mem[4] = 16'h0000;
         dut.classifier_inst.w1_mem[5] = 16'h0000;
         dut.classifier_inst.w1_mem[6] = 16'h0000;
-        dut.classifier_inst.w1_mem[7] = 16'h0100;
+        dut.classifier_inst.w1_mem[7] = 16'h0000;
 
         dut.classifier_inst.w2_mem[0] = 16'h0100;
         dut.classifier_inst.w2_mem[1] = 16'h0000;
@@ -98,11 +98,11 @@ module tb_mnist_serial_classifier;
         rst = 1'b0;
         repeat (5) @(posedge clk);
 
-        // Header + payload(0x05) + checksum(0x05)
+        // Header + payload(0x03) + checksum(0x03)
         drive_byte(8'hA5);
         drive_byte(8'h5A);
-        drive_byte(8'h05);
-        drive_byte(8'h05);
+        drive_byte(8'h03);
+        drive_byte(8'h03);
 
         wait (frame_loaded_out);
         @(posedge clk);
@@ -117,8 +117,24 @@ module tb_mnist_serial_classifier;
             $display("FAIL: unexpected frame error");
             $finish(1);
         end
-        if (prediction_out !== 4'd0) begin
-            $display("FAIL: expected prediction 0 got %0d", prediction_out);
+        if (prediction_out !== 4'd1) begin
+            $display("FAIL: expected prediction 1 got %0d", prediction_out);
+            $finish(1);
+        end
+        if (dut.classifier_inst.hidden_buffer[0] !== 16'h0500) begin
+            $display("FAIL: expected hidden[0] = 0500 got %04x", dut.classifier_inst.hidden_buffer[0]);
+            $finish(1);
+        end
+        if (dut.classifier_inst.hidden_buffer[1] !== 16'h0A00) begin
+            $display("FAIL: expected hidden[1] = 0A00 got %04x", dut.classifier_inst.hidden_buffer[1]);
+            $finish(1);
+        end
+        if (dut.classifier_inst.logits_buffer[0] !== 16'h0500) begin
+            $display("FAIL: expected logits[0] = 0500 got %04x", dut.classifier_inst.logits_buffer[0]);
+            $finish(1);
+        end
+        if (dut.classifier_inst.logits_buffer[1] !== 16'h0A00) begin
+            $display("FAIL: expected logits[1] = 0A00 got %04x", dut.classifier_inst.logits_buffer[1]);
             $finish(1);
         end
 

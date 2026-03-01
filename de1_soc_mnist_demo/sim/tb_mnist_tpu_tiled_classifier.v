@@ -54,7 +54,7 @@ module tb_mnist_tpu_tiled_classifier;
     initial begin
         rst = 1'b1;
         start = 1'b0;
-        frame_bits = 4'b0101; // pixels 0 and 2 set
+        frame_bits = 4'b0011; // pixels 0 and 1 set
 
         for (i = 0; i < 8; i = i + 1) begin
             dut.w1_mem[i] = 16'h0000;
@@ -70,15 +70,15 @@ module tb_mnist_tpu_tiled_classifier;
         dut.b2_mem[1] = 16'h0000;
 
         // W1, tile width 2, row-major by input:
-        // neuron0 = [1, 0, 1, 0], neuron1 = [0, 1, 0, 1]
+        // neuron0 = [1, 4, 0, 0], neuron1 = [2, 8, 0, 0]
         dut.w1_mem[0] = 16'h0100;
-        dut.w1_mem[1] = 16'h0000;
-        dut.w1_mem[2] = 16'h0000;
-        dut.w1_mem[3] = 16'h0100;
-        dut.w1_mem[4] = 16'h0100;
+        dut.w1_mem[1] = 16'h0200;
+        dut.w1_mem[2] = 16'h0400;
+        dut.w1_mem[3] = 16'h0800;
+        dut.w1_mem[4] = 16'h0000;
         dut.w1_mem[5] = 16'h0000;
         dut.w1_mem[6] = 16'h0000;
-        dut.w1_mem[7] = 16'h0100;
+        dut.w1_mem[7] = 16'h0000;
 
         // W2, tile width 2, row-major by hidden input:
         // out0 = [1, 0], out1 = [0, 1]
@@ -97,24 +97,24 @@ module tb_mnist_tpu_tiled_classifier;
         wait (done);
         #1;
 
-        if (prediction_out !== 4'd0) begin
-            $display("FAIL: expected prediction 0 got %0d", prediction_out);
+        if (prediction_out !== 4'd1) begin
+            $display("FAIL: expected prediction 1 got %0d", prediction_out);
             $finish(1);
         end
-        if (dut.hidden_buffer[0] !== 16'h0200) begin
-            $display("FAIL: expected hidden[0] = 0200 got %04x", dut.hidden_buffer[0]);
+        if (dut.hidden_buffer[0] !== 16'h0500) begin
+            $display("FAIL: expected hidden[0] = 0500 got %04x", dut.hidden_buffer[0]);
             $finish(1);
         end
-        if (dut.hidden_buffer[1] !== 16'h0000) begin
-            $display("FAIL: expected hidden[1] = 0000 got %04x", dut.hidden_buffer[1]);
+        if (dut.hidden_buffer[1] !== 16'h0A00) begin
+            $display("FAIL: expected hidden[1] = 0A00 got %04x", dut.hidden_buffer[1]);
             $finish(1);
         end
-        if (dut.logits_buffer[0] !== 16'h0200) begin
-            $display("FAIL: expected logits[0] = 0200 got %04x", dut.logits_buffer[0]);
+        if (dut.logits_buffer[0] !== 16'h0500) begin
+            $display("FAIL: expected logits[0] = 0500 got %04x", dut.logits_buffer[0]);
             $finish(1);
         end
-        if (dut.logits_buffer[1] !== 16'h0000) begin
-            $display("FAIL: expected logits[1] = 0000 got %04x", dut.logits_buffer[1]);
+        if (dut.logits_buffer[1] !== 16'h0A00) begin
+            $display("FAIL: expected logits[1] = 0A00 got %04x", dut.logits_buffer[1]);
             $finish(1);
         end
 

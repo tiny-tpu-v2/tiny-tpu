@@ -1,0 +1,9 @@
+{
+  "accuracy": 0.9245,
+  "hidden_size": 64,
+  "input_size": 784,
+  "output_size": 10,
+  "test_limit": 2000,
+  "tile_width": 2,
+  "train_limit": 10000
+}

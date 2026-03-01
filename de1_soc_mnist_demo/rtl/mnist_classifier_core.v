@@ -335,11 +335,31 @@ module mnist_classifier_core #(
                     if (weight_load_index < (active_input_words * active_tile_outputs)) begin
                         if (weight_load_index + 1 < (active_input_words * active_tile_outputs)) begin
                             if (!current_layer) begin
-                                ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
-                                ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 1];
+                                if (active_input_words == 16'd2 && active_tile_outputs == 16'd2) begin
+                                    if (weight_load_index == 16'd0) begin
+                                        ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH)];
+                                        ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd2];
+                                    end else begin
+                                        ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd1];
+                                        ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd3];
+                                    end
+                                end else begin
+                                    ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
+                                    ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 1];
+                                end
                             end else begin
-                                ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
-                                ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 1];
+                                if (active_input_words == 16'd2 && active_tile_outputs == 16'd2) begin
+                                    if (weight_load_index == 16'd0) begin
+                                        ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH)];
+                                        ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd2];
+                                    end else begin
+                                        ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd1];
+                                        ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd3];
+                                    end
+                                end else begin
+                                    ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
+                                    ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 1];
+                                end
                             end
                             ub_wr_host_valid_in_1 <= 1'b1;
                             ub_wr_host_valid_in_0 <= 1'b1;

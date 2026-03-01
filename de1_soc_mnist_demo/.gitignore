@@ -7,3 +7,4 @@ sim/modelsim_mnist_uart_ingress/
 sim/modelsim_uart_rx/
 sim/modelsim_mnist_tpu_tiled_classifier/
 sim/modelsim_mnist_serial_classifier/
+sim/modelsim_mnist_serial_classifier_full/
