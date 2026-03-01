@@ -1,0 +1,5 @@
+__pycache__/
+generated_model/
+generated_smoke/
+sim/modelsim_uart_frame_receiver/
+sim/modelsim_uart_rx/
