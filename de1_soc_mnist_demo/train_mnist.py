@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("de1_soc_mnist_demo/generated_model"),
+        default=Path("generated_model"),
     )
     return parser.parse_args()
 

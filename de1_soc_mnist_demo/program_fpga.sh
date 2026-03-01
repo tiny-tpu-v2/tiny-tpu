@@ -6,6 +6,7 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 STAGING_ROOT=${QUARTUS_BUILD_ROOT:-/mnt/c/fpga_builds/tiny-tpu-fpga-staging}
 STAGING_PROJECT_DIR="$STAGING_ROOT/de1_soc_mnist_demo"
 SOF_FILE="$STAGING_PROJECT_DIR/output_files/de1_soc_mnist_serial_top.sof"
+FALLBACK_SOF_FILE="$SCRIPT_DIR/artifacts/de1_soc_mnist_serial_top.sof"
 CABLE_NAME=${QUARTUS_CABLE:-"DE-SoC [USB-1]"}
 BYPASS_DEVICE=${QUARTUS_BYPASS_DEVICE:-"SOCVHPS"}
 FPGA_DEVICE_INDEX=${QUARTUS_FPGA_DEVICE_INDEX:-2}
@@ -14,9 +15,13 @@ JTAGCONFIG="$QUARTUS_BIN/jtagconfig.exe"
 QUARTUS_PGM="$QUARTUS_BIN/quartus_pgm.exe"
 
 if [ ! -f "$SOF_FILE" ]; then
-    echo "missing bitstream: $SOF_FILE" >&2
-    echo "run build_quartus.sh first" >&2
-    exit 1
+    if [ -f "$FALLBACK_SOF_FILE" ]; then
+        SOF_FILE="$FALLBACK_SOF_FILE"
+    else
+        echo "missing bitstream: $SOF_FILE" >&2
+        echo "run build_quartus.sh first" >&2
+        exit 1
+    fi
 fi
 
 SOF_FILE_WIN=$(wslpath -w "$SOF_FILE")

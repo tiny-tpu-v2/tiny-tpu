@@ -7,14 +7,16 @@ This folder is the self-contained MNIST demo project for the DE1-SoC.
 
 It includes:
 
-- the final FPGA RTL in [rtl](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl)
-- the top-level board wrapper in [de1_soc_mnist_serial_top.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/de1_soc_mnist_serial_top.v)
-- the Quartus project in [de1_soc_mnist_serial_top.qpf](/home/surya/tiny-tpu/de1_soc_mnist_demo/de1_soc_mnist_serial_top.qpf)
-- the Arduino touchscreen sender in [arduino_touch_sender.ino](/home/surya/tiny-tpu/de1_soc_mnist_demo/arduino_touch_sender/arduino_touch_sender.ino)
-- the training/export flow in [train_mnist.py](/home/surya/tiny-tpu/de1_soc_mnist_demo/train_mnist.py)
-- the ModelSim regressions in [sim](/home/surya/tiny-tpu/de1_soc_mnist_demo/sim)
-- the generated model in [model](/home/surya/tiny-tpu/de1_soc_mnist_demo/model)
-- the captured Quartus outputs in [artifacts](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts)
+- the final FPGA RTL in [rtl](rtl)
+- the top-level board wrapper in [de1_soc_mnist_serial_top.v](de1_soc_mnist_serial_top.v)
+- the Quartus project in [de1_soc_mnist_serial_top.qpf](de1_soc_mnist_serial_top.qpf)
+- the Arduino touchscreen sender in [arduino_touch_sender.ino](arduino_touch_sender/arduino_touch_sender.ino)
+- the training/export flow in [train_mnist.py](train_mnist.py)
+- the ModelSim regressions in [sim](sim)
+- the generated model in [model](model)
+- the captured Quartus outputs in [artifacts](artifacts)
+- the WSL Arduino attach note in [ARDUINO_WSL_SETUP.md](ARDUINO_WSL_SETUP.md)
+- the Arduino smoke-test sketch in [arduino-blink.ino](arduino-blink/arduino-blink.ino)
 
 The finished runtime path is:
 
@@ -38,7 +40,7 @@ This project is complete enough to run end-to-end on hardware:
 - the FPGA accepts frames over the wired UART link
 - the FPGA runs inference and latches a digit on the seven-segment display
 - the Quartus project builds successfully on the DE1-SoC target
-- the generated `.sof` is stored in [de1_soc_mnist_serial_top.sof](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.sof)
+- the generated `.sof` is stored in [de1_soc_mnist_serial_top.sof](artifacts/de1_soc_mnist_serial_top.sof)
 
 Key build facts from the captured reports:
 
@@ -47,7 +49,7 @@ Key build facts from the captured reports:
 - timing status: passing
 - worst-case setup slack after the final timing fix: `+7.147 ns`
 
-The current trained model summary is in [summary.json](/home/surya/tiny-tpu/de1_soc_mnist_demo/model/summary.json):
+The current trained model summary is in [summary.json](model/summary.json):
 
 - input size: `784`
 - hidden size: `64`
@@ -98,7 +100,7 @@ and built a tiled scheduler around that.
 
 ### 2. Do not widen the compute fabric first
 
-The compute fabric is still fundamentally a hard-coded `2x2` array in [systolic.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/systolic.v).
+The compute fabric is still fundamentally a hard-coded `2x2` array in [systolic.v](rtl/systolic.v).
 
 Trying to widen it first would have required a much larger rewrite across:
 
@@ -165,7 +167,7 @@ The final FPGA input pin is:
 
 - `UART_RX_IN`
 - mapped to `GPIO_0[0]`
-- constrained in [de1_soc_mnist_serial_top.qsf](/home/surya/tiny-tpu/de1_soc_mnist_demo/de1_soc_mnist_serial_top.qsf#L44)
+- constrained in [de1_soc_mnist_serial_top.qsf](de1_soc_mnist_serial_top.qsf#L44)
 - Quartus ball: `PIN_AC18`
 
 On the `GPIO_0` 2x20 header:
@@ -192,17 +194,17 @@ This is the primary, known-good workflow.
 
 The Arduino sketch is:
 
-- [arduino_touch_sender.ino](/home/surya/tiny-tpu/de1_soc_mnist_demo/arduino_touch_sender/arduino_touch_sender.ino)
+- [arduino_touch_sender.ino](arduino_touch_sender/arduino_touch_sender.ino)
 
 Typical upload flow from WSL:
 
 ```bash
 arduino-cli board list
-arduino-cli compile --fqbn arduino:avr:uno /home/surya/tiny-tpu/de1_soc_mnist_demo/arduino_touch_sender
-arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno /home/surya/tiny-tpu/de1_soc_mnist_demo/arduino_touch_sender
+arduino-cli compile --fqbn arduino:avr:uno arduino_touch_sender
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno arduino_touch_sender
 ```
 
-If the Uno is not visible in WSL, follow the machine setup note in [ARDUINO_WSL_SETUP.md](/home/surya/tiny-tpu/ARDUINO_WSL_SETUP.md).
+If the Uno is not visible in WSL, follow the machine setup note in [ARDUINO_WSL_SETUP.md](ARDUINO_WSL_SETUP.md).
 
 On this machine, the common recovery step is to reattach the Uno from Windows:
 
@@ -224,13 +226,13 @@ The verification flow is CLI-first and ModelSim-first.
 Useful regressions:
 
 ```bash
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_uart_rx_tb.sh
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_uart_frame_receiver_tb.sh
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_mnist_frame_buffer_tb.sh
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_mnist_uart_ingress_tb.sh
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_mnist_tpu_tiled_classifier_tb.sh
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_mnist_serial_classifier_full_tb.sh
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/sim/run_de1_soc_mnist_serial_top_tb.sh
+bash sim/run_uart_rx_tb.sh
+bash sim/run_uart_frame_receiver_tb.sh
+bash sim/run_mnist_frame_buffer_tb.sh
+bash sim/run_mnist_uart_ingress_tb.sh
+bash sim/run_mnist_tpu_tiled_classifier_tb.sh
+bash sim/run_mnist_serial_classifier_full_tb.sh
+bash sim/run_de1_soc_mnist_serial_top_tb.sh
 ```
 
 ### 3. FPGA: stage and build the Quartus project
@@ -240,13 +242,13 @@ The project stages itself from WSL into a Windows-visible path before building.
 Stage only:
 
 ```bash
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/stage_quartus_project.sh
+bash stage_quartus_project.sh
 ```
 
 Stage and build:
 
 ```bash
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/build_quartus.sh
+bash build_quartus.sh
 ```
 
 By default this uses:
@@ -259,15 +261,17 @@ You can override them:
 ```bash
 QUARTUS_BIN=/mnt/c/altera_lite/25.1std/quartus/bin64 \
 QUARTUS_BUILD_ROOT=/mnt/c/fpga_builds/tiny-tpu-fpga-staging \
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/build_quartus.sh
+bash build_quartus.sh
 ```
 
 ### 4. FPGA: program the board
 
-Once the bitstream exists in the staged Windows build tree:
+The programming script prefers the staged Windows build output, but it falls back to the tracked local bitstream in `artifacts/` if no staged build is present.
+
+Run:
 
 ```bash
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/program_fpga.sh
+bash program_fpga.sh
 ```
 
 The script:
@@ -309,7 +313,7 @@ This is the correct GUI workflow. Do not open the WSL path directly in the Windo
 ### 1. Stage the project from WSL
 
 ```bash
-bash /home/surya/tiny-tpu/de1_soc_mnist_demo/stage_quartus_project.sh
+bash stage_quartus_project.sh
 ```
 
 That copies this self-contained folder into:
@@ -346,20 +350,20 @@ The staged GUI build output appears under:
 
 ## Captured Build Artifacts
 
-This folder includes the generated build outputs in [artifacts](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts), including:
+This folder includes the generated build outputs in [artifacts](artifacts), including:
 
-- [de1_soc_mnist_serial_top.sof](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.sof)
-- [de1_soc_mnist_serial_top.fit.rpt](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.fit.rpt)
-- [de1_soc_mnist_serial_top.map.rpt](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.map.rpt)
-- [de1_soc_mnist_serial_top.asm.rpt](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.asm.rpt)
-- [de1_soc_mnist_serial_top.sta.rpt](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.sta.rpt)
-- [de1_soc_mnist_serial_top.pin](/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts/de1_soc_mnist_serial_top.pin)
+- [de1_soc_mnist_serial_top.sof](artifacts/de1_soc_mnist_serial_top.sof)
+- [de1_soc_mnist_serial_top.fit.rpt](artifacts/de1_soc_mnist_serial_top.fit.rpt)
+- [de1_soc_mnist_serial_top.map.rpt](artifacts/de1_soc_mnist_serial_top.map.rpt)
+- [de1_soc_mnist_serial_top.asm.rpt](artifacts/de1_soc_mnist_serial_top.asm.rpt)
+- [de1_soc_mnist_serial_top.sta.rpt](artifacts/de1_soc_mnist_serial_top.sta.rpt)
+- [de1_soc_mnist_serial_top.pin](artifacts/de1_soc_mnist_serial_top.pin)
 
 These artifacts are tracked so this folder remains usable even if the staging tree is deleted.
 
 ## Training And Model Export
 
-The model is trained and exported by [train_mnist.py](/home/surya/tiny-tpu/de1_soc_mnist_demo/train_mnist.py).
+The model is trained and exported by [train_mnist.py](train_mnist.py).
 
 The chosen model shape is:
 
@@ -373,25 +377,25 @@ Why this shape:
 
 The exported files are:
 
-- [w1_tiled_q8_8.memh](/home/surya/tiny-tpu/de1_soc_mnist_demo/model/w1_tiled_q8_8.memh)
-- [b1_q8_8.memh](/home/surya/tiny-tpu/de1_soc_mnist_demo/model/b1_q8_8.memh)
-- [w2_tiled_q8_8.memh](/home/surya/tiny-tpu/de1_soc_mnist_demo/model/w2_tiled_q8_8.memh)
-- [b2_q8_8.memh](/home/surya/tiny-tpu/de1_soc_mnist_demo/model/b2_q8_8.memh)
+- [w1_tiled_q8_8.memh](model/w1_tiled_q8_8.memh)
+- [b1_q8_8.memh](model/b1_q8_8.memh)
+- [w2_tiled_q8_8.memh](model/w2_tiled_q8_8.memh)
+- [b2_q8_8.memh](model/b2_q8_8.memh)
 
 Typical training command:
 
 ```bash
-source /home/surya/tiny-tpu/.venv-mnist/bin/activate
-python /home/surya/tiny-tpu/de1_soc_mnist_demo/train_mnist.py \
+source /path/to/your/venv/bin/activate
+python train_mnist.py \
   --hidden-size 64 \
   --tile-width 2 \
   --train-limit 10000 \
   --test-limit 2000 \
   --max-iter 20 \
-  --output-dir /home/surya/tiny-tpu/de1_soc_mnist_demo/generated_model
+  --output-dir generated_model
 ```
 
-If you want to replace the shipped model, regenerate the files and then copy them into [model](/home/surya/tiny-tpu/de1_soc_mnist_demo/model) before rebuilding Quartus.
+If you want to replace the shipped model, regenerate the files and then copy them into [model](model) before rebuilding Quartus.
 
 ## Verification Strategy
 
@@ -409,7 +413,7 @@ The main checkpoints were:
 6. Full serial classifier
 7. Full DE1-SoC top-level
 
-Each of those has a dedicated ModelSim regression in [sim](/home/surya/tiny-tpu/de1_soc_mnist_demo/sim).
+Each of those has a dedicated ModelSim regression in [sim](sim).
 
 ### Hardware checkpoints
 
@@ -476,8 +480,8 @@ Fix:
 
 That behavior is defined in:
 
-- [brush_tools.py](/home/surya/tiny-tpu/de1_soc_mnist_demo/brush_tools.py)
-- [test_brush_tools.py](/home/surya/tiny-tpu/de1_soc_mnist_demo/test_brush_tools.py)
+- [brush_tools.py](brush_tools.py)
+- [test_brush_tools.py](test_brush_tools.py)
 
 ### 4. The large model weights would not synthesize cleanly
 
@@ -492,7 +496,7 @@ Observed result:
 
 Fix:
 
-- change the large weight storage in [mnist_classifier_core.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/mnist_classifier_core.v) to synchronous ROM-style access
+- change the large weight storage in [mnist_classifier_core.v](rtl/mnist_classifier_core.v) to synchronous ROM-style access
 - add the required wait/commit states for the new read latency
 
 ### 5. The design initially failed timing
@@ -519,13 +523,13 @@ The finished system is not a random rewrite. It is a structured extension of the
 
 The major additions are:
 
-- UART byte receiver: [uart_rx.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/uart_rx.v)
-- framed UART packet receiver: [uart_frame_receiver.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/uart_frame_receiver.v)
-- packed frame storage: [mnist_frame_buffer.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/mnist_frame_buffer.v)
-- serial ingress wrapper: [mnist_uart_ingress.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/mnist_uart_ingress.v)
-- tiled MNIST scheduler: [mnist_classifier_core.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/mnist_classifier_core.v)
-- serial-to-classifier bridge: [mnist_serial_classifier.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/mnist_serial_classifier.v)
-- board top-level: [de1_soc_mnist_serial_top.v](/home/surya/tiny-tpu/de1_soc_mnist_demo/de1_soc_mnist_serial_top.v)
+- UART byte receiver: [uart_rx.v](rtl/uart_rx.v)
+- framed UART packet receiver: [uart_frame_receiver.v](rtl/uart_frame_receiver.v)
+- packed frame storage: [mnist_frame_buffer.v](rtl/mnist_frame_buffer.v)
+- serial ingress wrapper: [mnist_uart_ingress.v](rtl/mnist_uart_ingress.v)
+- tiled MNIST scheduler: [mnist_classifier_core.v](rtl/mnist_classifier_core.v)
+- serial-to-classifier bridge: [mnist_serial_classifier.v](rtl/mnist_serial_classifier.v)
+- board top-level: [de1_soc_mnist_serial_top.v](de1_soc_mnist_serial_top.v)
 
 The major behavioral change is:
 
