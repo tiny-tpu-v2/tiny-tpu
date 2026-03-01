@@ -1,0 +1,20 @@
+Fitter Status : Successful - Sun Mar  1 01:31:30 2026
+Quartus Prime Version : 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+Revision Name : de1_soc_mnist_serial_top
+Top-level Entity Name : de1_soc_mnist_serial_top
+Family : Cyclone V
+Device : 5CSEMA5F31C6
+Timing Models : Final
+Logic utilization (in ALMs) : 6,033 / 32,070 ( 19 % )
+Total registers : 5556
+Total pins : 58 / 457 ( 13 % )
+Total virtual pins : 0
+Total block memory bits : 813,056 / 4,065,280 ( 20 % )
+Total RAM Blocks : 100 / 397 ( 25 % )
+Total DSP Blocks : 7 / 87 ( 8 % )
+Total HSSI RX PCSs : 0
+Total HSSI PMA RX Deserializers : 0
+Total HSSI TX PCSs : 0
+Total HSSI PMA TX Serializers : 0
+Total PLLs : 0 / 6 ( 0 % )
+Total DLLs : 0 / 4 ( 0 % )
