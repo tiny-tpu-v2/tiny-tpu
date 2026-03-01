@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-TPU_DIR="/home/surya/tiny-tpu/de1_soc_xor_demo/rtl"
+TPU_DIR="$PROJECT_DIR/rtl"
 MODELSIM_DIR="${MODELSIM_DIR:-/mnt/c/intelFPGA/18.1/modelsim_ase/win32aloem}"
 WORK_DIR="$SCRIPT_DIR/modelsim_mnist_tpu_tiled_classifier"
 

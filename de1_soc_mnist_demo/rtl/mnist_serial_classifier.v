@@ -14,7 +14,12 @@ module mnist_serial_classifier #(
     parameter integer OUTPUT_NEURONS = 10,
     parameter integer OUTPUT_ADDR_WIDTH = 4,
     parameter integer TILE_WIDTH = 2,
-    parameter integer UNIFIED_BUFFER_WIDTH = 128
+    parameter integer UNIFIED_BUFFER_WIDTH = 128,
+    parameter integer PRELOAD_MODEL = 0,
+    parameter W1_INIT_FILE = "model/w1_tiled_q8_8.memh",
+    parameter B1_INIT_FILE = "model/b1_q8_8.memh",
+    parameter W2_INIT_FILE = "model/w2_tiled_q8_8.memh",
+    parameter B2_INIT_FILE = "model/b2_q8_8.memh"
 ) (
     input wire clk,
     input wire rst,
@@ -52,7 +57,12 @@ module mnist_serial_classifier #(
         .OUTPUT_NEURONS(OUTPUT_NEURONS),
         .OUTPUT_ADDR_WIDTH(OUTPUT_ADDR_WIDTH),
         .TILE_WIDTH(TILE_WIDTH),
-        .UNIFIED_BUFFER_WIDTH(UNIFIED_BUFFER_WIDTH)
+        .UNIFIED_BUFFER_WIDTH(UNIFIED_BUFFER_WIDTH),
+        .PRELOAD_MODEL(PRELOAD_MODEL),
+        .W1_INIT_FILE(W1_INIT_FILE),
+        .B1_INIT_FILE(B1_INIT_FILE),
+        .W2_INIT_FILE(W2_INIT_FILE),
+        .B2_INIT_FILE(B2_INIT_FILE)
     ) classifier_inst (
         .clk(clk),
         .rst(rst),

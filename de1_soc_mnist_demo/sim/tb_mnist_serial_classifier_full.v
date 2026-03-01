@@ -10,6 +10,10 @@ module tb_mnist_serial_classifier_full;
     localparam integer CLKS_PER_BIT = CLOCK_HZ / BAUD;
     localparam integer PAYLOAD_BYTES = 98;
     localparam [3:0] EXPECTED_LABEL = 4'd7;
+    localparam W1_INIT_FILE = "../../model/w1_tiled_q8_8.memh";
+    localparam B1_INIT_FILE = "../../model/b1_q8_8.memh";
+    localparam W2_INIT_FILE = "../../model/w2_tiled_q8_8.memh";
+    localparam B2_INIT_FILE = "../../model/b2_q8_8.memh";
 
     reg clk;
     reg rst;
@@ -39,7 +43,12 @@ module tb_mnist_serial_classifier_full;
         .OUTPUT_NEURONS(10),
         .OUTPUT_ADDR_WIDTH(4),
         .TILE_WIDTH(2),
-        .UNIFIED_BUFFER_WIDTH(128)
+        .UNIFIED_BUFFER_WIDTH(128),
+        .PRELOAD_MODEL(1),
+        .W1_INIT_FILE(W1_INIT_FILE),
+        .B1_INIT_FILE(B1_INIT_FILE),
+        .W2_INIT_FILE(W2_INIT_FILE),
+        .B2_INIT_FILE(B2_INIT_FILE)
     ) dut (
         .clk(clk),
         .rst(rst),
@@ -79,10 +88,6 @@ module tb_mnist_serial_classifier_full;
         start_inference = 1'b0;
         checksum = 8'h00;
 
-        $readmemh("../../model/w1_tiled_q8_8.memh", dut.classifier_inst.w1_mem);
-        $readmemh("../../model/b1_q8_8.memh", dut.classifier_inst.b1_mem);
-        $readmemh("../../model/w2_tiled_q8_8.memh", dut.classifier_inst.w2_mem);
-        $readmemh("../../model/b2_q8_8.memh", dut.classifier_inst.b2_mem);
         $readmemh("../../model/sample_image_0.memh", sample_bytes);
         $readmemh("../../model/sample_expected_hidden_0_q8_8.memh", expected_hidden);
         $readmemh("../../model/sample_expected_logits_0_q8_8.memh", expected_logits);

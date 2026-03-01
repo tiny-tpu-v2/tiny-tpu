@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# ABOUTME: Builds and runs the full-size MNIST serial-classifier regression in ModelSim.
-# ABOUTME: Uses the tracked exported model files and one committed sample frame to verify 784x64x10 inference.
+# ABOUTME: Builds and runs the DE1-SoC MNIST board-top regression in ModelSim.
+# ABOUTME: Verifies UART ingress, debounced button start, and seven-segment display behavior.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 TPU_DIR="$PROJECT_DIR/rtl"
 MODELSIM_DIR="${MODELSIM_DIR:-/mnt/c/intelFPGA/18.1/modelsim_ase/win32aloem}"
-WORK_DIR="$SCRIPT_DIR/modelsim_mnist_serial_classifier_full"
+WORK_DIR="$SCRIPT_DIR/modelsim_de1_soc_mnist_serial_top"
 
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"
@@ -38,8 +38,9 @@ cd "$WORK_DIR"
   "$(wslpath -w "$PROJECT_DIR/rtl/tpu_mnist.v")" \
   "$(wslpath -w "$PROJECT_DIR/rtl/mnist_classifier_core.v")" \
   "$(wslpath -w "$PROJECT_DIR/rtl/mnist_serial_classifier.v")" \
-  "$(wslpath -w "$SCRIPT_DIR/tb_mnist_serial_classifier_full.v")"
+  "$(wslpath -w "$PROJECT_DIR/de1_soc_mnist_serial_top.v")" \
+  "$(wslpath -w "$SCRIPT_DIR/tb_de1_soc_mnist_serial_top.v")"
 "$MODELSIM_DIR/vsim.exe" \
   -c \
   -do "run -all; quit -f" \
-  work.tb_mnist_serial_classifier_full
+  work.tb_de1_soc_mnist_serial_top

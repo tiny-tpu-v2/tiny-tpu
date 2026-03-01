@@ -12,7 +12,12 @@ module mnist_classifier_core #(
     parameter integer OUTPUT_NEURONS = 10,
     parameter integer OUTPUT_ADDR_WIDTH = 4,
     parameter integer TILE_WIDTH = 2,
-    parameter integer UNIFIED_BUFFER_WIDTH = 128
+    parameter integer UNIFIED_BUFFER_WIDTH = 128,
+    parameter integer PRELOAD_MODEL = 0,
+    parameter W1_INIT_FILE = "model/w1_tiled_q8_8.memh",
+    parameter B1_INIT_FILE = "model/b1_q8_8.memh",
+    parameter W2_INIT_FILE = "model/w2_tiled_q8_8.memh",
+    parameter B2_INIT_FILE = "model/b2_q8_8.memh"
 ) (
     input wire clk,
     input wire rst,
@@ -110,6 +115,15 @@ module mnist_classifier_core #(
     integer compare_index;
     integer best_index;
     reg signed [15:0] best_value;
+
+    initial begin
+        if (PRELOAD_MODEL) begin
+            $readmemh(W1_INIT_FILE, w1_mem);
+            $readmemh(B1_INIT_FILE, b1_mem);
+            $readmemh(W2_INIT_FILE, w2_mem);
+            $readmemh(B2_INIT_FILE, b2_mem);
+        end
+    end
 
     assign pixel_addr_out = (state == STATE_LOAD_INPUT && !current_layer)
         ? ((chunk_index << 1) + input_load_index)
