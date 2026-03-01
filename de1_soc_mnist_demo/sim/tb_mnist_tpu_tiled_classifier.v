@@ -57,35 +57,35 @@ module tb_mnist_tpu_tiled_classifier;
         frame_bits = 4'b0011; // pixels 0 and 1 set
 
         for (i = 0; i < 8; i = i + 1) begin
-            dut.w1_mem[i] = 16'h0000;
+            dut.model_runtime.w1_mem[i] = 16'h0000;
         end
         for (i = 0; i < 2; i = i + 1) begin
             dut.b1_mem[i] = 16'h0000;
-            dut.w2_mem[i] = 16'h0000;
+            dut.model_runtime.w2_mem[i] = 16'h0000;
         end
         for (i = 2; i < 4; i = i + 1) begin
-            dut.w2_mem[i] = 16'h0000;
+            dut.model_runtime.w2_mem[i] = 16'h0000;
         end
         dut.b2_mem[0] = 16'h0000;
         dut.b2_mem[1] = 16'h0000;
 
         // W1, tile width 2, row-major by input:
         // neuron0 = [1, 4, 0, 0], neuron1 = [2, 8, 0, 0]
-        dut.w1_mem[0] = 16'h0100;
-        dut.w1_mem[1] = 16'h0200;
-        dut.w1_mem[2] = 16'h0400;
-        dut.w1_mem[3] = 16'h0800;
-        dut.w1_mem[4] = 16'h0000;
-        dut.w1_mem[5] = 16'h0000;
-        dut.w1_mem[6] = 16'h0000;
-        dut.w1_mem[7] = 16'h0000;
+        dut.model_runtime.w1_mem[0] = 16'h0100;
+        dut.model_runtime.w1_mem[1] = 16'h0200;
+        dut.model_runtime.w1_mem[2] = 16'h0400;
+        dut.model_runtime.w1_mem[3] = 16'h0800;
+        dut.model_runtime.w1_mem[4] = 16'h0000;
+        dut.model_runtime.w1_mem[5] = 16'h0000;
+        dut.model_runtime.w1_mem[6] = 16'h0000;
+        dut.model_runtime.w1_mem[7] = 16'h0000;
 
         // W2, tile width 2, row-major by hidden input:
         // out0 = [1, 0], out1 = [0, 1]
-        dut.w2_mem[0] = 16'h0100;
-        dut.w2_mem[1] = 16'h0000;
-        dut.w2_mem[2] = 16'h0000;
-        dut.w2_mem[3] = 16'h0100;
+        dut.model_runtime.w2_mem[0] = 16'h0100;
+        dut.model_runtime.w2_mem[1] = 16'h0000;
+        dut.model_runtime.w2_mem[2] = 16'h0000;
+        dut.model_runtime.w2_mem[3] = 16'h0100;
 
         repeat (5) @(posedge clk);
         rst = 1'b0;

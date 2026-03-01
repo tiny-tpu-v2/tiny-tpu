@@ -4,6 +4,28 @@
 `timescale 1ns/1ps
 `default_nettype none
 
+module mnist_sync_rom_2r #(
+    parameter integer DEPTH = 1,
+    parameter INIT_FILE = ""
+) (
+    input wire clk,
+    input wire [15:0] addr_a,
+    input wire [15:0] addr_b,
+    output reg [15:0] q_a,
+    output reg [15:0] q_b
+);
+    (* ramstyle = "M10K" *) reg [15:0] mem [0:DEPTH - 1];
+
+    initial begin
+        $readmemh(INIT_FILE, mem);
+    end
+
+    always @(posedge clk) begin
+        q_a <= mem[addr_a];
+        q_b <= mem[addr_b];
+    end
+endmodule
+
 module mnist_classifier_core #(
     parameter integer PIXELS = 784,
     parameter integer PIXEL_ADDR_WIDTH = 10,
@@ -47,6 +69,10 @@ module mnist_classifier_core #(
     localparam [4:0] STATE_NEXT_TILE = 5'd13;
     localparam [4:0] STATE_ARGMAX = 5'd14;
     localparam [4:0] STATE_DONE = 5'd15;
+    localparam [4:0] STATE_LOAD_WEIGHT_WAIT = 5'd16;
+    localparam [4:0] STATE_LOAD_WEIGHT_COMMIT = 5'd17;
+    localparam [4:0] STATE_ARGMAX_COMPARE = 5'd18;
+    localparam [4:0] STATE_ARGMAX_LATCH = 5'd19;
 
     reg [4:0] state;
     reg current_layer;
@@ -106,24 +132,77 @@ module mnist_classifier_core #(
 
     reg signed [15:0] hidden_buffer [0:HIDDEN_NEURONS - 1];
     reg signed [15:0] logits_buffer [0:OUTPUT_NEURONS - 1];
-    reg signed [15:0] w1_mem [0:(PIXELS * HIDDEN_NEURONS) - 1];
     reg signed [15:0] b1_mem [0:HIDDEN_NEURONS - 1];
-    reg signed [15:0] w2_mem [0:(HIDDEN_NEURONS * OUTPUT_NEURONS) - 1];
     reg signed [15:0] b2_mem [0:OUTPUT_NEURONS - 1];
+    reg [15:0] weight_read_addr_a;
+    reg [15:0] weight_read_addr_b;
+    reg weight_read_dual;
+    wire [15:0] w1_read_data_a;
+    wire [15:0] w1_read_data_b;
+    wire [15:0] w2_read_data_a;
+    wire [15:0] w2_read_data_b;
+    wire [15:0] active_weight_read_data_a;
+    wire [15:0] active_weight_read_data_b;
 
     integer clear_index;
-    integer compare_index;
-    integer best_index;
+    reg [OUTPUT_ADDR_WIDTH - 1:0] argmax_index;
+    reg [3:0] best_index_reg;
     reg signed [15:0] best_value;
 
     initial begin
         if (PRELOAD_MODEL) begin
-            $readmemh(W1_INIT_FILE, w1_mem);
             $readmemh(B1_INIT_FILE, b1_mem);
-            $readmemh(W2_INIT_FILE, w2_mem);
             $readmemh(B2_INIT_FILE, b2_mem);
         end
     end
+
+    assign active_weight_read_data_a = current_layer ? w2_read_data_a : w1_read_data_a;
+    assign active_weight_read_data_b = current_layer ? w2_read_data_b : w1_read_data_b;
+
+    generate
+        if (PRELOAD_MODEL) begin : model_preload
+            mnist_sync_rom_2r #(
+                .DEPTH(PIXELS * HIDDEN_NEURONS),
+                .INIT_FILE(W1_INIT_FILE)
+            ) w1_rom (
+                .clk(clk),
+                .addr_a(weight_read_addr_a),
+                .addr_b(weight_read_addr_b),
+                .q_a(w1_read_data_a),
+                .q_b(w1_read_data_b)
+            );
+
+            mnist_sync_rom_2r #(
+                .DEPTH(HIDDEN_NEURONS * OUTPUT_NEURONS),
+                .INIT_FILE(W2_INIT_FILE)
+            ) w2_rom (
+                .clk(clk),
+                .addr_a(weight_read_addr_a),
+                .addr_b(weight_read_addr_b),
+                .q_a(w2_read_data_a),
+                .q_b(w2_read_data_b)
+            );
+        end else begin : model_runtime
+            (* ramstyle = "M10K" *) reg signed [15:0] w1_mem [0:(PIXELS * HIDDEN_NEURONS) - 1];
+            (* ramstyle = "M10K" *) reg signed [15:0] w2_mem [0:(HIDDEN_NEURONS * OUTPUT_NEURONS) - 1];
+            reg [15:0] w1_read_data_a_reg;
+            reg [15:0] w1_read_data_b_reg;
+            reg [15:0] w2_read_data_a_reg;
+            reg [15:0] w2_read_data_b_reg;
+
+            assign w1_read_data_a = w1_read_data_a_reg;
+            assign w1_read_data_b = w1_read_data_b_reg;
+            assign w2_read_data_a = w2_read_data_a_reg;
+            assign w2_read_data_b = w2_read_data_b_reg;
+
+            always @(posedge clk) begin
+                w1_read_data_a_reg <= w1_mem[weight_read_addr_a];
+                w1_read_data_b_reg <= w1_mem[weight_read_addr_b];
+                w2_read_data_a_reg <= w2_mem[weight_read_addr_a];
+                w2_read_data_b_reg <= w2_mem[weight_read_addr_b];
+            end
+        end
+    endgenerate
 
     assign pixel_addr_out = (state == STATE_LOAD_INPUT && !current_layer)
         ? ((chunk_index << 1) + input_load_index)
@@ -246,6 +325,12 @@ module mnist_classifier_core #(
             busy <= 1'b0;
             done <= 1'b0;
             prediction_out <= 4'd0;
+            argmax_index <= {OUTPUT_ADDR_WIDTH{1'b0}};
+            best_index_reg <= 4'd0;
+            best_value <= 16'h0000;
+            weight_read_addr_a <= 16'd0;
+            weight_read_addr_b <= 16'd0;
+            weight_read_dual <= 1'b0;
 
             ub_wr_host_data_in_0 <= 16'h0000;
             ub_wr_host_data_in_1 <= 16'h0000;
@@ -299,6 +384,12 @@ module mnist_classifier_core #(
                         partial_out_1 <= 16'h0000;
                         accum_0 <= 16'h0000;
                         accum_1 <= 16'h0000;
+                        argmax_index <= {OUTPUT_ADDR_WIDTH{1'b0}};
+                        best_index_reg <= 4'd0;
+                        best_value <= 16'h0000;
+                        weight_read_addr_a <= 16'd0;
+                        weight_read_addr_b <= 16'd0;
+                        weight_read_dual <= 1'b0;
                         tpu_rst <= 1'b1;
                         for (clear_index = 0; clear_index < HIDDEN_NEURONS; clear_index = clear_index + 1) begin
                             hidden_buffer[clear_index] <= 16'h0000;
@@ -351,45 +442,63 @@ module mnist_classifier_core #(
                             if (!current_layer) begin
                                 if (active_input_words == 16'd2 && active_tile_outputs == 16'd2) begin
                                     if (weight_load_index == 16'd0) begin
-                                        ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH)];
-                                        ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd2];
+                                        weight_read_addr_a <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH);
+                                        weight_read_addr_b <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd2;
                                     end else begin
-                                        ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd1];
-                                        ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd3];
+                                        weight_read_addr_a <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd1;
+                                        weight_read_addr_b <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd3;
                                     end
                                 end else begin
-                                    ub_wr_host_data_in_1 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
-                                    ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 1];
+                                    weight_read_addr_a <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index;
+                                    weight_read_addr_b <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 16'd1;
                                 end
                             end else begin
                                 if (active_input_words == 16'd2 && active_tile_outputs == 16'd2) begin
                                     if (weight_load_index == 16'd0) begin
-                                        ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH)];
-                                        ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd2];
+                                        weight_read_addr_a <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH);
+                                        weight_read_addr_b <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd2;
                                     end else begin
-                                        ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd1];
-                                        ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd3];
+                                        weight_read_addr_a <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd1;
+                                        weight_read_addr_b <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + 16'd3;
                                     end
                                 end else begin
-                                    ub_wr_host_data_in_1 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
-                                    ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 1];
+                                    weight_read_addr_a <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index;
+                                    weight_read_addr_b <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index + 16'd1;
                                 end
                             end
-                            ub_wr_host_valid_in_1 <= 1'b1;
-                            ub_wr_host_valid_in_0 <= 1'b1;
-                            weight_load_index <= weight_load_index + 16'd2;
+                            weight_read_dual <= 1'b1;
                         end else begin
                             if (!current_layer) begin
-                                ub_wr_host_data_in_0 <= w1_mem[(hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
+                                weight_read_addr_a <= (hidden_tile_index * PIXELS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index;
                             end else begin
-                                ub_wr_host_data_in_0 <= w2_mem[(output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index];
+                                weight_read_addr_a <= (output_tile_index * HIDDEN_NEURONS * TILE_WIDTH) + (chunk_index * 2 * TILE_WIDTH) + weight_load_index;
                             end
-                            ub_wr_host_valid_in_0 <= 1'b1;
-                            weight_load_index <= weight_load_index + 16'd1;
+                            weight_read_addr_b <= 16'd0;
+                            weight_read_dual <= 1'b0;
                         end
+                        state <= STATE_LOAD_WEIGHT_WAIT;
                     end else begin
                         state <= STATE_START_WEIGHT;
                     end
+                end
+
+                STATE_LOAD_WEIGHT_WAIT: begin
+                    state <= STATE_LOAD_WEIGHT_COMMIT;
+                end
+
+                STATE_LOAD_WEIGHT_COMMIT: begin
+                    ub_wr_host_data_in_1 <= active_weight_read_data_a;
+                    ub_wr_host_valid_in_1 <= weight_read_dual;
+                    if (weight_read_dual) begin
+                        ub_wr_host_data_in_0 <= active_weight_read_data_b;
+                        ub_wr_host_valid_in_0 <= 1'b1;
+                        weight_load_index <= weight_load_index + 16'd2;
+                    end else begin
+                        ub_wr_host_data_in_0 <= active_weight_read_data_a;
+                        ub_wr_host_valid_in_0 <= 1'b1;
+                        weight_load_index <= weight_load_index + 16'd1;
+                    end
+                    state <= STATE_LOAD_WEIGHT;
                 end
 
                 STATE_START_WEIGHT: begin
@@ -524,15 +633,34 @@ module mnist_classifier_core #(
                 end
 
                 STATE_ARGMAX: begin
-                    best_index = 0;
-                    best_value = logits_buffer[0];
-                    for (compare_index = 1; compare_index < OUTPUT_NEURONS; compare_index = compare_index + 1) begin
-                        if ($signed(logits_buffer[compare_index]) > $signed(best_value)) begin
-                            best_index = compare_index;
-                            best_value = logits_buffer[compare_index];
-                        end
+                    best_index_reg <= 4'd0;
+                    best_value <= logits_buffer[0];
+                    if (OUTPUT_NEURONS > 1) begin
+                        argmax_index <= {{(OUTPUT_ADDR_WIDTH - 1){1'b0}}, 1'b1};
+                        state <= STATE_ARGMAX_COMPARE;
+                    end else begin
+                        prediction_out <= 4'd0;
+                        busy <= 1'b0;
+                        done <= 1'b1;
+                        state <= STATE_DONE;
                     end
-                    prediction_out <= best_index[3:0];
+                end
+
+                STATE_ARGMAX_COMPARE: begin
+                    if ($signed(logits_buffer[argmax_index]) > $signed(best_value)) begin
+                        best_index_reg <= argmax_index;
+                        best_value <= logits_buffer[argmax_index];
+                    end
+
+                    if (argmax_index + {{(OUTPUT_ADDR_WIDTH - 1){1'b0}}, 1'b1} < OUTPUT_NEURONS) begin
+                        argmax_index <= argmax_index + {{(OUTPUT_ADDR_WIDTH - 1){1'b0}}, 1'b1};
+                    end else begin
+                        state <= STATE_ARGMAX_LATCH;
+                    end
+                end
+
+                STATE_ARGMAX_LATCH: begin
+                    prediction_out <= best_index_reg;
                     busy <= 1'b0;
                     done <= 1'b1;
                     state <= STATE_DONE;

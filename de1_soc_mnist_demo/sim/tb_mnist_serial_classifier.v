@@ -70,29 +70,29 @@ module tb_mnist_serial_classifier;
         start_inference = 1'b0;
 
         for (i = 0; i < 8; i = i + 1) begin
-            dut.classifier_inst.w1_mem[i] = 16'h0000;
+            dut.classifier_inst.model_runtime.w1_mem[i] = 16'h0000;
         end
         for (i = 0; i < 4; i = i + 1) begin
-            dut.classifier_inst.w2_mem[i] = 16'h0000;
+            dut.classifier_inst.model_runtime.w2_mem[i] = 16'h0000;
         end
         dut.classifier_inst.b1_mem[0] = 16'h0000;
         dut.classifier_inst.b1_mem[1] = 16'h0000;
         dut.classifier_inst.b2_mem[0] = 16'h0000;
         dut.classifier_inst.b2_mem[1] = 16'h0000;
 
-        dut.classifier_inst.w1_mem[0] = 16'h0100;
-        dut.classifier_inst.w1_mem[1] = 16'h0200;
-        dut.classifier_inst.w1_mem[2] = 16'h0400;
-        dut.classifier_inst.w1_mem[3] = 16'h0800;
-        dut.classifier_inst.w1_mem[4] = 16'h0000;
-        dut.classifier_inst.w1_mem[5] = 16'h0000;
-        dut.classifier_inst.w1_mem[6] = 16'h0000;
-        dut.classifier_inst.w1_mem[7] = 16'h0000;
+        dut.classifier_inst.model_runtime.w1_mem[0] = 16'h0100;
+        dut.classifier_inst.model_runtime.w1_mem[1] = 16'h0200;
+        dut.classifier_inst.model_runtime.w1_mem[2] = 16'h0400;
+        dut.classifier_inst.model_runtime.w1_mem[3] = 16'h0800;
+        dut.classifier_inst.model_runtime.w1_mem[4] = 16'h0000;
+        dut.classifier_inst.model_runtime.w1_mem[5] = 16'h0000;
+        dut.classifier_inst.model_runtime.w1_mem[6] = 16'h0000;
+        dut.classifier_inst.model_runtime.w1_mem[7] = 16'h0000;
 
-        dut.classifier_inst.w2_mem[0] = 16'h0100;
-        dut.classifier_inst.w2_mem[1] = 16'h0000;
-        dut.classifier_inst.w2_mem[2] = 16'h0000;
-        dut.classifier_inst.w2_mem[3] = 16'h0100;
+        dut.classifier_inst.model_runtime.w2_mem[0] = 16'h0100;
+        dut.classifier_inst.model_runtime.w2_mem[1] = 16'h0000;
+        dut.classifier_inst.model_runtime.w2_mem[2] = 16'h0000;
+        dut.classifier_inst.model_runtime.w2_mem[3] = 16'h0100;
 
         repeat (5) @(posedge clk);
         rst = 1'b0;
