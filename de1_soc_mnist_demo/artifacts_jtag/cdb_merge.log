@@ -1,0 +1,41 @@
+TBBmalloc: skip allocation functions replacement in ucrtbase.dll: unknown prologue for function _msize
+Info: *******************************************************************
+Info: Running Quartus Prime Partition Merge
+    Info: Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+    Info: Copyright (C) 2025  Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions 
+    Info: and other software and tools, and any partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Altera Program License 
+    Info: Subscription Agreement, the Altera Quartus Prime License Agreement,
+    Info: the Altera IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Altera and sold by Altera or its authorized distributors.  Please
+    Info: refer to the Altera Software License Subscription Agreements 
+    Info: on the Quartus Prime software download page.
+    Info: Processing started: Sat Mar  7 20:26:32 2026
+Info: Command: quartus_cdb de1_soc_mnist_jtag_top -c de1_soc_mnist_jtag_top --merge=on
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (35007): Using synthesis netlist for partition "Top"
+Info (35007): Using synthesis netlist for partition "sld_hub:auto_hub"
+Info (35002): Resolved and merged 2 partition(s)
+Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
+    Info (16011): Adding 9 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
+Warning (21074): Design contains 3 input pin(s) that do not drive logic
+    Warning (15610): No output dependent on input pin "KEY[0]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
+    Warning (15610): No output dependent on input pin "KEY[1]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
+    Warning (15610): No output dependent on input pin "KEY[2]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
+Info (21057): Implemented 13212 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 8 input pins
+    Info (21059): Implemented 53 output pins
+    Info (21061): Implemented 13007 logic cells
+    Info (21064): Implemented 136 RAM segments
+    Info (21062): Implemented 7 DSP elements
+Info: Quartus Prime Partition Merge was successful. 0 errors, 5 warnings
+    Info: Peak virtual memory: 4808 megabytes
+    Info: Processing ended: Sat Mar  7 20:26:35 2026
+    Info: Elapsed time: 00:00:03
+    Info: Total CPU time (on all processors): 00:00:26

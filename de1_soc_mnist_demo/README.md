@@ -9,14 +9,22 @@ It includes:
 
 - the final FPGA RTL in [rtl](rtl)
 - the top-level board wrapper in [de1_soc_mnist_serial_top.v](de1_soc_mnist_serial_top.v)
+- the JTAG MMIO board wrapper in [de1_soc_mnist_jtag_top.v](de1_soc_mnist_jtag_top.v)
 - the Quartus project in [de1_soc_mnist_serial_top.qpf](de1_soc_mnist_serial_top.qpf)
+- the Quartus JTAG project in [de1_soc_mnist_jtag_top.qpf](de1_soc_mnist_jtag_top.qpf)
 - the Arduino touchscreen sender in [arduino_touch_sender.ino](arduino_touch_sender/arduino_touch_sender.ino)
 - the training/export flow in [train_mnist.py](train_mnist.py)
 - the ModelSim regressions in [sim](sim)
 - the generated model in [model](model)
 - the captured Quartus outputs in [artifacts](artifacts)
+- the captured JTAG-top Quartus outputs in [artifacts_jtag](artifacts_jtag)
 - the WSL Arduino attach note in [ARDUINO_WSL_SETUP.md](ARDUINO_WSL_SETUP.md)
 - the Arduino smoke-test sketch in [arduino-blink.ino](arduino-blink/arduino-blink.ino)
+- the no-wire JTAG feasibility report in [JTAG_FEASIBILITY_REPORT.md](JTAG_FEASIBILITY_REPORT.md)
+- the JTAG memory map in [JTAG_MNIST_MEMORY_MAP.md](JTAG_MNIST_MEMORY_MAP.md)
+- the JTAG workflow in [JTAG_MNIST_WORKFLOW.md](JTAG_MNIST_WORKFLOW.md)
+- the JTAG verification and bring-up checklist in [JTAG_TEST_PLAN.md](JTAG_TEST_PLAN.md)
+- the full project journey and engineering log in [START_TO_FINISH_MNIST_JTAG.md](START_TO_FINISH_MNIST_JTAG.md)
 
 The finished runtime path is:
 
@@ -30,6 +38,19 @@ Arduino Uno + 3.5" resistive touchscreen shield
   -> tiled MNIST classifier
   -> Tiny-TPU datapath
   -> predicted digit on HEX0
+```
+
+The alternate no-wire runtime path is:
+
+```text
+Arduino Uno + 3.5" resistive touchscreen shield
+  -> packed 28x28 frame over USB serial to PC
+  -> host parser + checksum validation
+  -> System Console MMIO writes over USB-Blaster II JTAG
+  -> JTAG Avalon master bridge in FPGA
+  -> MMIO image buffer + control register start pulse
+  -> tiled MNIST classifier
+  -> predicted digit on HEX0 and host readback
 ```
 
 ## Final Status
@@ -189,6 +210,42 @@ Do not connect:
 ## How To Run From WSL (CLI)
 
 This is the primary, known-good workflow.
+
+### 0. Fast plug-in bootstrap (automated)
+
+If both boards are plugged in and you want the fastest repeatable bring-up path, run:
+
+```bash
+bash quickstart_jtag_demo.sh
+```
+
+This single command performs:
+
+- Arduino USB attach to WSL through `usbipd` (if available)
+- serial-port detection
+- FPGA programming with the JTAG `.sof`
+- JTAG MMIO `health` check
+- one-shot `predict_bits` sanity check
+- continuous Arduino-to-JTAG inference loop
+
+The continuous loop keeps a persistent System Console session open, so per-frame inference does not pay process startup cost each time.
+Typical observed per-frame latency on this machine:
+
+- with writeback verify on: roughly `0.45s` to `0.60s`
+- with writeback verify off: roughly `0.24s` to `0.35s`
+
+Useful variants:
+
+```bash
+# setup + smoke test only (no continuous loop)
+bash quickstart_jtag_demo.sh --no-loop
+
+# include a fresh JTAG Quartus build before programming
+bash quickstart_jtag_demo.sh --build
+
+# fastest per-frame loop (skip readback verify)
+bash quickstart_jtag_demo.sh --no-verify-writeback
+```
 
 ### 1. Arduino: compile and upload the touchscreen sketch
 

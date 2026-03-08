@@ -23,6 +23,7 @@
 - I initially stopped on the dirty git state before Jesse explicitly allowed me to ignore uncommitted changes.
 - I ran `vlib` and `vlog` in parallel once even though the compile depended on the library being initialized first. For simulator checks, run setup steps sequentially.
 - I launched `quartus_sh.exe` once with a PTY. That left it hanging without spawning the normal compile children, so Quartus Windows CLI runs should stay non-interactive from WSL.
+- I initially used `package require system_console` and `exit` inside a System Console Tcl script; this environment does not expose that package name and does not support `exit` in script context. Use built-in commands directly and signal failure with `error`.
 
 ## Critical Findings
 
@@ -49,3 +50,7 @@
 - `mnist_classifier_core` now supports a built-in model preload path via parameterized `$readmemh`, and the full-model regression proves it works in ModelSim without hierarchical testbench pokes.
 - `de1_soc_mnist_demo` now contains a self-contained DE1-SoC board wrapper (`de1_soc_mnist_serial_top.v`) plus a board-level ModelSim regression that proves the top-level UART ingress, debounced `KEY[0]` start, and `HEX0` digit latch.
 - The first Quartus `quartus_map` pass on the MNIST top exposed the next real hardware blocker: the large `w1_mem` and `w2_mem` arrays in `mnist_classifier_core` use asynchronous reads, so Quartus cannot infer them into M10K RAM/ROM blocks. It leaves them as registers, which exceeds the device register budget and stops Analysis & Synthesis.
+- For the JTAG/no-wire path, a minimal Platform Designer bridge (`mnist_jtag_bridge`) with exported Avalon master is enough; no HPS-side software is required for host MMIO.
+- The new `mnist_jtag_mmio` block can safely gate image writes while inference is busy and still feed `mnist_classifier_core` with the same Q8.8 pixel convention (`0x0000`/`0x0100`) used by the UART path.
+- A serial-vs-JTAG parity regression on the tracked sample now passes in ModelSim (`digit 7` on both paths), proving ingress transport changed without changing forward-pass intent.
+- `system-console` reports `no master service found` until an FPGA image containing the JTAG bridge is loaded; this is expected and is the first health check to run after programming.

@@ -9,3 +9,9 @@ sim/modelsim_mnist_tpu_tiled_classifier/
 sim/modelsim_mnist_serial_classifier/
 sim/modelsim_mnist_serial_classifier_full/
 sim/modelsim_de1_soc_mnist_serial_top/
+sim/modelsim_mnist_jtag_mmio/
+sim/modelsim_mnist_jtag_classifier/
+sim/modelsim_mnist_jtag_parity/
+jtag_host/runtime/
+jtag_ip/probe_jtag_bridge.sopcinfo
+jtag_ip/probe_jtag_bridge/

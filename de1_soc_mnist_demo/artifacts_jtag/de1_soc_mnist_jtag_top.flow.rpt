@@ -1,0 +1,145 @@
+Flow report for de1_soc_mnist_jtag_top
+Sat Mar  7 20:26:35 2026
+Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Flow Summary
+  3. Flow Settings
+  4. Flow Non-Default Global Settings
+  5. Flow Elapsed Time
+  6. Flow OS Summary
+  7. Flow Log
+  8. Flow Messages
+  9. Flow Suppressed Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++-----------------------------------------------------------------------------------+
+; Flow Summary                                                                      ;
++---------------------------------+-------------------------------------------------+
+; Flow Status                     ; Successful - Sat Mar  7 20:26:35 2026           ;
+; Quartus Prime Version           ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
+; Revision Name                   ; de1_soc_mnist_jtag_top                          ;
+; Top-level Entity Name           ; de1_soc_mnist_jtag_top                          ;
+; Family                          ; Cyclone V                                       ;
+; Device                          ; 5CSEMA5F31C6                                    ;
+; Timing Models                   ; Final                                           ;
+; Logic utilization (in ALMs)     ; N/A                                             ;
+; Total registers                 ; 5366                                            ;
+; Total pins                      ; 57                                              ;
+; Total virtual pins              ; 0                                               ;
+; Total block memory bits         ; 813,568                                         ;
+; Total DSP Blocks                ; 7                                               ;
+; Total HSSI RX PCSs              ; 0                                               ;
+; Total HSSI PMA RX Deserializers ; 0                                               ;
+; Total HSSI TX PCSs              ; 0                                               ;
+; Total HSSI PMA TX Serializers   ; 0                                               ;
+; Total PLLs                      ; 0                                               ;
+; Total DLLs                      ; 0                                               ;
++---------------------------------+-------------------------------------------------+
+
+
++--------------------------------------------+
+; Flow Settings                              ;
++-------------------+------------------------+
+; Option            ; Setting                ;
++-------------------+------------------------+
+; Start date & time ; 03/07/2026 20:26:33    ;
+; Main task         ; Compilation            ;
+; Revision Name     ; de1_soc_mnist_jtag_top ;
++-------------------+------------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                                                                                          ;
++---------------------------------------------+----------------------------------------------------------------------+---------------+-------------------+------------------+
+; Assignment Name                             ; Value                                                                ; Default Value ; Entity Name       ; Section Id       ;
++---------------------------------------------+----------------------------------------------------------------------+---------------+-------------------+------------------+
+; ABSORB_PATHS_FROM_OUTPUTS_TO_INPUTS         ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; ALLOW_MULTIPLE_PERSONAS                     ; Off                                                                  ; --            ; --                ; sld_hub:auto_hub ;
+; COMPILER_SIGNATURE_ID                       ; 248537414779219.177293319331488                                      ; --            ; --                ; --               ;
+; CROSS_BOUNDARY_OPTIMIZATIONS                ; Off                                                                  ; --            ; --                ; sld_hub:auto_hub ;
+; INPUT_PERSONA                               ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; MERGE_EQUIVALENT_BIDIRS                     ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; MERGE_EQUIVALENT_INPUTS                     ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; MISC_FILE                                   ; jtag_ip/mnist_jtag_bridge/synthesis/../mnist_jtag_bridge.cmp         ; --            ; --                ; --               ;
+; MISC_FILE                                   ; jtag_ip/mnist_jtag_bridge/synthesis/../../mnist_jtag_bridge.qsys     ; --            ; --                ; --               ;
+; PARTITION_ASD_REGION_ID                     ; 1                                                                    ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_COLOR                             ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_ENABLE_STRICT_PRESERVATION        ; Off                                                                  ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_EXTRACT_HARD_BLOCK_NODES          ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_FITTER_PRESERVATION_LEVEL         ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IGNORE_SOURCE_FILE_CHANGES        ; Off                                                                  ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IMPORT_ASSIGNMENTS                ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IMPORT_EXISTING_ASSIGNMENTS       ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IMPORT_EXISTING_LOGICLOCK_REGIONS ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IMPORT_FILE                       ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IMPORT_PIN_ASSIGNMENTS            ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_IMPORT_PROMOTE_ASSIGNMENTS        ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_LAST_IMPORTED_FILE                ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_NETLIST_TYPE                      ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_PRESERVE_HIGH_SPEED_TILES         ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; PARTITION_TYPE                              ; -- (Not supported for targeted family)                               ; --            ; --                ; sld_hub:auto_hub ;
+; PROJECT_OUTPUT_DIRECTORY                    ; output_files_jtag                                                    ; --            ; --                ; --               ;
+; PROPAGATE_CONSTANTS_ON_INPUTS               ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; PROPAGATE_INVERSIONS_ON_INPUTS              ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; REMOVE_LOGIC_ON_UNCONNECTED_OUTPUTS         ; On                                                                   ; --            ; --                ; sld_hub:auto_hub ;
+; SEARCH_PATH                                 ; model                                                                ; --            ; --                ; --               ;
+; SLD_FILE                                    ; jtag_ip/mnist_jtag_bridge/synthesis/mnist_jtag_bridge.debuginfo      ; --            ; --                ; --               ;
+; SLD_INFO                                    ; QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1772932882  ; --            ; mnist_jtag_bridge ; --               ;
+; SOPCINFO_FILE                               ; jtag_ip/mnist_jtag_bridge/synthesis/../../mnist_jtag_bridge.sopcinfo ; --            ; --                ; --               ;
+; SYNTHESIS_ONLY_QIP                          ; On                                                                   ; --            ; --                ; --               ;
+; SYNTHESIS_ONLY_QIP                          ; On                                                                   ; --            ; --                ; --               ;
++---------------------------------------------+----------------------------------------------------------------------+---------------+-------------------+------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------+
+; Flow Elapsed Time                                                                                                   ;
++-----------------+--------------+-------------------------+---------------------+------------------------------------+
+; Module Name     ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
++-----------------+--------------+-------------------------+---------------------+------------------------------------+
+; Partition Merge ; 00:00:02     ; 1.0                     ; 4808 MB             ; 00:00:24                           ;
+; Total           ; 00:00:02     ; --                      ; --                  ; 00:00:24                           ;
++-----------------+--------------+-------------------------+---------------------+------------------------------------+
+
+
++-------------------------------------------------------------------------------+
+; Flow OS Summary                                                               ;
++-----------------+------------------+------------+------------+----------------+
+; Module Name     ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
++-----------------+------------------+------------+------------+----------------+
+; Partition Merge ; SuryaM16         ; Windows 10 ; 10.0       ; x86_64         ;
++-----------------+------------------+------------+------------+----------------+
+
+
+------------
+; Flow Log ;
+------------
+quartus_cdb de1_soc_mnist_jtag_top -c de1_soc_mnist_jtag_top --merge=on
+
+
+
