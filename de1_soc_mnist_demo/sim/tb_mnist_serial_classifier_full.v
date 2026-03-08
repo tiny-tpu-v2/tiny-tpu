@@ -9,7 +9,6 @@ module tb_mnist_serial_classifier_full;
     localparam integer BAUD = 115200;
     localparam integer CLKS_PER_BIT = CLOCK_HZ / BAUD;
     localparam integer PAYLOAD_BYTES = 98;
-    localparam [3:0] EXPECTED_LABEL = 4'd7;
     localparam W1_INIT_FILE = "../../model/w1_tiled_q8_8.memh";
     localparam B1_INIT_FILE = "../../model/b1_q8_8.memh";
     localparam W2_INIT_FILE = "../../model/w2_tiled_q8_8.memh";
@@ -32,6 +31,10 @@ module tb_mnist_serial_classifier_full;
     integer i;
     integer wait_cycles;
     integer mismatch_index;
+    integer label_file;
+    integer label_scan;
+    integer expected_label_int;
+    reg [3:0] expected_label;
 
     mnist_serial_classifier #(
         .CLOCK_HZ(CLOCK_HZ),
@@ -87,10 +90,24 @@ module tb_mnist_serial_classifier_full;
         serial_in = 1'b1;
         start_inference = 1'b0;
         checksum = 8'h00;
+        expected_label = 4'd0;
+        expected_label_int = 0;
 
         $readmemh("../../model/sample_image_0.memh", sample_bytes);
         $readmemh("../../model/sample_expected_hidden_0_q8_8.memh", expected_hidden);
         $readmemh("../../model/sample_expected_logits_0_q8_8.memh", expected_logits);
+        label_file = $fopen("../../model/sample_expected_prediction_0.txt", "r");
+        if (label_file == 0) begin
+            $display("FAIL: could not open expected prediction file");
+            $finish(1);
+        end
+        label_scan = $fscanf(label_file, "%d", expected_label_int);
+        $fclose(label_file);
+        if (label_scan != 1 || expected_label_int < 0 || expected_label_int > 15) begin
+            $display("FAIL: malformed expected prediction value %0d", expected_label_int);
+            $finish(1);
+        end
+        expected_label = expected_label_int[3:0];
 
         for (i = 0; i < PAYLOAD_BYTES; i = i + 1) begin
             checksum = checksum ^ sample_bytes[i];
@@ -163,10 +180,10 @@ module tb_mnist_serial_classifier_full;
                 $finish(1);
             end
         end
-        if (prediction_out !== EXPECTED_LABEL) begin
+        if (prediction_out !== expected_label) begin
             $display(
                 "FAIL: expected prediction %0d got %0d",
-                EXPECTED_LABEL,
+                expected_label,
                 prediction_out
             );
             $finish(1);
@@ -174,7 +191,7 @@ module tb_mnist_serial_classifier_full;
 
         $display(
             "PASS: mnist_serial_classifier inferred the expected digit %0d on the tracked sample",
-            prediction_out
+            expected_label
         );
         $finish(0);
     end

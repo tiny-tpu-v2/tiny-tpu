@@ -10,7 +10,7 @@ namespace {
 const uint8_t kGridRows = 28;
 const uint8_t kGridCols = 28;
 const uint8_t kCellSize = 10;
-const uint8_t kBrushRadius = 1;
+const uint8_t kBrushRadius = 0;
 const uint16_t kHeader0 = 0xA5;
 const uint16_t kHeader1 = 0x5A;
 const uint16_t kPackedBytes = (kGridRows * kGridCols) / 8;

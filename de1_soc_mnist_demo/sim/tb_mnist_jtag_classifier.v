@@ -10,7 +10,6 @@ module tb_mnist_jtag_classifier;
     localparam integer CLOCK_HZ = 50000000;
     localparam integer MAX_WAIT_CYCLES = 2000000;
     localparam [31:0] IMAGE_BASE = 32'h00000100;
-    localparam [3:0] EXPECTED_LABEL = 4'd7;
     localparam W1_INIT_FILE = "../../model/w1_tiled_q8_8.memh";
     localparam B1_INIT_FILE = "../../model/b1_q8_8.memh";
     localparam W2_INIT_FILE = "../../model/w2_tiled_q8_8.memh";
@@ -43,6 +42,10 @@ module tb_mnist_jtag_classifier;
     integer wait_cycles;
     reg [31:0] status_value;
     reg [31:0] result_value;
+    integer label_file;
+    integer label_scan;
+    integer expected_label_int;
+    reg [3:0] expected_label;
 
     mnist_jtag_mmio #(
         .PIXELS(PIXELS),
@@ -141,8 +144,22 @@ module tb_mnist_jtag_classifier;
         avs_write = 1'b0;
         avs_writedata = 32'h0;
         avs_byteenable = 4'h1;
+        expected_label = 4'd0;
+        expected_label_int = 0;
 
         $readmemh("../../model/sample_image_0.memh", sample_bytes);
+        label_file = $fopen("../../model/sample_expected_prediction_0.txt", "r");
+        if (label_file == 0) begin
+            $display("FAIL: could not open expected prediction file");
+            $finish(1);
+        end
+        label_scan = $fscanf(label_file, "%d", expected_label_int);
+        $fclose(label_file);
+        if (label_scan != 1 || expected_label_int < 0 || expected_label_int > 15) begin
+            $display("FAIL: malformed expected prediction value %0d", expected_label_int);
+            $finish(1);
+        end
+        expected_label = expected_label_int[3:0];
 
         repeat (5) @(posedge clk);
         rst = 1'b0;
@@ -195,10 +212,10 @@ module tb_mnist_jtag_classifier;
             $display("FAIL: write_while_busy should remain low in nominal flow");
             $finish(1);
         end
-        if ((result_value[3:0] != EXPECTED_LABEL) || (prediction_latched != EXPECTED_LABEL)) begin
+        if ((result_value[3:0] != expected_label) || (prediction_latched != expected_label)) begin
             $display(
                 "FAIL: prediction mismatch expected=%0d result_reg=%0d latched=%0d classifier=%0d",
-                EXPECTED_LABEL,
+                expected_label,
                 result_value[3:0],
                 prediction_latched,
                 classifier_prediction
@@ -208,7 +225,7 @@ module tb_mnist_jtag_classifier;
 
         $display(
             "PASS: jtag mmio + classifier predicted expected digit %0d (cycles=%0d)",
-            EXPECTED_LABEL,
+            expected_label,
             wait_cycles
         );
         $finish(0);

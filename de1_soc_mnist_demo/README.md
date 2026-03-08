@@ -76,7 +76,8 @@ The current trained model summary is in [summary.json](model/summary.json):
 - hidden size: `64`
 - output size: `10`
 - tile width: `2`
-- recorded software-side test accuracy: `0.9245` on the exported training run
+- split mode: `balanced` (equal per-class counts for train/test subsets)
+- recorded software-side test accuracy: `0.959` on the exported training run
 
 ## Original Starting Point
 
@@ -446,9 +447,10 @@ source /path/to/your/venv/bin/activate
 python train_mnist.py \
   --hidden-size 64 \
   --tile-width 2 \
-  --train-limit 10000 \
+  --train-limit 20000 \
   --test-limit 2000 \
   --max-iter 20 \
+  --split-mode balanced \
   --output-dir generated_model
 ```
 

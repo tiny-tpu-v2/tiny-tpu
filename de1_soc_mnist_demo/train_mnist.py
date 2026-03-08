@@ -23,6 +23,7 @@ from de1_soc_mnist_demo.mnist_tools import to_u16_hex
 
 MNIST_TRAIN_SAMPLES = 60000
 MNIST_TEST_SAMPLES = 10000
+Q8_8_SHIFT = 8
 
 
 def parse_args() -> argparse.Namespace:
@@ -35,6 +36,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pixel-threshold", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument(
+        "--split-mode",
+        choices=["balanced", "contiguous"],
+        default="balanced",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=Path("generated_model"),
@@ -42,11 +48,60 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def summarize_class_counts(labels: np.ndarray, num_classes: int) -> dict[str, int]:
+    counts = np.bincount(labels, minlength=num_classes)
+    return {str(index): int(counts[index]) for index in range(num_classes)}
+
+
+def select_balanced_subset(
+    features: np.ndarray,
+    labels: np.ndarray,
+    limit: int,
+    num_classes: int,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray, dict[str, int]]:
+    if limit <= 0 or limit > labels.shape[0]:
+        raise ValueError("limit must be in 1..len(labels)")
+    if num_classes <= 0:
+        raise ValueError("num_classes must be positive")
+
+    rng = np.random.default_rng(seed)
+    target_counts = np.full(num_classes, limit // num_classes, dtype=np.int64)
+    remainder = limit % num_classes
+    if remainder:
+        class_order = np.arange(num_classes, dtype=np.int64)
+        rng.shuffle(class_order)
+        target_counts[class_order[:remainder]] += 1
+
+    selected_indices: list[np.ndarray] = []
+    for class_id in range(num_classes):
+        class_indices = np.flatnonzero(labels == class_id)
+        if class_indices.shape[0] < target_counts[class_id]:
+            raise ValueError(
+                f"class {class_id} has {class_indices.shape[0]} samples, "
+                f"needs {target_counts[class_id]}"
+            )
+        chosen = rng.choice(
+            class_indices,
+            size=int(target_counts[class_id]),
+            replace=False,
+        )
+        selected_indices.append(chosen)
+
+    merged_indices = np.concatenate(selected_indices, axis=0)
+    rng.shuffle(merged_indices)
+    subset_x = features[merged_indices]
+    subset_y = labels[merged_indices]
+    return subset_x, subset_y, summarize_class_counts(subset_y, num_classes)
+
+
 def load_binarized_mnist(
     train_limit: int,
     test_limit: int,
     pixel_threshold: float,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    seed: int,
+    split_mode: str,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, int], dict[str, int]]:
     features, labels = fetch_openml(
         "mnist_784",
         version=1,
@@ -62,11 +117,37 @@ def load_binarized_mnist(
     if test_limit <= 0 or test_limit > MNIST_TEST_SAMPLES:
         raise ValueError("test_limit must be in 1..10000")
 
-    train_x = features[:train_limit]
-    train_y = labels[:train_limit]
-    test_x = features[MNIST_TRAIN_SAMPLES:MNIST_TRAIN_SAMPLES + test_limit]
-    test_y = labels[MNIST_TRAIN_SAMPLES:MNIST_TRAIN_SAMPLES + test_limit]
-    return train_x, train_y, test_x, test_y
+    full_train_x = features[:MNIST_TRAIN_SAMPLES]
+    full_train_y = labels[:MNIST_TRAIN_SAMPLES]
+    full_test_x = features[MNIST_TRAIN_SAMPLES:MNIST_TRAIN_SAMPLES + MNIST_TEST_SAMPLES]
+    full_test_y = labels[MNIST_TRAIN_SAMPLES:MNIST_TRAIN_SAMPLES + MNIST_TEST_SAMPLES]
+
+    if split_mode == "balanced":
+        train_x, train_y, train_counts = select_balanced_subset(
+            features=full_train_x,
+            labels=full_train_y,
+            limit=train_limit,
+            num_classes=10,
+            seed=seed,
+        )
+        test_x, test_y, test_counts = select_balanced_subset(
+            features=full_test_x,
+            labels=full_test_y,
+            limit=test_limit,
+            num_classes=10,
+            seed=seed + 1,
+        )
+    elif split_mode == "contiguous":
+        train_x = full_train_x[:train_limit]
+        train_y = full_train_y[:train_limit]
+        test_x = full_test_x[:test_limit]
+        test_y = full_test_y[:test_limit]
+        train_counts = summarize_class_counts(train_y, 10)
+        test_counts = summarize_class_counts(test_y, 10)
+    else:
+        raise ValueError(f"unsupported split_mode: {split_mode}")
+
+    return train_x, train_y, test_x, test_y, train_counts, test_counts
 
 
 def quantize_matrix(matrix: np.ndarray) -> list[list[int]]:
@@ -85,8 +166,63 @@ def write_memh(path: Path, values: list[int]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="ascii")
 
 
+def write_byte_memh(path: Path, values: list[int]) -> None:
+    lines = [f"{value & 0xFF:02X}" for value in values]
+    path.write_text("\n".join(lines) + "\n", encoding="ascii")
+
+
 def write_summary(path: Path, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="ascii")
+
+
+def wrap_s16(value: int) -> int:
+    wrapped = value & 0xFFFF
+    if wrapped >= 0x8000:
+        return wrapped - 0x10000
+    return wrapped
+
+
+def sat_add16(left: int, right: int) -> int:
+    result = left + right
+    if result > 0x7FFF:
+        return 0x7FFF
+    if result < -0x8000:
+        return -0x8000
+    return result
+
+
+def q8_8_mul(left: int, right: int) -> int:
+    return wrap_s16((left * right) >> Q8_8_SHIFT)
+
+
+def run_quantized_inference(
+    bits: list[int],
+    w1: list[list[int]],
+    b1: list[int],
+    w2: list[list[int]],
+    b2: list[int],
+) -> tuple[list[int], list[int], int]:
+    q8_inputs = [0x0100 if bit else 0x0000 for bit in bits]
+
+    hidden_values: list[int] = []
+    for hidden_index in range(len(b1)):
+        acc = 0
+        for input_index in range(len(q8_inputs)):
+            product = q8_8_mul(q8_inputs[input_index], w1[input_index][hidden_index])
+            acc = sat_add16(acc, product)
+        biased = sat_add16(acc, b1[hidden_index])
+        hidden_values.append(max(0, biased))
+
+    logits: list[int] = []
+    for output_index in range(len(b2)):
+        acc = 0
+        for hidden_index in range(len(hidden_values)):
+            product = q8_8_mul(hidden_values[hidden_index], w2[hidden_index][output_index])
+            acc = sat_add16(acc, product)
+        logits.append(sat_add16(acc, b2[output_index]))
+
+    prediction = int(np.argmax(np.array(logits, dtype=np.int64)))
+    return hidden_values, logits, prediction
 
 
 def export_model(
@@ -98,6 +234,9 @@ def export_model(
     accuracy: float,
     train_limit: int,
     test_limit: int,
+    split_mode: str,
+    train_class_counts: dict[str, int],
+    test_class_counts: dict[str, int],
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -111,7 +250,21 @@ def export_model(
     write_memh(output_dir / "w2_tiled_q8_8.memh", flatten_weights_for_tiles(w2, tile_width))
     write_memh(output_dir / "b2_q8_8.memh", b2)
 
-    (output_dir / "sample_image_0.bin").write_bytes(pack_binary_image(sample_bits))
+    sample_bytes = list(pack_binary_image(sample_bits))
+    (output_dir / "sample_image_0.bin").write_bytes(bytes(sample_bytes))
+    write_byte_memh(output_dir / "sample_image_0.memh", sample_bytes)
+
+    hidden_values, logits, prediction = run_quantized_inference(
+        bits=sample_bits,
+        w1=w1,
+        b1=b1,
+        w2=w2,
+        b2=b2,
+    )
+    write_memh(output_dir / "sample_expected_hidden_0_q8_8.memh", hidden_values)
+    write_memh(output_dir / "sample_expected_logits_0_q8_8.memh", logits)
+    (output_dir / "sample_expected_prediction_0.txt").write_text(f"{prediction}\n", encoding="ascii")
+
     (output_dir / "sample_label_0.txt").write_text(f"{sample_label}\n", encoding="ascii")
 
     write_summary(
@@ -121,9 +274,12 @@ def export_model(
             "hidden_size": len(b1),
             "input_size": len(w1),
             "output_size": len(b2),
+            "split_mode": split_mode,
             "test_limit": test_limit,
+            "test_class_counts": test_class_counts,
             "tile_width": tile_width,
             "train_limit": train_limit,
+            "train_class_counts": train_class_counts,
         },
     )
 
@@ -131,10 +287,12 @@ def export_model(
 def main() -> None:
     args = parse_args()
 
-    train_x, train_y, test_x, test_y = load_binarized_mnist(
+    train_x, train_y, test_x, test_y, train_counts, test_counts = load_binarized_mnist(
         train_limit=args.train_limit,
         test_limit=args.test_limit,
         pixel_threshold=args.pixel_threshold,
+        seed=args.seed,
+        split_mode=args.split_mode,
     )
 
     model = MLPClassifier(
@@ -162,6 +320,9 @@ def main() -> None:
         accuracy=accuracy,
         train_limit=args.train_limit,
         test_limit=args.test_limit,
+        split_mode=args.split_mode,
+        train_class_counts=train_counts,
+        test_class_counts=test_counts,
     )
 
     print(
@@ -170,9 +331,12 @@ def main() -> None:
                 "accuracy": accuracy,
                 "hidden_size": args.hidden_size,
                 "output_dir": str(args.output_dir),
+                "split_mode": args.split_mode,
                 "test_limit": args.test_limit,
+                "test_class_counts": test_counts,
                 "tile_width": args.tile_width,
                 "train_limit": args.train_limit,
+                "train_class_counts": train_counts,
             },
             sort_keys=True,
         )
