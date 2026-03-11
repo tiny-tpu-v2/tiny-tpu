@@ -63,7 +63,6 @@ module gradient_descent (
 
     always_ff @(posedge clk or posedge rst) begin
         if(rst) begin
-            sub_in_a <= '0;
             value_updated_out <= '0;
             grad_descent_done_out <= '0;
         end else begin
