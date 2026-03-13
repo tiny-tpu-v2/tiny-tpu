@@ -1,1404 +1,1227 @@
-# tiny-tpu — Complete Line-by-Line Code Walkthrough
+﻿# tiny-tpu — Complete Detailed Code Walkthrough
 
-> **Who this is for:** Someone who understands basic digital logic (what a clock, flip-flop, and bus are) but has never read this codebase before. Every design choice is explained in plain English.
+> **Who this is for:** Someone who has never seen this codebase, knows basic digital logic (what a clock and a flip-flop are), but needs every design decision, every signal name, and every line of purpose explained in plain English.
 
 ---
 
 ## Table of Contents
 
-1. [Background: What are we building?](#1-background-what-are-we-building)
-2. [fixedpoint.sv — The Math Library](#2-fixedpointsv--the-math-library)
-3. [pe.sv — The Compute Cell](#3-pesv--the-compute-cell)
-4. [systolic.sv — The 2×2 Matrix Multiplier](#4-systolicsv--the-2x2-matrix-multiplier)
-5. [bias_child.sv — Adding a Bias to One Column](#5-bias_childsv--adding-a-bias-to-one-column)
-6. [bias_parent.sv — Bias for Both Columns](#6-bias_parentsv--bias-for-both-columns)
-7. [leaky_relu_child.sv — The Activation Function](#7-leaky_relu_childsv--the-activation-function)
-8. [leaky_relu_parent.sv — Activation for Both Columns](#8-leaky_relu_parentsv--activation-for-both-columns)
-9. [loss_child.sv — Measuring the Error (Backprop Stage 1)](#9-loss_childsv--measuring-the-error-backprop-stage-1)
-10. [loss_parent.sv — Error for Both Columns](#10-loss_parentsv--error-for-both-columns)
-11. [leaky_relu_derivative_child.sv — Backprop Through the Activation](#11-leaky_relu_derivative_childsv--backprop-through-the-activation)
-12. [leaky_relu_derivative_parent.sv — Derivative for Both Columns](#12-leaky_relu_derivative_parentsv--derivative-for-both-columns)
-13. [gradient_descent.sv — Updating Weights](#13-gradient_descentsv--updating-weights)
-14. [control_unit.sv — The Instruction Decoder](#14-control_unitsv--the-instruction-decoder)
-15. [vpu.sv — The Post-Processing Pipeline](#15-vpusv--the-post-processing-pipeline)
-16. [unified_buffer.sv — The Memory System](#16-unified_buffersv--the-memory-system)
-17. [tpu.sv — Wiring It All Together](#17-tpusv--wiring-it-all-together)
-18. [How Everything Connects — The Big Picture](#18-how-everything-connects--the-big-picture)
+1. [Background: What Are We Building?](#1-background-what-are-we-building)
+2. [The Number Format Used Everywhere: Q8.8 Fixed-Point](#2-the-number-format-used-everywhere-q88-fixed-point)
+3. [fixedpoint.sv — The Arithmetic Library](#3-fixedpointsv--the-arithmetic-library)
+4. [pe.sv — The Processing Element (One MAC Cell)](#4-pesv--the-processing-element-one-mac-cell)
+5. [systolic.sv — The 2×2 Systolic Array](#5-systolicsv--the-2x2-systolic-array)
+6. [bias_child.sv — Adding a Bias to One Column](#6-bias_childsv--adding-a-bias-to-one-column)
+7. [bias_parent.sv — Bias for Both Columns Together](#7-bias_parentsv--bias-for-both-columns-together)
+8. [leaky_relu_child.sv — The Activation Function (One Column)](#8-leaky_relu_childsv--the-activation-function-one-column)
+9. [leaky_relu_parent.sv — Activation for Both Columns Together](#9-leaky_relu_parentsv--activation-for-both-columns-together)
+10. [leaky_relu_derivative_child.sv — Backprop Through Activation (One Column)](#10-leaky_relu_derivative_childsv--backprop-through-activation-one-column)
+11. [leaky_relu_derivative_parent.sv — Derivative for Both Columns Together](#11-leaky_relu_derivative_parentsv--derivative-for-both-columns-together)
+12. [loss_child.sv — Computing the Error Gradient (One Column)](#12-loss_childsv--computing-the-error-gradient-one-column)
+13. [loss_parent.sv — Error Gradient for Both Columns Together](#13-loss_parentsv--error-gradient-for-both-columns-together)
+14. [gradient_descent.sv — Updating Weights and Biases](#14-gradient_descentsv--updating-weights-and-biases)
+15. [control_unit.sv — The Instruction Decoder](#15-control_unitsv--the-instruction-decoder)
+16. [vpu.sv — The Post-Processing Pipeline](#16-vpusv--the-post-processing-pipeline)
+17. [unified_buffer.sv — The Memory System](#17-unified_buffersv--the-memory-system)
+18. [tpu.sv — Wiring Everything Together (The Top Module)](#18-tpusv--wiring-everything-together-the-top-module)
+19. [How Everything Connects: The Big Picture](#19-how-everything-connects-the-big-picture)
 
 ---
 
 ## 1. Background: What Are We Building?
 
-A **TPU (Tensor Processing Unit)** is a chip designed to do one thing very efficiently: matrix multiplication. This is the core operation in every neural network layer.
-
-Think of a neural network layer like this:
+A **TPU (Tensor Processing Unit)** is a chip designed specifically to run neural network computations efficiently. The key operation in every neural network layer is:
 
 ```
-output = activation(input_matrix × weight_matrix + bias)
+output = activation_function( input x weights + bias )
 ```
 
-This tiny-tpu implements exactly that, and also the backward pass (the math that finds "how wrong were we and how should we fix the weights").
+This is called a **multiply-accumulate with activation**. This tiny-tpu implements exactly that, for **2 columns** of data at a time, and also implements the **backward pass** -- the math that figures out "how wrong were our predictions, and how should we change the weights to be less wrong next time."
 
-**The data flow for a forward pass is:**
+### The Two Passes
 
+**Forward Pass** (making a prediction):
 ```
-Memory (UB) → Systolic Array → Bias → Leaky ReLU → Memory (UB)
-```
-
-**The data flow for a backward pass is:**
-
-```
-Memory (UB) → Systolic Array → LeakyReLU Derivative → Memory (UB)
-              ↓
-         Gradient Descent → Updated Weights → Memory (UB)
+Memory -> Systolic Array (matrix multiply) -> Bias Add -> Leaky ReLU -> Memory
 ```
 
-All data in this design is represented as **Q8.8 fixed-point** — a 16-bit number where the top 8 bits are the integer part and the bottom 8 bits are the fractional part. Think of it as dollars.cents but in binary.
-
----
-
-## 2. fixedpoint.sv — The Math Library
-
-This file is a pre-written library of arithmetic circuits. The rest of the design uses it everywhere. You do **not** need to understand every line of this file — but you need to know what each module does.
-
-### The Number Format
-
-Every data signal in this design is a **16-bit signed fixed-point number** with:
-- Bits [15:8] = integer part (8 bits, with bit 15 as the sign bit)
-- Bits [7:0]  = fractional part (8 bits)
-
-So the value `1.5` is stored as `0x0180` (= 256 + 128 = 384, and 384 / 256 = 1.5).
-
-Negative numbers use two's complement. For example `-1.0` is `0xFF00`.
-
-**Rule of thumb:** bit [15] = 0 means the number is ≥ 0. bit [15] = 1 means the number is negative.
-
----
-
-### `fxp_zoom` — Bit-Width Converter
-
-```systemverilog
-module fxp_zoom #(
-    parameter WII  = 8,   // Input integer bits
-    parameter WIF  = 8,   // Input fractional bits
-    parameter WOI  = 8,   // Output integer bits
-    parameter WOF  = 8,   // Output fractional bits
-    parameter ROUND= 1    // 1 = round, 0 = truncate
-)
+**Transition Pass** (first backwards step -- computing error gradients):
+```
+Memory -> Systolic Array -> Bias Add -> Leaky ReLU -> Loss (compute gradient) -> LReLU Derivative -> Memory
 ```
 
-**What it does:** Converts a fixed-point number from one bit width to another, handling overflow and optionally rounding. It is used internally by all the arithmetic modules below — you never call it directly.
+**Backward Pass** (propagating gradients deeper into the network):
+```
+Memory -> Systolic Array -> LReLU Derivative -> Memory
+                 |
+         Gradient Descent -> Updated Weights/Biases -> Memory
+```
+
+### The Module Hierarchy (Biggest to Smallest)
+
+```
+tpu.sv                      <- top-level chip wrapper
++-- unified_buffer.sv       <- the memory (holds all matrices)
+|   +-- gradient_descent.sv <- weight/bias update math (2 instances)
++-- systolic.sv             <- 2x2 matrix multiply engine
+|   +-- pe.sv (x4)          <- each MAC cell
++-- vpu.sv                  <- post-processing pipeline
+    +-- bias_parent.sv
+    |   +-- bias_child.sv (x2)
+    +-- leaky_relu_parent.sv
+    |   +-- leaky_relu_child.sv (x2)
+    +-- loss_parent.sv
+    |   +-- loss_child.sv (x2)
+    +-- leaky_relu_derivative_parent.sv
+        +-- leaky_relu_derivative_child.sv (x2)
+```
+
+Every arithmetic module (the "child" modules) uses `fixedpoint.sv` for its math.
 
 ---
 
-### `fxp_add` — Addition
+## 2. The Number Format Used Everywhere: Q8.8 Fixed-Point
 
-```systemverilog
-module fxp_add # (
-    parameter WIIA = 8,  // Integer bits of input A
-    parameter WIFA = 8,  // Fractional bits of input A
-    parameter WIIB = 8,  // Integer bits of input B
-    parameter WIFB = 8,  // Fractional bits of input B
-    parameter WOI  = 8,  // Integer bits of output
-    parameter WOF  = 8,  // Output fractional bits
-    parameter ROUND= 1
-)(
-    input  wire [WIIA+WIFA-1:0] ina,   // First number to add
-    input  wire [WIIB+WIFB-1:0] inb,   // Second number to add
-    output wire [WOI +WOF -1:0] out,   // Result
-    output wire                 overflow  // Goes to 1 if result doesn't fit
-);
-```
+**Every single data value** in this design is a **16-bit signed fixed-point number** in the **Q8.8 format**. Understanding this is critical before reading any code.
 
-**How it works internally:**
-1. Both inputs are first "zoomed" to the same precision using `fxp_zoom`
-2. They are added with `$signed(inaz) + $signed(inbz)` — standard binary addition
-3. The result is "zoomed" back down to the output width, rounded if `ROUND=1`
+### What Q8.8 Means
 
-**What it does:** Adds two fixed-point numbers together. Simple addition, but with automatic handling of different bit widths.
+A 16-bit number is split into two halves:
+- **Bits [15:8]** = the integer part (8 bits, with bit 15 as the sign bit using twos complement)
+- **Bits [7:0]**  = the fractional part (8 bits, representing 1/256, 2/256, ... 255/256)
+
+To convert a Q8.8 number to a real number: divide the raw 16-bit integer value by 256.
+
+| Raw 16-bit value (hex) | Real value | Explanation |
+|------------------------|------------|-------------|
+| `0x0100` (= 256)       | 1.0        | 256 / 256 = 1.0 |
+| `0x0180` (= 384)       | 1.5        | 384 / 256 = 1.5 |
+| `0x0080` (= 128)       | 0.5        | 128 / 256 = 0.5 |
+| `0xFF00` (= -256 signed) | -1.0     | -256 / 256 = -1.0 |
+| `0x0000`               | 0.0        | zero |
+
+**Rule of thumb for sign:** Bit [15] = `0` means the number is zero or positive. Bit [15] = `1` means the number is negative.
+
+**Why fixed-point instead of floating-point?** Because fixed-point hardware is much simpler and smaller. Floating-point (like Python or C `float`) requires complex exponent handling. Fixed-point just uses integer arithmetic with an agreed-upon scale factor (256 here).
 
 ---
 
-### `fxp_addsub` — Addition or Subtraction
+## 3. fixedpoint.sv -- The Arithmetic Library
 
-```systemverilog
-module fxp_addsub # (...)
-(
-    input  wire [WIIA+WIFA-1:0] ina,
-    input  wire [WIIB+WIFB-1:0] inb,
-    input  wire                 sub,   // 0 = add, 1 = subtract
-    output wire [WOI +WOF -1:0] out,
-    output wire                 overflow
-);
-```
+**File:** `src/fixedpoint.sv`
 
-**What it does:** Either adds or subtracts `ina` and `inb` depending on the `sub` bit.
-- `sub = 0`: result = ina + inb
-- `sub = 1`: result = ina - inb
-
-**How subtraction works internally:** To subtract, it negates `inb` using two's complement (`~inb + 1`) and then adds. Same hardware, just flip bits and add one.
+This file is a **library of reusable arithmetic circuits**. All the other source files instantiate modules from here. Think of it like `import math` in Python. Every module here is **purely combinational** -- it produces its result immediately within the same clock cycle, with no registers inside. The calling module is responsible for registering the result.
 
 ---
 
-### `fxp_mul` — Multiplication
+### Module: `fxp_zoom` -- Bit-Width Converter
 
-```systemverilog
-module fxp_mul # (...) (
-    input  wire [WIIA+WIFA-1:0] ina,
-    input  wire [WIIB+WIFB-1:0] inb,
-    output wire [WOI +WOF -1:0] out,
-    output wire                 overflow
-);
+**Purpose:** Changes a fixed-point number from one bit-width to another (e.g., Q8.8 to Q10.10). Handles overflow detection and optional rounding.
 
-localparam WRI = WIIA + WIIB;   // When you multiply, integer bits add
-localparam WRF = WIFA + WIFB;   // Fractional bits add too
-
-wire signed [WRI+WRF-1:0] res = $signed(ina) * $signed(inb);
-```
-
-**What it does:** Multiplies two fixed-point numbers.
-
-**Why the intermediate result is wider:** If you multiply two 16-bit numbers, the product needs up to 32 bits to avoid losing information. The result is then zoomed back down to 16 bits (with rounding/truncation).
-
-**Important:** This is **purely combinational** — it produces a result on the same clock cycle the inputs arrive. There is no clock, no flip-flop. Combinational means "instant" from a logical perspective.
-
----
-
-## 3. pe.sv — The Compute Cell
-
-This is the most important module. Everything else is built on top of the logic this module performs.
-
-### What is a PE?
-
-**PE = Processing Element**. It is one cell in the matrix multiplication grid. A single PE does:
+**Used by:** All arithmetic modules internally as a helper. Never called directly from the design.
 
 ```
-psum_out = (input × weight) + psum_in
+Parameters:
+  WII   = number of integer bits in the INPUT
+  WIF   = number of fractional bits in the INPUT
+  WOI   = number of integer bits in the OUTPUT
+  WOF   = number of fractional bits in the OUTPUT
+  ROUND = 1 means round to nearest, 0 means truncate
+
+Ports:
+  in       [WII+WIF-1:0]  -> the input number
+  out      [WOI+WOF-1:0]  -> the converted output
+  overflow                -> HIGH if the value was saturated (did not fit)
 ```
 
-This is a **Multiply-Accumulate (MAC)** operation. The trick is that many PEs are chained together so each PE passes its partial sum (`psum`) to the next PE. By the time data has passed through all PEs in a column, the full dot-product of a row and column has been accumulated.
-
-### Port Layout
-
-```
-         weight_in / accept_w_in / switch_in
-                    ↓  (North)
-    input_in →  [  PE  ]  → input_out
-    valid_in →  [      ]  → valid_out
-   switch_in →  [      ]  → switch_out
-                   ↓  (South)
-              psum_out / weight_out
-```
-
-Signals flow through PEs like water through plumbing — each PE passes its processed signal to its neighbor.
+**What it does:** Aligns the fractional parts, then checks if the integer part fits.
+If the number is too large it saturates to the representable maximum; if too negative, saturates to the minimum. The `overflow` flag alerts the caller.
 
 ---
 
-### Line-by-Line Walkthrough
+### Module: `fxp_add` -- Fixed-Point Addition
 
-```systemverilog
-`timescale 1ns/1ps
-```
-This sets the simulation time unit. `1ns` = one nanosecond per time step, `1ps` = one picosecond of precision. Every `#1` delay in testbenches means 1ns.
+**Purpose:** Adds two Q8.8 numbers and produces a Q8.8 result.
 
-```systemverilog
-`default_nettype none
 ```
-Disables implicit wire creation. If you make a typo in a signal name, the compiler will give an error instead of silently creating a new wire. This is a best practice to catch bugs early.
+Ports:
+  ina      [15:0]  -> first operand
+  inb      [15:0]  -> second operand
+  out      [15:0]  -> ina + inb, in Q8.8
+  overflow         -> HIGH if result overflowed Q8.8 range
+```
 
-```systemverilog
-module pe #(
-    parameter int DATA_WIDTH = 16
-)
-```
-Defines the module named `pe`. The `#(...)` section lists **parameters** — values you can customize when you instantiate this module. `DATA_WIDTH=16` is defined but has a `//TODO` comment saying it's not used yet.
-
-```systemverilog
-    input logic clk,
-    input logic rst,
-```
-Standard clock and reset. Every flip-flop in this module is clocked by `clk` and resets when `rst` goes high.
-
-```systemverilog
-    // North wires of PE
-    input logic signed [15:0] pe_psum_in,
-    input logic signed [15:0] pe_weight_in,
-    input logic pe_accept_w_in,
-```
-- `pe_psum_in`: The partial sum coming IN from the PE above. The first PE in a column gets `0` here.
-- `pe_weight_in`: A new weight value being loaded. This comes from memory.
-- `pe_accept_w_in`: A flag saying "the weight on `pe_weight_in` right now is valid, please store it."
-
-```systemverilog
-    // West wires of PE
-    input logic signed [15:0] pe_input_in,
-    input logic pe_valid_in,
-    input logic pe_switch_in,
-    input logic pe_enabled,
-```
-- `pe_input_in`: The input data value (from the matrix being processed). Flows left-to-right.
-- `pe_valid_in`: A flag saying "the data on `pe_input_in` right now is real data, not garbage." Only when this is 1 should the PE compute.
-- `pe_switch_in`: A command to "activate" the freshly loaded weight. Explained more below.
-- `pe_enabled`: If 0, this PE is completely inactive. Used to disable unused PEs when working with matrices smaller than 2 columns.
-
-```systemverilog
-    // South wires of the PE
-    output logic signed [15:0] pe_psum_out,
-    output logic signed [15:0] pe_weight_out,
-```
-- `pe_psum_out`: The partial sum we computed, passed down to the PE below.
-- `pe_weight_out`: We pass the weight through to the PE below, so each PE in a column can load the same weight in sequence.
-
-```systemverilog
-    // East wires of the PE
-    output logic signed [15:0] pe_input_out,
-    output logic pe_valid_out,
-    output logic pe_switch_out
-```
-- `pe_input_out`: We pass the input data to the right (to the next PE in the row).
-- `pe_valid_out`: We pass the valid flag to the right, delayed by 1 clock cycle.
-- `pe_switch_out`: We pass the switch signal to the right, delayed by 1 clock cycle.
+**Used in:** `bias_child.sv`
 
 ---
 
-### Internal Signals and Instantiations
+### Module: `fxp_addsub` -- Fixed-Point Addition or Subtraction
 
-```systemverilog
-    logic signed [15:0] mult_out;
-    wire signed [15:0] mac_out;
-    logic signed [15:0] weight_reg_active;    // foreground register
-    logic signed [15:0] weight_reg_inactive;  // background register
+**Purpose:** Adds or subtracts two Q8.8 numbers. `sub=0` adds, `sub=1` subtracts.
+
+```
+Ports:
+  ina, inb [15:0]  -> operands
+  sub              -> 0 = ina + inb,  1 = ina - inb
+  out      [15:0]  -> result
+  overflow         -> HIGH if result overflowed
 ```
 
-This is the **double-buffer weight scheme**:
-- `weight_reg_inactive` = the "shadow" register. New weights are loaded here safely while the PE is still computing with old weights.
-- `weight_reg_active` = the "live" register. The one actually being used in the multiply.
-- When you want to switch to the new weights, you assert `pe_switch_in` and the inactive register's value is copied into the active register instantly.
-
-`mult_out` holds the result of `input × weight`. `mac_out` holds `mult_out + psum_in`.
-
-```systemverilog
-    fxp_mul mult (
-        .ina(pe_input_in),
-        .inb(weight_reg_active),
-        .out(mult_out),
-        .overflow()
-    );
-```
-This **instantiates** (creates) one copy of the `fxp_mul` module. It is connected so that:
-- Input A = `pe_input_in` (the data)
-- Input B = `weight_reg_active` (the loaded weight)
-- Output = `mult_out`
-- The `overflow` port is left unconnected — the design ignores overflow detection from the multiplier.
-
-This module is **purely combinational**: any time `pe_input_in` or `weight_reg_active` changes, `mult_out` updates instantly (no clock needed).
-
-```systemverilog
-    fxp_add adder (
-        .ina(mult_out),
-        .inb(pe_psum_in),
-        .out(mac_out),
-        .overflow()
-    );
-```
-Adds: `mac_out = mult_out + pe_psum_in`. This is also combinational. Together, the multiplier and adder form a **chain** that continuously computes `(input × weight) + psum` — the MAC operation.
+**Used in:** `loss_child.sv` (H - Y), `gradient_descent.sv` (weight - lr*grad)
 
 ---
 
-### The Double-Buffer: `always_comb` Block
+### Module: `fxp_mul` -- Fixed-Point Multiplication
 
-```systemverilog
-    always_comb begin
-        if (pe_switch_in) begin
-            weight_reg_active = weight_reg_inactive;
-        end
-    end
+**Purpose:** Multiplies two Q8.8 numbers and produces a Q8.8 result.
+
+```
+Ports:
+  ina, inb [15:0]  -> operands
+  out      [15:0]  -> ina x inb, rounded back to Q8.8
+  overflow         -> HIGH if result overflowed
 ```
 
-**`always_comb`** means "this logic runs every time any input changes, instantly (no clock)". Think of it like a combinational mux.
+Internally produces a 32-bit Q16.16 result then uses `fxp_zoom` to round back to Q8.8.
 
-- When `pe_switch_in = 1`: `weight_reg_active` immediately equals `weight_reg_inactive`. The new weights go "live" **on the same clock cycle** that `switch_in` is asserted.
-- When `pe_switch_in = 0`: This block does nothing. But since there's **no `else` clause**, `weight_reg_active` is also driven by the `always_ff` block below — this creates a latch condition technically, but the design handles it through simulation.
-
-**Why design it this way?** Because you want to load new weights into the shadow register while old weights are being used for computation. When you're ready to switch to the new weights, you assert `switch_in` and the entire array switches simultaneously.
+**Used in:** `pe.sv` (MAC), `leaky_relu_child.sv` (scale negative), `leaky_relu_derivative_child.sv`, `gradient_descent.sv` (lr x gradient)
 
 ---
 
-### The Main Sequential Logic: `always_ff` Block
+## 4. pe.sv -- The Processing Element (One MAC Cell)
+
+**File:** `src/pe.sv`
+
+### What It Is
+
+A **Processing Element (PE)** is the smallest compute cell. It performs one **MAC** (Multiply-Accumulate):
+
+```
+output_partial_sum = (input x weight) + input_partial_sum
+```
+
+This is the core operation of matrix multiplication. Four PEs arranged in a 2x2 grid perform the full 2x2 matrix multiply.
+
+### Why a Systolic Array Needs This
+
+In a systolic array, data flows through a grid of PEs like water through pipes. Each PE takes a partial sum from above, multiplies its stored weight with the incoming data, adds the two, and passes the new partial sum downward. The input simultaneously ripples rightward. After all data has flowed through, the bottom-row partial sums are the full matrix multiply results.
+
+### Port Explanation
+
+Think of the PE sitting in a grid with four sides: North (top), West (left), South (bottom), East (right).
+
+```
+North inputs (from above):
+  pe_psum_in    [15:0]  -- partial sum arriving from the PE above (0 for top-row PEs)
+  pe_weight_in  [15:0]  -- new weight value being loaded from the top
+  pe_accept_w_in        -- HIGH = load the weight on this clock edge (flows top-to-bottom)
+
+West inputs (from the left):
+  pe_input_in   [15:0]  -- the input data flowing in from the left
+  pe_valid_in           -- HIGH = pe_input_in contains real data
+  pe_switch_in          -- HIGH = swap shadow weight into active use
+                           (propagates diagonally to synchronize weight-switch timing with data flow)
+  pe_enabled            -- HIGH = this PE is allowed to compute; LOW = freeze and clear outputs
+
+South outputs (going downward):
+  pe_psum_out   [15:0]  -- (input x weight) + pe_psum_in, passed down to next row
+  pe_weight_out [15:0]  -- the loaded weight, forwarded downward to the next row
+
+East outputs (going rightward):
+  pe_input_out  [15:0]  -- pe_input_in delayed by 1 cycle, forwarded right
+  pe_valid_out          -- pe_valid_in delayed by 1 cycle, forwarded right
+  pe_switch_out         -- pe_switch_in delayed by 1 cycle, forwarded right/diagonally
+  pe_overflow_out       -- sticky flag: stays HIGH permanently once any overflow occurs
+```
+
+### Internal Signals
+
+```
+mult_out           [15:0]  -- combinational output of multiplier: input x weight
+mac_out            [15:0]  -- combinational output of adder: mult_out + pe_psum_in
+weight_reg_active  [15:0]  -- the ACTIVE weight being used for multiplication
+weight_reg_inactive[15:0]  -- the SHADOW (pre-loaded) weight, not yet active
+mult_overflow, add_overflow -- overflow flags from the two arithmetic units
+```
+
+**Why two weight registers (double-buffering)?** While the PE computes with `weight_reg_active`, the controller pre-loads the next weight set into `weight_reg_inactive`. A `pe_switch_in` pulse atomically swaps them. This lets the system load next-batch weights while current-batch computation is still running -- a pipeline overlap optimization.
+
+### The Arithmetic (Combinational, Instant)
 
 ```systemverilog
-    always_ff @(posedge clk or posedge rst) begin
+fxp_mul mult (.ina(pe_input_in), .inb(weight_reg_active),
+              .out(mult_out), .overflow(mult_overflow));
+
+fxp_add adder (.ina(mult_out), .inb(pe_psum_in),
+               .out(mac_out), .overflow(add_overflow));
 ```
-`always_ff` means "this runs only when the clock rises or rst rises". Everything inside uses flip-flops (registers). This is sequential logic — it only changes at clock edges.
 
-```systemverilog
-        if (rst || !pe_enabled) begin
-            pe_input_out <= 16'b0;
-            weight_reg_active <= 16'b0;
-            weight_reg_inactive <= 16'b0;
-            pe_valid_out <= 0;
-            pe_weight_out <= 16'b0;
-            pe_switch_out <= 0;
-```
-When either `rst = 1` (reset) or `pe_enabled = 0` (this PE is disabled), all outputs and registers are forced to zero. The `<=` (non-blocking assignment) means "schedule this update for the end of the clock edge", which is how flip-flops work.
+Results `mult_out` and `mac_out` are combinationally available every cycle. They are latched in the `always_ff` block below.
 
-```systemverilog
-        end else begin
-            pe_valid_out <= pe_valid_in;
-            pe_switch_out <= pe_switch_in;
-```
-In normal operation, both `valid` and `switch` are registered (delayed by exactly 1 clock cycle) and passed to the east (right). This is how valid signals propagate across the array — each PE delays them by 1 cycle, which ensures the data stays aligned as it flows through a chain of PEs.
+### The Sequential Block (Registered on Clock Edge)
 
-```systemverilog
-            if (pe_accept_w_in) begin
-                weight_reg_inactive <= pe_weight_in;
-                pe_weight_out <= pe_weight_in;
-            end else begin
-                pe_weight_out <= 0;
-            end
-```
-If `accept_w_in = 1`, store the incoming weight in the **shadow register** (`weight_reg_inactive`), not the active one. Also pass the weight downward (`pe_weight_out`) so the PE below can load the same weight.
+**On reset OR when disabled (`!pe_enabled`):** All registers go to zero. Disabling clears outputs to prevent garbage values from flowing downstream when processing smaller matrices.
 
-If not accepting, `pe_weight_out = 0` — no weight is pass through to the PE below.
+**Normal operation every clock cycle:**
+- `pe_valid_out  <= pe_valid_in`  (propagate valid signal rightward, 1 cycle delay)
+- `pe_switch_out <= pe_switch_in` (propagate switch signal, 1 cycle delay)
+- If `pe_switch_in=1`: copy `weight_reg_inactive` into `weight_reg_active` (swap happens)
+- If `pe_accept_w_in=1`: load `pe_weight_in` into `weight_reg_inactive` and pass downward
+- If `pe_valid_in=1`:
+  - `pe_input_out  <= pe_input_in`  (forward input rightward)
+  - `pe_psum_out   <= mac_out`      (latch computed partial sum going downward)
+  - `pe_overflow_out <= pe_overflow_out | mult_overflow | add_overflow` (sticky OR)
+- If `pe_valid_in=0`:
+  - `pe_input_out <= 0`  (clear stale data, do not propagate)
+  - `pe_psum_out  <= 0`  (no computation this cycle)
 
-```systemverilog
-            if (pe_valid_in) begin
-                pe_input_out <= pe_input_in;   // pass input to the right
-                pe_psum_out <= mac_out;         // pass accumulated sum down
-            end else begin
-                pe_valid_out <= 0;
-                pe_psum_out <= 16'b0;
-            end
-```
-If `valid_in = 1` (real data is present):
-- Pass the input rightward to the next PE.
-- Output the MAC result (`mac_out`) downward.
+**Why is `pe_overflow_out` sticky?** Once any overflow is detected, the flag stays HIGH until reset. This lets you check "did anything overflow during the whole computation?" without monitoring every cycle.
 
-If `valid_in = 0` (no valid data):
-- Force `psum_out = 0` — no garbage sum passes down.
-- Override `pe_valid_out = 0` even though it was already assigned above (the `else` here overwrites the earlier assignment).
+### What This Module Outputs Per Cycle
 
-**Note:** `pe_input_out` does NOT get cleared when `valid_in = 0`. It holds its last value. This is intentional — the input data value is latched and can be reused or inspected.
+When `pe_valid_in` is HIGH:
+- `pe_psum_out` = `(pe_input_in x weight_reg_active) + pe_psum_in` (downward)
+- `pe_input_out` = `pe_input_in` (rightward, 1-cycle delayed)
+- `pe_valid_out` = 1 (rightward, 1-cycle delayed)
 
 ---
 
-## 4. systolic.sv — The 2×2 Matrix Multiplier
+## 5. systolic.sv -- The 2×2 Systolic Array
 
-### What is a Systolic Array?
+**File:** `src/systolic.sv`
 
-Imagine you want to multiply two 2×2 matrices:
+### What It Is
 
-```
-A × B = C
+This module arranges **four PEs in a 2x2 grid** and routes signals between them. It is the matrix multiplication engine.
 
-A = [a00  a01]    B = [b00  b01]
-    [a10  a11]        [b10  b11]
-```
-
-In a systolic array, the weights (B matrix values) are pre-loaded into PEs. Then the input rows of A are fed in from the left, one row at a time. Data flows rightward and partial sums flow downward. After all rows have been fed in, the output matrix C is read from the bottom.
-
-This design has a **2×2 grid** of 4 PEs:
+### The Grid Layout
 
 ```
-         col1         col2
-         ↓             ↓
-row1: [pe11] → [pe12]
-         ↓             ↓
-row2: [pe21] → [pe22]
-         ↓             ↓
-     data_out_21   data_out_22
+        col1 (weight col1)    col2 (weight col2)
+         sys_weight_in_11      sys_weight_in_12
+                |                     |
+row1:  [pe11] ------input_out------> [pe12]
+sys_data_in_11  |                         |
+(sys_start_1)   | psum_out               | psum_out
+                |                         |
+row2:  [pe21] ------input_out------> [pe22]
+sys_data_in_21  |                         |
+(sys_start_2)   v                         v
+         sys_data_out_21          sys_data_out_22
+         sys_valid_out_21         sys_valid_out_22
 ```
 
-Naming convention: `pe_XY` where X = row, Y = column.
+Data enters from the left. Weights load from the top. Results exit from the bottom.
 
----
+### Port Explanation
 
-### Port Declarations
+```
+Data inputs (from left, fed by Unified Buffer):
+  sys_data_in_11  [15:0] -- row-1 input data going into pe11
+  sys_data_in_21  [15:0] -- row-2 input data going into pe21
+  sys_start_1            -- valid/start for row-1 data (drives pe11 valid_in)
+  sys_start_2            -- valid/start for row-2 data (drives pe21 valid_in, INDEPENDENT)
+
+Result outputs (from bottom):
+  sys_data_out_21 [15:0] -- column-1 MAC result (from pe21)
+  sys_data_out_22 [15:0] -- column-2 MAC result (from pe22)
+  sys_valid_out_21       -- HIGH when sys_data_out_21 is valid
+  sys_valid_out_22       -- HIGH when sys_data_out_22 is valid
+
+Weight inputs (from top, fed by Unified Buffer):
+  sys_weight_in_11 [15:0] -- weight data for column-1 PEs
+  sys_weight_in_12 [15:0] -- weight data for column-2 PEs
+  sys_accept_w_1          -- HIGH = load weight into column-1 PE shadow registers
+  sys_accept_w_2          -- HIGH = load weight into column-2 PE shadow registers
+  sys_switch_in           -- copy shadow weights to active across all PEs
+
+Column-size control (from Unified Buffer):
+  ub_rd_col_size_in  [15:0] -- how many columns in the matrix (1 or 2)
+  ub_rd_col_size_valid_in   -- HIGH = the column size value is valid
+```
+
+### How the 4 PEs Are Connected
+
+**pe11** (row 1, col 1):
+- Input data: `sys_data_in_11` from the left; valid: `sys_start_1`
+- Partial sum input: 16'b0 (it is the top-left, no partial sum above it)
+- Weight: `sys_weight_in_11` loaded when `sys_accept_w_1` is HIGH
+- `pe_psum_out` flows downward into pe12 (to accumulate the column-1 dot product)
+- `pe_input_out` flows rightward to pe21 (the input ripple)
+- `pe_valid_out` flows downward to pe12 (chains timing within the column)
+
+**pe12** (row 1, col 2):
+- Input: `pe_input_out_11` (the rippled row-1 data, 1 cycle delayed)
+- Partial sum input: `pe_psum_out_11` (accumulates from pe11)
+- Weight: `sys_weight_in_12` loaded when `sys_accept_w_2` is HIGH
+- `pe_psum_out` flows downward into pe22
+- `pe_valid_out` flows downward to pe22
+
+**pe21** (row 2, col 1):
+- Input: `sys_data_in_21` directly from UB; valid: `sys_start_2` (INDEPENDENT timing)
+- Partial sum input: `pe_psum_out_11` (adds column-1 contributions from pe11)
+- Weight: passed down from pe11 via `pe_weight_out_11`
+- `pe_psum_out` goes to `sys_data_out_21` (FINAL column-1 result)
+- `pe_valid_out` goes to `sys_valid_out_21`
+
+**pe22** (row 2, col 2):
+- Input: `pe_input_out_21` (row-2 data rippled from pe21)
+- Partial sum input: `pe_psum_out_12` (column-2 accumulation from pe12)
+- Weight: passed down from pe12 via `pe_weight_out_12`
+- `pe_psum_out` goes to `sys_data_out_22` (FINAL column-2 result)
+- `pe_valid_out` goes to `sys_valid_out_22`
+
+### Why `sys_start_1` and `sys_start_2` Are Independent
+
+In a systolic array, row-2's data must arrive 1 cycle after row-1's data. This is because the first column PE needs 1 cycle to produce its partial sum for row-2 to accumulate. The Unified Buffer generates separate valid signals with this 1-cycle skew. Using two independent start signals (`sys_start_1`, `sys_start_2`) instead of one shared signal gives the UB full control over this skew.
+
+### The `pe_enabled` Register
 
 ```systemverilog
-module systolic #(
-    parameter int SYSTOLIC_ARRAY_WIDTH = 2   // 2 columns
-)
-```
-
-```systemverilog
-    input logic [15:0] sys_data_in_11,    // input for row 1
-    input logic [15:0] sys_data_in_21,    // input for row 2
-    input logic sys_start,                // = valid signal for row 1
-```
-- `sys_data_in_11`: Row 1 data fed into PE(1,1).
-- `sys_data_in_21`: Row 2 data fed into PE(2,1).
-- `sys_start`: When high, the data on the inputs is valid. Goes directly into `pe11` and `pe21` as `pe_valid_in`.
-
-```systemverilog
-    output logic [15:0] sys_data_out_21,   // final MAC output, row 2, col 1
-    output logic [15:0] sys_data_out_22,   // final MAC output, row 2, col 2
-    output wire sys_valid_out_21,          // valid flag for data_out_21
-    output wire sys_valid_out_22,          // valid flag for data_out_22
-```
-Outputs come from the **bottom row** of PEs (row 2). After 2 clock cycles, the result of the dot product appears here.
-
-```systemverilog
-    input logic [15:0] sys_weight_in_11,   // weight for column 1, row 1
-    input logic [15:0] sys_weight_in_12,   // weight for column 2, row 1
-    input logic sys_accept_w_1,            // load weight into column 1
-    input logic sys_accept_w_2,            // load weight into column 2
-    input logic sys_switch_in,             // switch all PEs to new weights
-```
-Weights are loaded from the top. `sys_weight_in_11` goes into `pe11`, which then passes it down to `pe21` via `pe_weight_out`. So you only need to provide the weight for the top PE in each column.
-
-```systemverilog
-    input logic [15:0] ub_rd_col_size_in,
-    input logic ub_rd_col_size_valid_in
-```
-These tell the array how many columns of the input matrix are active. If you're multiplying a 2×1 matrix, you only want column 1 active. This lets you disable unused PEs to save energy and avoid corrupting outputs.
-
----
-
-### Internal Wiring
-
-```systemverilog
-    logic [15:0] pe_input_out_11;     // connects pe11.east_out to pe12.west_in (NOT SHOWN IN HWDESIGN - pe12 gets input from pe11's output)
-    logic [15:0] pe_input_out_21;     // connects pe21.east_out to pe22.west_in
-
-    logic [15:0] pe_psum_out_11;      // connects pe11.south_out to pe21.north_in
-    logic [15:0] pe_psum_out_12;      // connects pe12.south_out to pe22.north_in
-
-    logic [15:0] pe_weight_out_11;    // weight passed from pe11 down to pe21
-    logic [15:0] pe_weight_out_12;    // weight passed from pe12 down to pe22
-
-    logic pe_switch_out_11;           // switch signal propagates diagonally
-    logic pe_switch_out_12;
-
-    wire pe_valid_out_11;             // valid propagates diagonally (pe11 → pe12, pe21)
-    wire pe_valid_out_12;             // valid from pe12 → pe22
-
-    logic [1:0] pe_enabled;           // bit 0 controls col1, bit 1 controls col2
-```
-
-These are just internal wires connecting the PEs together. Each PE's outputs connect to the next PE's inputs.
-
----
-
-### PE Instantiations
-
-```systemverilog
-    pe pe11 (
-        .pe_enabled(pe_enabled[0]),     // bit 0 enables column 1
-        .pe_valid_in(sys_start),         // row 1 starts when sys_start is high
-        .pe_valid_out(pe_valid_out_11),  // valid propagates right and down
-        .pe_input_in(sys_data_in_11),    // input data from UB
-        .pe_psum_in(16'b0),              // first PE in column: no accumulated sum yet
-        .pe_weight_in(sys_weight_in_11), // weight from UB
-        ...
-    );
-```
-
-The first PE in a column always gets `pe_psum_in = 16'b0` — there is nothing to accumulate yet. The result just starts from scratch.
-
-```systemverilog
-    pe pe12 (
-        .pe_enabled(pe_enabled[1]),       // bit 1 enables column 2
-        .pe_valid_in(pe_valid_out_11),     // valid comes from pe11 (1 clock delay!)
-        .pe_input_in(pe_input_out_11),     // data comes from pe11's east output
-        .pe_psum_in(16'b0),               // first PE in its column: no prior sum
-        .pe_weight_in(sys_weight_in_12),   // weight for column 2
-        .pe_switch_in(pe_switch_out_11),   // switch propagates diagonally
-        ...
-    );
-```
-
-Notice `pe_valid_in(pe_valid_out_11)` — pe12 starts computing 1 clock cycle after pe11. This is the "wave" of computation advancing through the array.
-
-```systemverilog
-    pe pe21 (
-        .pe_valid_in(pe_valid_out_11),     // also driven by pe11's valid!
-        .pe_psum_in(pe_psum_out_11),       // accumulate pe11's partial sum
-        .pe_weight_in(pe_weight_out_11),   // weight passed down from pe11
-        .pe_psum_out(sys_data_out_21),     // FINAL RESULT for column 1
-        ...
-    );
-```
-
-pe21 is the **bottom** PE in column 1. Its `psum_out` is the final accumulated result for column 1 — it becomes `sys_data_out_21`.
-
-```systemverilog
-    pe pe22 (
-        .pe_valid_in(pe_valid_out_12),     // valid comes from pe12 (2 cycles after start!)
-        .pe_psum_in(pe_psum_out_12),       // accumulate pe12's partial sum
-        .pe_psum_out(sys_data_out_22),     // FINAL RESULT for column 2
-        ...
-    );
-```
-
-pe22 is the bottom-right PE. Its result appears 1 cycle after pe21's result because it takes one more cycle for valid to reach pe12 → pe22.
-
----
-
-### Enabling/Disabling Columns
-
-```systemverilog
-    always@(posedge clk or posedge rst) begin
-        if(rst) begin
-            pe_enabled <= '0;        // reset: disable all PEs
-        end else begin
-            if(ub_rd_col_size_valid_in) begin
-                pe_enabled <= (1 << ub_rd_col_size_in) - 1;
-                // col_size=1 → (1<<1)-1 = 01 → only pe11, pe21 enabled
-                // col_size=2 → (1<<2)-1 = 11 → all PEs enabled
-            end
-        end
-    end
-```
-
-The expression `(1 << col_size) - 1` creates a bitmask:
-- `col_size=1`: `0b10 - 1 = 0b01` → only bit 0 set → only column 1 active
-- `col_size=2`: `0b100 - 1 = 0b11` → both bits set → both columns active
-
-This is a clever bit trick to create a "how many columns are enabled" mask.
-
----
-
-## 5. bias_child.sv — Adding a Bias to One Column
-
-After the systolic array computes `Z = input × weight`, a neural network needs to add a **bias** value: `Z_biased = Z + bias`. Each output neuron has its own bias. Since we have 2 output columns, we need 2 bias adders.
-
-`bias_child` handles one column.
-
-```systemverilog
-module bias_child (
-    input logic clk,
-    input logic rst,
-    input logic signed [15:0] bias_scalar_in,    // the bias value (from memory)
-    output logic bias_Z_valid_out,               // is the output valid?
-    input wire signed [15:0] bias_sys_data_in,   // data from systolic array
-    input wire bias_sys_valid_in,                // is the systolic data valid?
-    output logic signed [15:0] bias_z_data_out   // result: data + bias
-);
-```
-
-```systemverilog
-    logic signed [15:0] z_pre_activation;
-
-    fxp_add add_inst(
-        .ina(bias_sys_data_in),
-        .inb(bias_scalar_in),
-        .out(z_pre_activation)
-    );
-```
-
-`z_pre_activation` is a combinational wire — it **always** equals `data_in + bias_scalar_in` regardless of whether the data is valid. The computation is happening continuously in combinational logic.
-
-The result is called `z_pre_activation` because in neural network terminology, `Z` (before applying the activation function) = weights × input + bias.
-
-```systemverilog
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            bias_Z_valid_out <= 1'b0;
-            bias_z_data_out <= 16'b0;
-        end else begin
-            if (bias_sys_valid_in) begin    // real data is arriving
-                bias_Z_valid_out <= 1'b1;
-                bias_z_data_out <= z_pre_activation;   // register (latch) the result
-            end else begin
-                bias_Z_valid_out <= 1'b0;   // tell downstream: ignore this output
-                bias_z_data_out <= 16'b0;   // also clear data to 0
-            end
-        end
-    end
-```
-
-**Key point:** The output is only meaningful when `bias_Z_valid_out = 1`. When no valid data is arriving, both outputs are explicitly cleared to 0. There is NO data hold — it doesn't keep the last valid value. Each invalid cycle produces a 0 output.
-
-Why register the result instead of using it combinationally? Because the output needs to stay stable for exactly 1 clock cycle so the next stage can read it reliably.
-
----
-
-## 6. bias_parent.sv — Bias for Both Columns
-
-```systemverilog
-module bias_parent(
-    input logic signed [15:0] bias_scalar_in_1,    // bias for column 1
-    input logic signed [15:0] bias_scalar_in_2,    // bias for column 2
-    ...
-```
-
-This module simply instantiates two `bias_child` modules — one for each column:
-
-```systemverilog
-    bias_child column_1 ( ... );
-    bias_child column_2 ( ... );
-```
-
-**This pattern of "child + parent" modules is used throughout the design.** The "child" contains the actual logic for one channel. The "parent" is a wrapper that groups two children together (one per output column of the systolic array).
-
-The parent module exists purely for clean wiring. It adds no logic.
-
----
-
-## 7. leaky_relu_child.sv — The Activation Function
-
-After `Z = input × weight + bias`, a neural network applies an **activation function**. This is needed to allow the network to learn non-linear patterns. Without it, stacking layers is pointless — the whole thing collapses to a single linear transformation.
-
-This design uses **Leaky ReLU**:
-```
-output = input           if input ≥ 0
-output = input × α       if input < 0
-```
-
-Where `α` (alpha, or `leak_factor`) is a small number like 0.01. This way, negative inputs are not completely blocked — they "leak" through at a reduced scale.
-
-A plain ReLU would set negative outputs to exactly 0. Leaky ReLU prevents "dying neurons" — units that get stuck at 0 forever.
-
-```systemverilog
-module leaky_relu_child (
-    input logic clk,
-    input logic rst,
-    input logic lr_valid_in,
-    input logic signed [15:0] lr_data_in,
-    input logic signed [15:0] lr_leak_factor_in,   // the α factor
-    output logic signed [15:0] lr_data_out,
-    output logic lr_valid_out
-);
-```
-
-```systemverilog
-    logic signed [15:0] mul_out;
-    fxp_mul mul_inst(
-        .ina(lr_data_in),
-        .inb(lr_leak_factor_in),
-        .out(mul_out)
-    );
-```
-
-This multiplier is always computing `lr_data_in × lr_leak_factor_in` combinationally — even when the data is not valid. The register block below decides whether to use `mul_out` or `lr_data_in` based on the sign.
-
-```systemverilog
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            lr_data_out <= 16'b0;
-            lr_valid_out <= 0;
-        end else begin
-            if (lr_valid_in) begin           // only process real data
-                if (lr_data_in >= 0) begin   // positive: pass through unchanged
-                    lr_data_out <= lr_data_in;
-                end else begin               // negative: scale it down
-                    lr_data_out <= mul_out;
-                end
-                lr_valid_out <= 1;
-            end else begin
-                lr_valid_out <= 0;
-                lr_data_out <= 16'b0;        // clear outputs when no valid data
-            end
-        end
-    end
-```
-
-**Sign detection:** `lr_data_in >= 0` in SystemVerilog compares the **signed** value. Since `lr_data_in` is declared `signed [15:0]`, bit [15] being 1 makes the number negative. So this comparison is just checking bit [15].
-
-**Why both branches produce a 0 output when invalid:** Same as `bias_child` — no data hold, always clean outputs. Downstream modules must check `lr_valid_out` to know when to trust the data.
-
----
-
-## 8. leaky_relu_parent.sv — Activation for Both Columns
-
-Same pattern as `bias_parent`. Instantiates two `leaky_relu_child` modules:
-
-```systemverilog
-module leaky_relu_parent (
-    input logic signed [15:0] lr_leak_factor_in,   // shared α across both columns
-    ...
-```
-
-**Note:** Both columns share the same `lr_leak_factor_in`. This makes sense because the leak factor is a hyperparameter of the layer, not per-neuron. All neurons in the layer use the same Leaky ReLU setting.
-
----
-
-## 9. loss_child.sv — Measuring the Error (Backprop Stage 1)
-
-This module begins the **backward pass** (backpropagation). The goal of backprop is to figure out how much each weight contributed to the prediction error, so we can adjust weights to reduce that error.
-
-**What is MSE?** Mean Squared Error. If the network predicted H (hypothesis) but the correct answer was Y (label), the error is:
-
-```
-MSE loss = (1/N) × Σ (H - Y)²
-```
-
-The **gradient** of MSE with respect to H is:
-
-```
-dLoss/dH = (2/N) × (H - Y)
-```
-
-This is what `loss_child` computes. It doesn't compute the actual loss value — it computes the **gradient** (the derivative) that will be used to update weights.
-
-```systemverilog
-module loss_child (
-    input logic signed [15:0] H_in,                        // network's prediction
-    input logic signed [15:0] Y_in,                        // correct label
-    input logic valid_in,                                   // is data valid?
-    input logic signed [15:0] inv_batch_size_times_two_in, // (2/N) as fixed-point
-    output logic signed [15:0] gradient_out,               // the gradient (2/N)*(H-Y)
-    output logic valid_out
-);
-```
-
-The value `inv_batch_size_times_two_in` is `2/N` pre-computed outside and passed in as a fixed-point constant. `N` is the batch size. It's called "inverse batch size times two" because it represents `2 × (1/N)`.
-
-```systemverilog
-    logic signed [15:0] diff_stage1;
-    logic signed [15:0] final_gradient;
-
-    fxp_addsub subtractor (
-        .ina(H_in),
-        .inb(Y_in),
-        .sub(1'b1),         // subtract: H - Y
-        .out(diff_stage1),
-        .overflow()
-    );
-
-    fxp_mul multiplier (
-        .ina(diff_stage1),
-        .inb(inv_batch_size_times_two_in),
-        .out(final_gradient),   // result: (2/N) × (H - Y)
-        .overflow()
-    );
-```
-
-Both operations are **combinational** and chain together:
-1. `diff_stage1 = H_in - Y_in` (always computing, instant)
-2. `final_gradient = diff_stage1 × (2/N)` (also always computing)
-
-```systemverilog
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            gradient_out <= '0;
-            valid_out <= '0;
-        end else begin
-            valid_out <= valid_in;
-            gradient_out <= final_gradient;   // ALWAYS registered, not just when valid!
-        end
-    end
-```
-
-**IMPORTANT DESIGN CHOICE:** `gradient_out` is registered on **every clock cycle**, regardless of `valid_in`. When `valid_in = 0`, the hardware is still computing `final_gradient` from whatever garbage `H_in` and `Y_in` values are on the bus, and registering that garbage into `gradient_out`.
-
-This is intentional — the downstream consumer (the gradient descent module) checks `valid_out` before using `gradient_out`. The garbage value with `valid_out = 0` is simply ignored.
-
-`valid_out` does correctly track `valid_in` — it's just a 1-cycle register delay.
-
----
-
-## 10. loss_parent.sv — Error for Both Columns
-
-Again, wraps two `loss_child` instances, one per column. Both children share the same `inv_batch_size_times_two_in` constant (the batch size is a property of the training run, not per-neuron).
-
----
-
-## 11. leaky_relu_derivative_child.sv — Backprop Through the Activation
-
-During backpropagation, when a gradient passes through the Leaky ReLU function going backward, we need to apply the **derivative** of Leaky ReLU:
-
-```
-d(LeakyReLU(H))/dH = 1       if H ≥ 0   → gradient passes through unchanged
-d(LeakyReLU(H))/dH = α       if H < 0   → gradient is scaled by α
-```
-
-The key difference from the forward pass is: **the sign decision is based on H (the original activation from the forward pass), not on the gradient itself.**
-
-```systemverilog
-module leaky_relu_derivative_child(
-    input logic lr_d_valid_in,
-    input logic signed [15:0] lr_d_data_in,      // the gradient flowing backward
-    input logic signed [15:0] lr_leak_factor_in,  // the α factor
-    input logic signed [15:0] lr_d_H_data_in,     // H from the forward pass!
-    output logic lr_d_valid_out,
-    output logic signed [15:0] lr_d_data_out
-);
-```
-
-`lr_d_H_data_in` is what makes this module different. During the forward pass, the activation values H were saved to memory. Now, during the backward pass, we read them back to know which ReLU branch was taken.
-
-```systemverilog
-    fxp_mul mul_inst(
-        .ina(lr_d_data_in),          // gradient signal
-        .inb(lr_leak_factor_in),
-        .out(mul_out)
-    );
-```
-
-The multiplier pre-computes `gradient × α` combinationally.
-
-```systemverilog
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            lr_d_data_out <= 16'b0;
-            lr_d_valid_out <= 0;
-        end else begin
-            lr_d_valid_out <= lr_d_valid_in;     // plain register — no override
-            if (lr_d_valid_in) begin
-                if (lr_d_H_data_in >= 0) begin   // H was positive in forward pass
-                    lr_d_data_out <= lr_d_data_in;   // gradient passes through
-                end else begin                   // H was negative in forward pass
-                    lr_d_data_out <= mul_out;        // scale gradient by α
-                end
-            end else begin
-                lr_d_data_out <= 16'b0;
-            end
-        end
-    end
-```
-
-**Critical difference from `leaky_relu_child`:** In `leaky_relu_child`, the `else` branch overrides `lr_valid_out <= 0`. Here, `lr_d_valid_out <= lr_d_valid_in` is written **unconditionally** (outside the if/else), so it is always registered, even when `valid_in = 0`. The net result is the same — `valid_out` tracks `valid_in` with 1 cycle delay — but the code structure is different.
-
----
-
-## 12. leaky_relu_derivative_parent.sv — Derivative for Both Columns
-
-Wraps two `leaky_relu_derivative_child` instances. Both children share the same `lr_leak_factor_in` but have independent `H` inputs (one H value per column from the forward pass).
-
----
-
-## 13. gradient_descent.sv — Updating Weights
-
-This is the learning step. After computing gradients (how much the loss changes with respect to weights), we update the weights using **gradient descent**:
-
-```
-W_new = W_old - learning_rate × gradient
-```
-
-This makes the weight "move" in the direction that reduces the loss.
-
-```systemverilog
-module gradient_descent (
-    input logic [15:0] lr_in,               // learning rate (hyperparameter)
-    input logic [15:0] value_old_in,        // current weight or bias value
-    input logic [15:0] grad_in,             // gradient for this weight
-    input logic grad_descent_valid_in,      // is input data valid?
-    input logic grad_bias_or_weight,        // 0 = updating bias, 1 = updating weight
-    output logic [15:0] value_updated_out,  // new weight value
-    output logic grad_descent_done_out      // one cycle pulse when update is done
-);
-```
-
-```systemverilog
-    logic [15:0] sub_value_out;   // result of the subtraction
-    logic [15:0] sub_in_a;        // what we're subtracting from (changes for bias mode)
-    logic [15:0] mul_out;         // learning_rate × gradient
-
-    fxp_mul mul_inst (
-        .ina(grad_in),
-        .inb(lr_in),
-        .out(mul_out),         // mul_out = grad × lr
-    );
-
-    fxp_addsub sub_inst (
-        .ina(sub_in_a),
-        .inb(mul_out),
-        .sub(1'b1),            // subtract: sub_in_a - (grad × lr)
-        .out(sub_value_out),
-    );
-```
-
-The formula `W_new = W_old - lr × grad` is computed in two combinational stages:
-1. `mul_out = grad × lr`
-2. `sub_value_out = sub_in_a - mul_out`
-
----
-
-### Weight vs. Bias Mode
-
-```systemverilog
-    always_comb begin
-        case(grad_bias_or_weight)
-            1'b0: begin    // BIAS MODE
-                if(grad_descent_done_out) begin
-                    sub_in_a = value_updated_out;  // use the previously updated value!
-                end else begin
-                    sub_in_a = value_old_in;       // first update: start from old value
-                end
-            end
-
-            1'b1: begin    // WEIGHT MODE
-                sub_in_a = value_old_in;           // always use the old value
-            end
+always_ff @(posedge clk or posedge rst) begin
+    if (rst)
+        pe_enabled <= 2'b11;   // reset default: all columns enabled
+    else if (ub_rd_col_size_valid_in)
+        case (ub_rd_col_size_in[1:0])
+            2'd1:    pe_enabled <= 2'b01;   // only column 1
+            2'd2:    pe_enabled <= 2'b11;   // both columns
+            default: pe_enabled <= 2'b00;
         endcase
-    end
+end
 ```
 
-**Weight mode (`grad_bias_or_weight = 1`):** Each update is independent. Always subtract from `value_old_in`. Simple one-shot update.
+`pe_enabled[0]` controls pe11 and pe21 (column 1). `pe_enabled[1]` controls pe12 and pe22 (column 2). When a matrix has only 1 column, disabling column-2 PEs prevents garbage from appearing on `sys_data_out_22`.
 
-**Bias mode (`grad_bias_or_weight = 0`):** The bias gradient is accumulated over the batch. After the first update, we use `value_updated_out` as the new starting point, then apply the next gradient on top of that. This is how gradients from multiple batch samples get summed together before applying the final update.
+Reset sets `2'b11` (all-enabled) as the safe default. The first instruction from UB overrides this to the correct value.
 
-`grad_descent_done_out` serves as the "is there already a valid updated value to chain from?" flag.
+### Timing
+
+- `sys_valid_out_21` goes HIGH **1 cycle** after `sys_start_2` is asserted
+- `sys_valid_out_22` goes HIGH **2 cycles** after `sys_start_1` is asserted (passes through pe11 then pe22)
+
+---
+
+## 6. bias_child.sv -- Adding a Bias to One Column
+
+**File:** `src/bias_child.sv`
+
+### What It Is
+
+After matrix multiplication, a neural network adds a **bias** to each output. A bias is a learned constant that shifts the neuron's output, giving the model more flexibility. This module handles that addition for exactly **one column** of data.
+
+Math: `output = systolic_result + bias_constant`
+
+### Port Explanation
+
+```
+Inputs:
+  clk, rst
+  bias_scalar_in  [15:0]  -- the bias value from UB (Q8.8, same for every row in this column)
+  bias_sys_data_in[15:0]  -- data arriving from the systolic array
+  bias_sys_valid_in       -- HIGH = the systolic data is valid
+
+Outputs:
+  bias_z_data_out [15:0]  -- result: sys_data + bias_scalar (registered, 1 cycle later)
+  bias_Z_valid_out        -- HIGH = bias_z_data_out is valid
+  bias_overflow_out       -- sticky flag: stays HIGH if any cycle's addition overflowed
+```
+
+### How It Works
+
+A `fxp_add` instance computes `bias_sys_data_in + bias_scalar_in` combinationally every cycle. The `always_ff` block then latches this result on the clock edge only when `bias_sys_valid_in` is HIGH. When invalid, the output is zeroed.
+
+**Output timing:** 1 cycle after input arrives.
+
+**Z** in the output name refers to the neural network convention: Z = W*X + b (the pre-activation value).
+
+---
+
+## 7. bias_parent.sv -- Bias for Both Columns Together
+
+**File:** `src/bias_parent.sv`
+
+A thin **wrapper** that instantiates two `bias_child` modules side by side -- one for each output column from the systolic array. The VPU uses this to apply bias to both columns with a single module instance.
+
+Both columns are processed in parallel. Each column has its own independent bias scalar (`bias_scalar_in_1` for column 1, `bias_scalar_in_2` for column 2). All other ports are per-column versions of the same signals.
+
+Contains no logic of its own -- just wiring.
+
+---
+
+## 8. leaky_relu_child.sv -- The Activation Function (One Column)
+
+**File:** `src/leaky_relu_child.sv`
+
+### What It Is
+
+After bias addition the result goes through an **activation function**. This design uses **Leaky ReLU**:
+
+```
+if input >= 0:   output = input          (pass through unchanged)
+if input  < 0:   output = input x leak_factor   (scale down by a small factor)
+```
+
+Without activation functions, stacking neural network layers does nothing beyond a single linear transformation. The non-linearity is what allows deep networks to learn complex patterns.
+
+"Leaky" means a tiny fraction of the negative signal passes through (instead of being cut to zero like regular ReLU). This prevents "dying neurons" -- neurons that get stuck outputting exactly zero forever and stop learning.
+
+### Port Explanation
+
+```
+Inputs:
+  clk, rst
+  lr_valid_in            -- HIGH = input data is meaningful
+  lr_data_in   [15:0]    -- the value to apply activation to (Q8.8)
+  lr_leak_factor_in[15:0]-- the leak factor (Q8.8, e.g. 0.01 ~ 0x0003)
+
+Outputs:
+  lr_data_out  [15:0]    -- result: lr_data_in (if >= 0) or lr_data_in x leak_factor (if < 0)
+  lr_valid_out           -- HIGH = output is valid (1-cycle delayed from input)
+  lr_overflow_out        -- sticky overflow flag
+```
+
+### How It Works
+
+A `fxp_mul` instance computes `lr_data_in x lr_leak_factor_in` **all the time** (every cycle, combinationally). The `always_ff` block selects which value to latch:
+
+- If `lr_data_in >= 0` (bit [15] = 0): latch `lr_data_in` unchanged
+- If `lr_data_in < 0` (bit [15] = 1): latch `mul_out` (the scaled-down version)
+
+When `lr_valid_in` is LOW: output is zeroed, `lr_valid_out` is de-asserted.
+
+**Output timing:** 1 cycle after input arrives.
+
+---
+
+## 9. leaky_relu_parent.sv -- Activation for Both Columns Together
+
+**File:** `src/leaky_relu_parent.sv`
+
+Wraps two `leaky_relu_child` instances in parallel. Both children share the **same `lr_leak_factor_in`** (one leak factor per layer). Each column gets its own data and valid signals. No logic of its own -- just wiring.
+
+---
+
+## 10. leaky_relu_derivative_child.sv -- Backprop Through Activation (One Column)
+
+**File:** `src/leaky_relu_derivative_child.sv`
+
+### What It Is
+
+During training (backward pass), gradients must flow backward through the same activation function. The **derivative** of Leaky ReLU tells us how much the gradient changes passing through:
+
+```
+if H >= 0:   dOutput/dInput = 1         -> gradient passes unchanged
+if H  < 0:   dOutput/dInput = leak_factor -> gradient scaled by leak_factor
+```
+
+where `H` is the **original output of the Leaky ReLU from the forward pass**, stored back in the UB. This is why the backward pass reads the H matrix out of memory before calling this module.
+
+### Port Explanation
+
+```
+Inputs:
+  clk, rst
+  lr_d_valid_in         -- HIGH = gradient input is valid
+  lr_d_data_in  [15:0]  -- the incoming gradient (from the loss module upstream)
+  lr_leak_factor_in[15:0]-- same leak factor used in the forward pass
+  lr_d_H_data_in[15:0]  -- the original H value from the forward pass (to decide which branch)
+
+Outputs:
+  lr_d_valid_out        -- HIGH = output gradient is valid
+  lr_d_data_out [15:0]  -- the scaled or unscaled gradient
+  lr_d_overflow_out     -- sticky overflow flag
+```
+
+**Critical difference from `leaky_relu_child`:** The forward module checks if *the current input* is positive/negative. The derivative module checks if *the stored H* is positive/negative. The branch taken during backprop must match the branch taken during the forward pass.
+
+### Key Design Detail
+
+`lr_d_valid_out <= lr_d_valid_in` is assigned **unconditionally** (outside the `if(lr_d_valid_in)` block). This ensures `valid_out` always correctly mirrors the input valid signal every cycle -- it will de-assert when input de-asserts, and assert when input asserts, regardless of other conditions. If it were inside the conditional block it could get stuck HIGH.
+
+### Output Timing
+
+1 cycle after input arrives.
+
+---
+
+## 11. leaky_relu_derivative_parent.sv -- Derivative for Both Columns Together
+
+**File:** `src/leaky_relu_derivative_parent.sv`
+
+Wraps two `leaky_relu_derivative_child` instances. Each column has its own `lr_d_H_1_in` / `lr_d_H_2_in` input (the stored forward-pass activation for that column). No logic of its own.
+
+---
+
+## 12. loss_child.sv -- Computing the Error Gradient (One Column)
+
+**File:** `src/loss_child.sv`
+
+### What It Is
+
+This module computes the **gradient of the MSE (Mean Squared Error) loss** with respect to the network's output. This is the entry point of backpropagation -- it measures how wrong each prediction was.
+
+MSE loss formula: `loss = (1/N) x SUM[(H - Y)^2]`
+
+The gradient of this loss with respect to prediction H is:
+```
+dL/dH = (2/N) x (H - Y)
+```
+
+Where:
+- `H` = the network's prediction (output of the forward pass)
+- `Y` = the correct answer (ground truth from training data)
+- `N` = the number of samples in the batch
+- `2/N` is precomputed and stored as `inv_batch_size_times_two_in`
+
+### Port Explanation
+
+```
+Inputs:
+  clk, rst
+  H_in         [15:0]  -- network's prediction (Q8.8)
+  Y_in         [15:0]  -- correct label (Q8.8)
+  valid_in             -- HIGH = H_in and Y_in are valid data
+  inv_batch_size_times_two_in [15:0] -- precomputed (2/N) in Q8.8
+
+Outputs:
+  gradient_out [15:0]  -- the computed gradient: (2/N) x (H - Y)
+  valid_out            -- HIGH = gradient_out is valid
+  loss_overflow_out    -- sticky flag if subtraction or multiplication overflowed
+```
+
+### Two-Stage Combinational Pipeline
+
+**Stage 1 (subtraction):**
+```
+fxp_addsub:  diff_stage1 = H_in - Y_in
+```
+
+**Stage 2 (multiplication):**
+```
+fxp_mul:  final_gradient = diff_stage1 x inv_batch_size_times_two_in
+                         = (H - Y) x (2/N)
+                         = (2/N)(H - Y)
+```
+
+Both stages are combinational (instant). The `always_ff` latches `final_gradient` on the clock edge.
+
+### Key Design Detail
+
+`valid_out <= valid_in` is assigned **unconditionally** (outside the `if(valid_in)` block). Same reason as in `leaky_relu_derivative_child` -- the valid handshake must always mirror the input regardless of data conditions.
+
+### What the Gradient Means
+
+- If `H > Y`: gradient is **positive** (model predicted too high; decrease H)
+- If `H < Y`: gradient is **negative** (model predicted too low; increase H)
+- If `H == Y`: gradient is **zero** (perfect prediction for this sample)
+
+### Output Timing
+
+1 cycle after input arrives.
+
+---
+
+## 13. loss_parent.sv -- Error Gradient for Both Columns Together
+
+**File:** `src/loss_parent.sv`
+
+Wraps two `loss_child` instances. Both share the same `inv_batch_size_times_two_in` (same 2/N for the whole batch). Each column gets its own `H_in` and `Y_in`. No logic of its own.
+
+---
+
+## 14. gradient_descent.sv -- Updating Weights and Biases
+
+**File:** `src/gradient_descent.sv`
+
+### What It Is
+
+After backpropagation computes the gradient, this module applies the **gradient descent update rule**:
+
+```
+new_value = old_value - (learning_rate x gradient)
+```
+
+"Move the weight in the opposite direction of the gradient by a small step." Repeated over many iterations, this converges the weights toward values that minimize the loss.
+
+This single module handles both **weights** and **biases** using the `grad_bias_or_weight` flag.
+
+### Port Explanation
+
+```
+Inputs:
+  clk, rst
+  lr_in           [15:0]  -- learning rate (Q8.8, e.g., 0.01)
+  value_old_in    [15:0]  -- the current weight or bias value from memory
+  grad_in         [15:0]  -- the gradient for this weight/bias
+  grad_descent_valid_in   -- HIGH = all inputs are valid, compute the update
+  grad_bias_or_weight     -- 0 = bias mode,  1 = weight mode
+
+Outputs:
+  value_updated_out [15:0] -- the new weight/bias after the update step
+  grad_descent_done_out    -- HIGH = value_updated_out is ready (1-cycle delay from valid_in)
+  grad_overflow_out        -- sticky overflow flag
+```
+
+### Two-Operation Combinational Pipeline
+
+**Operation 1 (multiplication):**
+```
+fxp_mul:  mul_out = grad_in x lr_in    (gradient x learning_rate)
+```
+
+**Operation 2 (subtraction):**
+```
+fxp_addsub:  sub_value_out = sub_in_a - mul_out    (old_value - lr*gradient)
+```
+
+`sub_in_a` is selected by the combinational mode logic below.
+
+### Weight Mode vs Bias Mode
+
+**Weight mode (`grad_bias_or_weight = 1`):**
+```
+sub_in_a = value_old_in     (always use the original weight from memory)
+```
+One gradient, one update, done. The weight update is straightforward.
+
+**Bias mode (`grad_bias_or_weight = 0`):**
+```
+if grad_descent_done_out == 1:   sub_in_a = value_updated_out  (feed last result back in)
+else:                            sub_in_a = value_old_in        (start from the UB value)
+```
+Bias updates accumulate across multiple gradient steps (one per sample in the batch). Once the first update completes (`done=1`), the result feeds back as the input for the next step. The feedback loop allows the bias to accumulate all gradients in the batch without the UB needing to read/write at every step.
+
+### The Sequential Block
 
 ```systemverilog
-    always_ff @(posedge clk or posedge rst) begin
-        if(rst) begin
-            value_updated_out <= '0;
-            grad_descent_done_out <= '0;
+always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+        value_updated_out     <= '0;
+        grad_descent_done_out <= '0;
+        grad_overflow_out     <= '0;
+    end else begin
+        grad_descent_done_out <= grad_descent_valid_in;  // UNCONDITIONAL 1-cycle delay
+        if (grad_descent_valid_in) begin
+            value_updated_out <= sub_value_out;
+            grad_overflow_out <= grad_overflow_out | mul_overflow | sub_overflow;
+        end
+        // NO else clause -- hold value_updated_out when not valid
+    end
+end
+```
+
+**Why no else clause?** After computing an update, the result must stay stable until the UB reads it back and writes it to memory. Clearing to zero in the else branch would destroy the computed result between the `done` pulse and the UB writeback. The register holds its value indefinitely until reset.
+
+**`grad_descent_done_out`** is unconditionally `grad_descent_valid_in` delayed by 1 cycle. Consumers watch `done` to know when to read `value_updated_out`.
+
+---
+
+## 15. control_unit.sv -- The Instruction Decoder
+
+**File:** `src/control_unit.sv`
+
+### What It Is
+
+The TPU is controlled by a **130-bit instruction word**. Rather than setting dozens of individual wires, the host system packs all control signals into one wide bus. The `control_unit` **decodes** this bus -- it is purely combinational (no clock, no registers) with all outputs driven by `assign` statements.
+
+### Port Explanation
+
+```
+Input:
+  instruction [129:0]  -- the full 130-bit packed control word from the host
+
+Decoded output signals (all determined instantly from instruction bits):
+  sys_switch_in              [bit 0]     -- swap active/shadow weights NOW
+  ub_rd_start_in             [bit 1]     -- trigger a UB read operation
+  ub_rd_transpose            [bit 2]     -- read the matrix transposed
+  ub_wr_host_valid_in_1      [bit 3]     -- host is writing on port 1
+  ub_wr_host_valid_in_2      [bit 4]     -- host is writing on port 2
+  ub_rd_col_size     [15:0]  [bits 20:5] -- number of columns in the target matrix
+  ub_rd_row_size     [15:0]  [bits 36:21]-- number of rows in the target matrix
+  ub_rd_addr_in      [15:0]  [bits 52:37]-- start address in UB memory
+  ub_ptr_select      [8:0]   [bits 61:53]-- which data type to read (0-6, see UB section)
+  ub_wr_host_data_in_1[15:0] [bits 77:62]-- data value being written on host port 1
+  ub_wr_host_data_in_2[15:0] [bits 93:78]-- data value being written on host port 2
+  vpu_data_pathway   [3:0]   [bits 97:94]-- which VPU stages to activate
+  inv_batch_size_times_two_in[15:0] [bits 113:98] -- 2/N for MSE loss gradient
+  vpu_leak_factor_in [15:0]  [bits 129:114]-- leak factor for Leaky ReLU
+```
+
+### Bit Allocation Summary
+
+| Bits | Signal | Width |
+|------|--------|-------|
+| [0]     | sys_switch_in | 1 bit |
+| [1]     | ub_rd_start_in | 1 bit |
+| [2]     | ub_rd_transpose | 1 bit |
+| [3]     | ub_wr_host_valid_in_1 | 1 bit |
+| [4]     | ub_wr_host_valid_in_2 | 1 bit |
+| [20:5]  | ub_rd_col_size | 16 bits |
+| [36:21] | ub_rd_row_size | 16 bits |
+| [52:37] | ub_rd_addr_in | 16 bits |
+| [61:53] | ub_ptr_select | 9 bits |
+| [77:62] | ub_wr_host_data_in_1 | 16 bits |
+| [93:78] | ub_wr_host_data_in_2 | 16 bits |
+| [97:94] | vpu_data_pathway | 4 bits |
+| [113:98] | inv_batch_size_times_two_in | 16 bits |
+| [129:114] | vpu_leak_factor_in | 16 bits |
+
+**Total: 5x1 + 3x16 + 1x9 + 2x16 + 4 + 2x16 = 130 bits**
+
+The full implementation is just 14 `assign` statements, one per decoded signal.
+
+---
+
+## 16. vpu.sv -- The Post-Processing Pipeline
+
+**File:** `src/vpu.sv`
+
+### What It Is
+
+The **VPU (Vector Processing Unit)** sits between the systolic array and the Unified Buffer. It is a configurable pipeline of four processing stages that can be individually enabled or bypassed depending on which phase of computation is running.
+
+### The Four Stages (Always Instantiated)
+
+```
+[bias_parent]  ->  [leaky_relu_parent]  ->  [loss_parent]  ->  [leaky_relu_derivative_parent]
+```
+
+Each stage is **always instantiated** in hardware. The routing logic decides whether each stage receives real data or zeros (effectively bypassing it).
+
+### The Pathway Control
+
+The 4-bit `vpu_data_pathway` controls which stages are active:
+
+| `vpu_data_pathway` | Active stages | Use case | Total latency |
+|---|---|---|---|
+| `4'b0000` | None (passthrough) | Raw systolic results to UB | 1 cycle (output register) |
+| `4'b1100` | Bias + Leaky ReLU | Forward pass, hidden layers | 3 cycles |
+| `4'b1111` | All four stages | Transition pass, output layer | 5 cycles |
+| `4'b0001` | LReLU Derivative only | Backward pass, hidden layers | 2 cycles |
+
+Bit mapping: `[3]`=bias, `[2]`=leaky_relu, `[1]`=loss, `[0]`=leaky_relu_derivative
+
+### Port Explanation
+
+```
+Inputs from systolic array:
+  vpu_data_in_1/2  [15:0]  -- column 1 and 2 MAC results
+  vpu_valid_in_1/2         -- valid signals for column 1 and 2
+
+Scalar inputs from Unified Buffer:
+  bias_scalar_in_1/2 [15:0]              -- bias constants for each column (for bias stage)
+  lr_leak_factor_in  [15:0]              -- leak factor (shared for both relu stages)
+  Y_in_1/2           [15:0]              -- ground truth labels (for loss stage)
+  inv_batch_size_times_two_in [15:0]     -- 2/N for MSE gradient (for loss stage)
+  H_in_1/2           [15:0]              -- stored forward-pass activations (for lrd stage in backward pass)
+
+Outputs to Unified Buffer:
+  vpu_data_out_1/2   [15:0]  -- final processed results
+  vpu_valid_out_1/2          -- valid signals for the outputs
+```
+
+### The Internal Data Chain
+
+Data flows through a chain of intermediate wire groups. Each group is named for the two stages it connects:
+
+```
+vpu_data_in_* / vpu_valid_in_*
+        |
+        v [if pathway[3]=1: route through bias_parent; else: bypass with vpu_data_in directly]
+b_to_lr_data_in_* / b_to_lr_valid_in_*
+        |
+        v [if pathway[2]=1: route through leaky_relu_parent; else: bypass]
+lr_to_loss_data_in_* / lr_to_loss_valid_in_*
+        |
+        v [if pathway[1]=1: route through loss_parent AND capture H into H-cache; else: bypass]
+loss_to_lrd_data_in_* / loss_to_lrd_valid_in_*
+        |
+        v [if pathway[0]=1: route through lr_derivative_parent; else: bypass]
+vpu_data_mux_* / vpu_valid_mux_*
+        |
+        v [ALWAYS registered here -- the output always_ff register]
+vpu_data_out_* / vpu_valid_out_*
+```
+
+### The "Last-H Cache"
+
+During the transition pass (`1111`), the data flows: input -> bias -> leaky_relu -> loss -> lrd.
+
+The `loss` module needs `H` (the leaky_relu output). The `lrd` module also needs `H`. But `H` is mid-pipeline and is being consumed by `loss`. The solution: the VPU maintains two registers (`last_H_data_1_out`, `last_H_data_2_out`) that snap a copy of the leaky_relu output exactly when it flows through.
+
+```
+if pathway[1]=1:
+    last_H_data_1_in = lr_data_1_out     (the leaky_relu output this cycle)
+    lr_d_H_in_1      = last_H_data_1_out (the REGISTERED copy from last cycle)
+else:
+    last_H_data_1_in = 16'b0             (clear the cache)
+    lr_d_H_in_1      = H_in_1            (use the UB-supplied H instead)
+```
+
+The registered copy is 1 cycle older, but because `lrd` comes AFTER `loss` in the pipeline, the registered H value arrives at `lrd` at the correct time relative to the gradient computed by `loss`.
+
+During the backward pass (not transition), `H` is read directly from the UB into `H_in_1/2` and forwarded to `lrd` without using the cache.
+
+### The Output Register (always_ff)
+
+```systemverilog
+always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+        last_H_data_1_out <= '0;
+        last_H_data_2_out <= '0;
+        vpu_data_out_1    <= '0;
+        vpu_data_out_2    <= '0;
+        vpu_valid_out_1   <= '0;
+        vpu_valid_out_2   <= '0;
+    end else begin
+        vpu_data_out_1  <= vpu_data_mux_1;   // latch selected output each cycle
+        vpu_data_out_2  <= vpu_data_mux_2;
+        vpu_valid_out_1 <= vpu_valid_mux_1;
+        vpu_valid_out_2 <= vpu_valid_mux_2;
+        if (vpu_data_pathway[1]) begin
+            last_H_data_1_out <= last_H_data_1_in;  // capture H this cycle
+            last_H_data_2_out <= last_H_data_2_in;
         end else begin
-            grad_descent_done_out <= grad_descent_valid_in;  // 1-cycle delay
-            if(grad_descent_valid_in) begin
-                value_updated_out <= sub_value_out;    // register the result
-            end else begin
-                value_updated_out <= '0;               // clear when idle
-            end
+            last_H_data_1_out <= '0;  // clear H cache when loss stage inactive
+            last_H_data_2_out <= '0;
         end
     end
+end
 ```
 
-`grad_descent_done_out` is simply the registered version of `grad_descent_valid_in` — it goes high 1 clock cycle after valid_in goes high. This signals to the memory system that a valid updated value is ready to be written back.
+This final register adds exactly +1 cycle of latency to every pathway. It exists to prevent combinational glitches (unstable transitions during logic evaluation) from propagating directly into the UB write port and corrupting memory.
 
 ---
 
-## 14. control_unit.sv — The Instruction Decoder
+## 17. unified_buffer.sv -- The Memory System
 
-This module is the simplest in the design: it decodes a single large **instruction word** into many individual signals.
+**File:** `src/unified_buffer.sv`
 
-Think of it like reading a packet header: the controller sends an 88-bit "command" to the TPU and the control unit splits it into named fields.
+### What It Is
 
-```systemverilog
-module control_unit (
-    input logic [87:0] instruction,   // 88-bit command from outside
-    
-    output logic sys_switch_in,              // bit  0
-    output logic ub_rd_start_in,             // bit  1
-    output logic ub_rd_transpose,            // bit  2
-    output logic ub_wr_host_valid_in_1,      // bit  3
-    output logic ub_wr_host_valid_in_2,      // bit  4
-    output logic [1:0] ub_rd_col_size,       // bits 6:5
-    output logic [7:0] ub_rd_row_size,       // bits 14:7
-    output logic [1:0] ub_rd_addr_in,        // bits 16:15
-    output logic [2:0] ub_ptr_sel,           // bits 19:17
-    output logic [15:0] ub_wr_host_data_in_1,// bits 35:20
-    output logic [15:0] ub_wr_host_data_in_2,// bits 51:36
-    output logic [3:0] vpu_data_pathway,     // bits 55:52
-    output logic [15:0] inv_batch_size_times_two_in, // bits 71:56
-    output logic [15:0] vpu_leak_factor_in   // bits 87:72
-);
-```
+The **Unified Buffer (UB)** is the central shared memory of the TPU. It holds ALL data:
 
-The instruction bit map:
-
-| Bit range | Field | Purpose |
-|-----------|-------|---------|
-| [0]       | sys_switch_in | Activate new weights in systolic array |
-| [1]       | ub_rd_start_in | Trigger a memory read |
-| [2]       | ub_rd_transpose | Read the matrix transposed |
-| [3]       | ub_wr_host_valid_in_1 | Host is writing data into column 1 of memory |
-| [4]       | ub_wr_host_valid_in_2 | Host is writing data into column 2 of memory |
-| [6:5]     | ub_rd_col_size | How many columns to read |
-| [14:7]    | ub_rd_row_size | How many rows to read |
-| [16:15]   | ub_rd_addr_in | Which memory address to start reading from |
-| [19:17]   | ub_ptr_sel | Which data type (weights/biases/activations/etc.) to read |
-| [35:20]   | ub_wr_host_data_in_1 | Data value to write from host to column 1 |
-| [51:36]   | ub_wr_host_data_in_2 | Data value to write from host to column 2 |
-| [55:52]   | vpu_data_pathway | Which VPU stages to activate (forward/backward/etc.) |
-| [71:56]   | inv_batch_size_times_two_in | 2/N constant |
-| [87:72]   | vpu_leak_factor_in | Leaky ReLU α factor |
-
-Implementation — every output is a simple bit slice:
-
-```systemverilog
-    assign sys_switch_in = instruction[0];
-    assign ub_rd_start_in = instruction[1];
-    ...
-    assign vpu_leak_factor_in = instruction[87:72];
-```
-
-**All `assign` statements are purely combinational** — no clock, no flip-flops. Any change to `instruction` immediately changes all outputs. This is the hardware equivalent of a bit-field struct in C.
-
----
-
-## 15. vpu.sv — The Post-Processing Pipeline
-
-VPU stands for **Vector Processing Unit**. It is the multi-stage pipeline that processes the systolic array's output. Depending on the current phase of training, different stages are enabled.
-
-### The Four Stages
-
-```
-sys_out → [BIAS] → [LEAKY_RELU] → [LOSS] → [LEAKY_RELU_DERIVATIVE] → vpu_out
-```
-
-Each stage can be bypassed with a combinational mux. The 4-bit `vpu_data_pathway` field controls which stages are active:
-
-| Pathway bits | Meaning | Stages active | Latency |
-|--------------|---------|---------------|---------|
-| `1100` | Forward pass | Bias + Leaky ReLU | 2 cycles |
-| `1111` | Transition | All 4 stages | 4 cycles |
-| `0001` | Backward pass | Leaky ReLU Derivative only | 1 cycle |
-| `0000` | Passthrough | None | 0 cycles (combinational) |
-
----
-
-### Internal Wiring Declarations
-
-Before the module instances, `vpu.sv` declares a large set of intermediate signals:
-
-```systemverilog
-    // bias to lr intermediate values
-    logic [15:0] b_to_lr_data_in_1;
-    logic b_to_lr_valid_in_1;
-    ...
-
-    // lr to loss intermediate values
-    logic [15:0] lr_to_loss_data_in_1;
-    ...
-
-    // loss to lrd intermediate values
-    logic [15:0] loss_to_lrd_data_in_1;
-    ...
-```
-
-These are "staging lanes" between stages. In the `always @(*)` routing block, each lane is either connected to a stage's output (if that stage is active) or bypassed by connecting it directly to the previous lane. This creates the configurable pipeline.
-
-There is also a "last H cache":
-
-```systemverilog
-    logic [15:0] last_H_data_1_in;
-    logic [15:0] last_H_data_1_out;
-```
-
-In the transition pathway (`1111`), the H values (activations from Leaky ReLU) need to be passed into the Loss module. But by the time they pass through the Loss stage, they also need to feed the Leaky ReLU Derivative stage. The cache registers them for one cycle to synchronize timing.
-
----
-
-### Module Instantiations
-
-```systemverilog
-    bias_parent bias_parent_inst ( ... );
-    leaky_relu_parent leaky_relu_parent_inst ( ... );
-    loss_parent loss_parent_inst ( ... );
-    leaky_relu_derivative_parent leaky_relu_derivative_parent_inst ( ... );
-```
-
-All four processing stages are **always instantiated**. The pathway routing logic (below) controls whether they receive real data or zeros.
-
----
-
-### The Routing Logic (`always @(*)`)
-
-This is the most important part of VPU. The entire block is `always @(*)` (combinational) — it runs instantly whenever inputs change.
-
-```systemverilog
-    always @(*) begin
-        if (rst) begin
-            // zero everything out
-            ...
-        end else begin
-```
-
-**Bias stage routing (bit 3 of pathway):**
-
-```systemverilog
-            if(vpu_data_pathway[3]) begin
-                // Route input into bias module
-                bias_data_1_in = vpu_data_in_1;
-                bias_valid_1_in = vpu_valid_in_1;
-
-                // Route bias output into next stage
-                b_to_lr_data_in_1 = bias_z_data_out_1;
-                b_to_lr_valid_in_1 = bias_valid_1_out;
-            end else begin
-                // Bypass bias: feed input directly to next stage
-                bias_data_1_in = 16'b0;     // starve the bias module (don't waste power)
-                bias_valid_1_in = 1'b0;
-
-                b_to_lr_data_in_1 = vpu_data_in_1;    // skip straight to next stage
-                b_to_lr_valid_in_1 = vpu_valid_in_1;
-            end
-```
-
-When bias is **enabled** (bit=1): real data flows through the bias module; its output feeds the next stage.
-When bias is **disabled** (bit=0): the bias module gets zeroed inputs (it does nothing useful), and the input bypasses directly to the next stage.
-
-The same pattern repeats for each of the four stages. Each stage writes into the "lane" that connects it to the next stage. If skipped, that lane is populated by the lane before it.
-
-**Loss stage — special: H caching:**
-
-```systemverilog
-            if(vpu_data_pathway[1]) begin
-                // Loss stage active
-                loss_data_1_in = lr_to_loss_data_in_1;
-                ...
-
-                // Save the H matrix COMING OUT OF LEAKY RELU
-                last_H_data_1_in = lr_data_1_out;
-                lr_d_H_in_1 = last_H_data_1_out;    // use CACHED H for derivative
-            end else begin
-                // Loss stage bypassed: use H from memory (UB)
-                lr_d_H_in_1 = H_in_1;
-            end
-```
-
-When the loss stage is active (transition pathway), it means both Leaky ReLU and Leaky ReLU Derivative are also active. The H values that came out of Leaky ReLU need to be fed into Leaky ReLU Derivative. But the derivative stage runs AFTER the loss stage, so the H values need to be stored for one extra cycle — that's what `last_H_data_1_out` (the cached version) is for.
-
-When the loss stage is NOT active (pure backward pass), the H values come directly from memory (`H_in_1` from the UB).
-
----
-
-### H Cache Sequential Logic
-
-```systemverilog
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            last_H_data_1_out <= 0;
-        end else begin
-            if (vpu_data_pathway[1]) begin
-                last_H_data_1_out <= last_H_data_1_in;   // register the H value
-            end else begin
-                last_H_data_1_out <= 0;    // clear when not needed
-            end
-        end
-    end
-```
-
-Simple: when the loss stage is active, the H value from Leaky ReLU's output is registered and available on the next cycle for the Leaky ReLU Derivative stage.
-
----
-
-## 16. unified_buffer.sv — The Memory System
-
-This is the largest and most complex module. The **Unified Buffer (UB)** is a 128-word (128 × 16-bit = 2048 bits) RAM that stores:
-- Input matrices (features)
+- Input activation matrices
 - Weight matrices
 - Bias vectors
-- Label matrices (Y)
-- Activation matrices (H) from the forward pass
-- Gradient matrices from the backward pass
-- Updated weights after gradient descent
+- Y (ground truth label) matrices
+- H (stored forward-pass activation) matrices
+- Gradient results written by VPU
+- Updated weights/biases after gradient descent
 
-It also contains **2 gradient_descent module instances** (one per column) and all the address generation logic to feed data to every other part of the design.
-
-### Memory Declaration
+### Memory Array
 
 ```systemverilog
-    logic [15:0] ub_memory [0:UNIFIED_BUFFER_WIDTH-1];
+logic [15:0] ub_memory [0:UNIFIED_BUFFER_WIDTH-1];
+// 128 slots of 16-bit (Q8.8) values by default
+// Expandable via the UNIFIED_BUFFER_WIDTH parameter
 ```
 
-This is literally a 128-element array of 16-bit values — a register file. All 128 words are accessible every clock cycle.
+A single flat array of 16-bit words. The software-side (host) is responsible for placing each data type at a known, non-overlapping address range.
 
-### Seven Read "Channels"
+### Write Ports
 
-The UB has 7 different read pointers, each feeding a different destination:
+**Source 1 -- Host writes** (loading data before computation):
+```
+ub_wr_host_data_in [SYSTOLIC_ARRAY_WIDTH]  -- 2-element array; one per column
+ub_wr_host_valid_in[SYSTOLIC_ARRAY_WIDTH]  -- when [i] is HIGH, write ub_wr_host_data_in[i]
+```
 
-| Pointer | `ptr_sel` value | Feeds | Used when |
-|---------|----------------|-------|-----------|
-| `rd_input_ptr` | 0 | Left side of systolic array (input data) | Forward pass |
-| `rd_weight_ptr` | 1 | Top of systolic array (weights) | Weight loading |
-| `rd_bias_ptr` | 2 | Bias modules in VPU | Forward pass |
-| `rd_Y_ptr` | 3 | Loss modules in VPU (labels) | Transition pass |
-| `rd_H_ptr` | 4 | Leaky ReLU derivative in VPU (saved activations) | Backward pass |
-| `rd_grad_bias_ptr` | 5 | Gradient descent modules (bias update) | After backward pass |
-| `rd_grad_weight_ptr` | 6 | Gradient descent modules (weight update) | After backward pass |
+**Source 2 -- VPU writes** (storing computation results):
+```
+ub_wr_data_in  [SYSTOLIC_ARRAY_WIDTH]   -- VPU output data (2 columns)
+ub_wr_valid_in [SYSTOLIC_ARRAY_WIDTH]   -- when [i] is HIGH, write ub_wr_data_in[i]
+```
 
-### Write Channels
+Both sources share the same `wr_ptr` write pointer. They are mutually exclusive by protocol: the host only writes before computation, the VPU only writes during/after computation.
 
-The UB has two write sources:
-1. **From VPU:** computational results (activations, gradients) are written back automatically
-2. **From host:** the initial weight/bias/input data is written by the external world (a computer, testbench, etc.) via `ub_wr_host_data_in`
+**Row-major write order:** The write loop decrements from `SYSTOLIC_ARRAY_WIDTH-1` to 0. This stores column[1] first (lower address), then column[0] (next address) -- row-major layout for the 2-column result.
 
-### Memory Write Logic
+### The `_next` Variable Pattern
+
+Inside `always_ff`, when a `for` loop needs to advance an address on multiple iterations in the same clock cycle, ordinary non-blocking assignments (`<=`) would all see the same OLD value. The fix uses **blocking assignments** (`=`) to a helper `_next` variable:
 
 ```systemverilog
-for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin   // NOTE: DECREMENT for row-major order
-    if (ub_wr_valid_in[i]) begin
-        ub_memory[wr_ptr] <= ub_wr_data_in[i];
-        wr_ptr = wr_ptr + 1;    // blocking assignment (exception to rule)
-    end else if (ub_wr_host_valid_in[i]) begin
-        ub_memory[wr_ptr] <= ub_wr_host_data_in[i];
-        wr_ptr = wr_ptr + 1;
+wr_ptr_next = wr_ptr;           // (= not <=) start from current
+for (int i = N-1; i >= 0; i--) begin
+    if (valid[i]) begin
+        ub_memory[wr_ptr_next] <= data[i];  // write to current address
+        wr_ptr_next = wr_ptr_next + 1;      // (= not <=) advance for next iteration
     end
 end
+wr_ptr <= wr_ptr_next;          // single final non-blocking update
 ```
 
-**Why decrement?** Data from VPU comes out as `[column_1, column_2]`. Human-readable row-major order stores data as `[row0_col0, row0_col1, row1_col0, ...]`. Decrementing the loop ensures column 0 goes into the lower address, column 1 into the next — matching row-major layout.
+This correctly advances the address across iterations within one clock cycle.
 
-**Why mix blocking (`=`) and non-blocking (`<=`) assignments?** The comment in the code acknowledges this is not ideal. The `wr_ptr` uses a blocking assignment so it increments immediately within the same clock cycle, letting multiple columns be written sequentially in one cycle. The actual memory write uses non-blocking. This works in simulation but could cause issues in synthesis — hence the TODO comment.
+### Read Channels and the Pointer Select System
 
-### Read Logic Pattern
+When `ub_rd_start_in` is HIGH, `ub_ptr_select` determines WHICH type of data to stream out:
 
-Each of the 7 read channels follows the same pattern:
+| `ub_ptr_select` | Data type | Destination |
+|---|---|---|
+| 0 | Input activations | Left side of systolic array (`sys_data_in_*`, `sys_start_*`) |
+| 1 | Weight matrix | Top of systolic array (`sys_weight_in_*`, `sys_accept_w_*`) PLUS sends `ub_rd_col_size_out` to set `pe_enabled` |
+| 2 | Bias scalars | VPU bias stage (`bias_scalar_in_*`) |
+| 3 | Y labels | VPU loss stage (`Y_in_*`) |
+| 4 | H activations | VPU LReLU derivative stage (`H_in_*`) |
+| 5 | Bias values for gradient descent | gradient_descent `value_old_in` (bias mode) |
+| 6 | Weight values for gradient descent | gradient_descent `value_old_in` (weight mode) |
+
+When `ub_rd_start_in` fires, the UB loads `ub_rd_addr_in`, `ub_rd_row_size`, `ub_rd_col_size` into the selected channel's internal registers. Then over the next `row_size + col_size` cycles, the channel auto-streams data out (incrementing its internal pointer each cycle).
+
+### Time Counter Streaming Pattern
+
+Each read channel has a time counter:
 
 ```systemverilog
-// if we still have data to read (time_counter hasn't expired yet)
-if (rd_input_time_counter + 1 < rd_input_row_size + rd_input_col_size) begin
-    // for each column, check if this counter tick falls within its active window
-    for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
-        if(rd_input_time_counter >= i &&
-           rd_input_time_counter < rd_input_row_size + i &&
-           i < rd_input_col_size) begin
-            ub_rd_input_valid_out[i] <= 1'b1;
-            ub_rd_input_data_out[i] <= ub_memory[rd_input_ptr];
-            rd_input_ptr = rd_input_ptr + 1;
-        end else begin
-            ub_rd_input_valid_out[i] <= 1'b0;
-            ub_rd_input_data_out[i] <= '0;
-        end
-    end
-    rd_input_time_counter <= rd_input_time_counter + 1;
+if (rd_X_time_counter + 1 < rd_X_row_size + rd_X_col_size) begin
+    // still streaming: output the next data word
+    rd_X_time_counter <= rd_X_time_counter + 1;
+    // ... per-column output logic with skewed timing
 end else begin
-    // done: reset the channel
-    rd_input_ptr <= 0;
-    ...
+    // done: reset all channel registers to zero
+    rd_X_ptr          <= 0;
+    rd_X_row_size     <= 0;
+    rd_X_col_size     <= 0;
+    rd_X_time_counter <= '0;
+    // ... clear all outputs
 end
 ```
 
-**How the staggering works:** For a 2×2 matrix on a 2-column bus:
-- `time_counter = 0`: column 0 is valid (sends row 0, col 0). Column 1 waits.
-- `time_counter = 1`: both column 0 and column 1 are valid (column 0 sends row 1, col 0; column 1 sends row 0, col 1).
-- `time_counter = 2`: only column 1 is valid (sends row 1, col 1).
+The skewed per-column logic (`if time_counter >= i && time_counter < row_size + i`) ensures that column 0 starts outputting 0 cycles into the burst, and column 1 starts outputting 1 cycle later. This creates the diagonal input skew that the systolic array needs.
 
-This **diagonal stagger** is exactly what the systolic array expects — each column starts one cycle later than the column to its left, so each PE gets the right input at the right time.
+### Column-Size Output (Registered)
 
-### The `ptr_sel` Switch Statement (Combinational)
+When a weight read starts (`ptr_select = 1`), the UB tells the systolic array how many columns are active:
 
 ```systemverilog
-    always_comb begin
-        if (ub_rd_start_in) begin
-            case (ub_ptr_select)
-                0: begin   // set up input read
-                    rd_input_ptr = ub_rd_addr_in;
-                    rd_input_row_size = ub_rd_row_size;
-                    ...
-                end
-                1: begin   // set up weight read
-                    ...
-                    // Also compute starting pointer position for column-major access
-                    rd_weight_ptr = ub_rd_addr_in + ub_rd_row_size*ub_rd_col_size - ub_rd_col_size;
-                    ...
-                    ub_rd_col_size_valid_out = 1'b1;   // tell systolic how many columns
-                end
-                2: begin   // set up bias read ... end
-                3: begin   // set up Y read ... end
-                4: begin   // set up H read ... end
-                5: begin   // set up bias gradient descent
-                    grad_bias_or_weight = 1'b0;    // bias mode
-                    ...
-                end
-                6: begin   // set up weight gradient descent
-                    grad_bias_or_weight = 1'b1;    // weight mode
-                    ...
-                end
-            endcase
-        end
+always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+        ub_rd_col_size_valid_out <= 1'b0;
+        ub_rd_col_size_out       <= '0;
+    end else begin
+        ub_rd_col_size_valid_out <= (ub_rd_start_in && (ub_ptr_select == 9'd1));
+        ub_rd_col_size_out       <= (ub_rd_start_in && (ub_ptr_select == 9'd1)) ?
+                                    (ub_rd_transpose ? ub_rd_row_size : ub_rd_col_size)
+                                    : 16'b0;
     end
+end
 ```
 
-When `ub_rd_start_in` is asserted with a `ptr_select` value, the UB sets up the corresponding read channel with the starting address, dimensions, and configuration. The actual reading then happens in the sequential always block on subsequent clock cycles.
+This is **registered** (not combinational) to prevent glitches from the instruction decode from reaching the systolic array's `pe_enabled` register.
 
-### Weight Address Calculation (Transposed)
+### Gradient Descent Integration
+
+The UB instantiates **2 gradient_descent modules** via `generate` (one per column):
 
 ```systemverilog
-rd_weight_ptr = ub_rd_addr_in + ub_rd_col_size - 1;            // transposed
-rd_weight_ptr = ub_rd_addr_in + ub_rd_row_size*ub_rd_col_size - ub_rd_col_size;  // normal
+generate
+    for (i = 0; i < SYSTOLIC_ARRAY_WIDTH; i++) begin : gradient_descent_gen
+        gradient_descent gradient_descent_inst (
+            .lr_in(learning_rate_in),
+            .grad_in(ub_wr_data_in[i]),        // gradient from VPU
+            .value_old_in(value_old_in[i]),     // old weight/bias -- read from UB memory
+            .grad_descent_valid_in(grad_descent_valid_in[i]),
+            .grad_bias_or_weight(grad_bias_or_weight),
+            .value_updated_out(value_updated_out[i]),
+            .grad_descent_done_out(grad_descent_done_out[i]),
+            ...
+        );
+    end
+endgenerate
 ```
 
-Weights are loaded column-by-column into the systolic array from the **top**. In memory they're stored row-major. To load weights column-by-column, the address pointer must jump by `col_size` each step rather than 1. The starting address is calculated to point to the correct starting position depending on transpose mode.
+The always_comb block automatically activates gradient descent whenever a gradient read channel (`ptr_select` 5 or 6) is active AND the VPU is writing valid gradient data. When `done` is asserted, the UB writes the updated value back to memory at `grad_descent_ptr`.
+
+### All Output Ports
+
+```
+To systolic left side (input data):
+  ub_rd_input_data_out_0/1  [15:0]  -- row data per column
+  ub_rd_input_valid_out_0/1         -- valid signals (these become sys_start_1/2)
+
+To systolic top (weights):
+  ub_rd_weight_data_out_0/1 [15:0]  -- weight per column
+  ub_rd_weight_valid_out_0/1        -- valid (these become sys_accept_w_1/2)
+
+To VPU bias stage:
+  ub_rd_bias_data_out_0/1   [15:0]  -- bias scalar per column
+
+To VPU loss stage:
+  ub_rd_Y_data_out_0/1      [15:0]  -- Y (ground truth) per column
+
+To VPU lrd stage:
+  ub_rd_H_data_out_0/1      [15:0]  -- H (stored activation) per column
+
+To systolic (column count):
+  ub_rd_col_size_out         [15:0] -- number of active columns
+  ub_rd_col_size_valid_out          -- HIGH = above is valid
+```
+
+Output ports are split into `_0` / `_1` suffixed individual signals (rather than arrays) because certain tools have difficulty connecting SystemVerilog port arrays between modules.
 
 ---
 
-## 17. tpu.sv — Wiring It All Together
+## 18. tpu.sv -- Wiring Everything Together (The Top Module)
 
-This is the **top-level module**. It contains no logic of its own — it only instantiates and connects:
-1. `unified_buffer` — memory
-2. `systolic` — matrix multiplier
-3. `vpu` — post-processing pipeline
+**File:** `src/tpu.sv`
 
-### Port Connections
+### What It Is
 
-```systemverilog
-    assign ub_wr_data_in[0] = vpu_data_out_1;
-    assign ub_wr_data_in[1] = vpu_data_out_2;
-    assign ub_wr_valid_in[0] = vpu_valid_out_1;
-    assign ub_wr_valid_in[1] = vpu_valid_out_2;
+`tpu.sv` is the **top-level integration module**. It contains no computation logic -- it only declares internal wires and connects the three major subsystems. Think of it as the circuit-board-level schematic.
+
+### Port Explanation
+
+```
+Inputs from the host (the external system driving the TPU):
+  clk, rst
+  ub_wr_host_data_in [2]   -- data to write into UB from host (2 columns)
+  ub_wr_host_valid_in[2]   -- valid signal for host writes
+
+Instruction interface (comes from control_unit in a real system):
+  ub_rd_start_in           -- trigger a UB read
+  ub_rd_transpose          -- read in transposed order
+  ub_ptr_select  [8:0]     -- which data type to read
+  ub_rd_addr_in  [15:0]    -- memory start address
+  ub_rd_row_size [15:0]    -- number of rows
+  ub_rd_col_size [15:0]    -- number of columns
+
+Scalar parameters:
+  learning_rate_in [15:0]  -- learning rate for gradient descent
+  vpu_data_pathway [3:0]   -- which VPU stages to activate
+  sys_switch_in            -- switch active/shadow weights in systolic array
+  vpu_leak_factor_in[15:0] -- Leaky ReLU leak factor
+  inv_batch_size_times_two_in [15:0] -- 2/N for MSE gradient
 ```
 
-These four lines close the **feedback loop**: VPU outputs feed back into the UB as write data. This is how the results of every computation get stored back for use in the next step.
+There are no output ports from the top-level TPU -- results are written back into the Unified Buffer internally. The host reads computed results by looking at the UB memory contents (in a real system with a memory-mapped interface, or by reading testbench signals in simulation).
 
-The rest of `tpu.sv` is boilerplate connections between the three modules. The interesting parts:
+### The Three Key Internal Connections
 
-```systemverilog
-    .sys_start(ub_rd_input_valid_out_0),   // UB's valid output becomes the start signal
+**Connection 1: UB feeds the Systolic Array**
+```
+UB ub_rd_input_data_out_0  ---> sys_data_in_11    (row-1 input data)
+UB ub_rd_input_data_out_1  ---> sys_data_in_21    (row-2 input data)
+UB ub_rd_input_valid_out_0 ---> sys_start_1       (row-1 start/valid)
+UB ub_rd_input_valid_out_1 ---> sys_start_2       (row-2 start/valid, independent)
+UB ub_rd_weight_data_out_0 ---> sys_weight_in_11  (column-1 weight)
+UB ub_rd_weight_data_out_1 ---> sys_weight_in_12  (column-2 weight)
+UB ub_rd_weight_valid_out_0---> sys_accept_w_1    (load column-1 weight)
+UB ub_rd_weight_valid_out_1---> sys_accept_w_2    (load column-2 weight)
+UB ub_rd_col_size_out      ---> ub_rd_col_size_in (tells systolic how many cols active)
+UB ub_rd_col_size_valid_out---> ub_rd_col_size_valid_in
 ```
 
-The systolic array starts computing when the UB's read channel declares its data valid. No separate start signal needed — the valid protocol handles everything.
-
-```systemverilog
-    .sys_weight_in_11(ub_rd_weight_data_out_0),
-    .sys_accept_w_1(ub_rd_weight_valid_out_0),
+**Connection 2: Systolic Array feeds the VPU**
+```
+sys_data_out_21  ---> vpu_data_in_1    (column-1 MAC result)
+sys_data_out_22  ---> vpu_data_in_2    (column-2 MAC result)
+sys_valid_out_21 ---> vpu_valid_in_1
+sys_valid_out_22 ---> vpu_valid_in_2
+UB ub_rd_bias_data_out_0/1  ---> bias_scalar_in_1/2  (scalars from UB)
+UB ub_rd_Y_data_out_0/1     ---> Y_in_1/2
+UB ub_rd_H_data_out_0/1     ---> H_in_1/2
 ```
 
-The weight valid signal from the UB becomes `sys_accept_w` — the systolic array loads a new weight on every cycle that the UB sends a valid weight.
+**Connection 3: VPU writes back to UB** (the feedback loop)
+```
+vpu_data_out_1   ---> ub_wr_data_in[0]   (result for column 1)
+vpu_data_out_2   ---> ub_wr_data_in[1]   (result for column 2)
+vpu_valid_out_1  ---> ub_wr_valid_in[0]
+vpu_valid_out_2  ---> ub_wr_valid_in[1]
+```
+
+This forms a **closed loop**: UB -> Systolic -> VPU -> UB.
 
 ---
 
-## 18. How Everything Connects — The Big Picture
+## 19. How Everything Connects: The Big Picture
 
-### Forward Pass (predicting outputs):
-
-```
-1. Host writes input matrix, weight matrix, bias vector into UB
-2. Send instruction ptr_sel=1 (weights) → UB sends weights to systolic PEs (loading phase)
-3. Assert sys_switch_in → PEs make new weights "live"
-4. Send instruction ptr_sel=0 (inputs) + ptr_sel=2 (biases) + vpu_pathway=1100
-5. UB sends input rows to systolic array
-6. Systolic computes input×weight (2 cycles) → sends to VPU
-7. VPU: Bias adds bias → Leaky ReLU applies activation → output to UB
-8. UB stores the activations (H values) at wr_ptr
-```
-
-### Transition Pass (computing loss gradients):
+### Forward Pass Data Flow
 
 ```
-1. Load Y (labels) into UB (ptr_sel=3), H already in UB from forward pass
-2. Send instruction vpu_pathway=1111 (all stages)
-3. UB sends H through systolic (just passes through, no new weights) to VPU
-4. VPU: Bias → Leaky ReLU → Loss (computes 2/N*(H-Y)) → Leaky ReLU Derivative
-5. Result (dL/dH) written back to UB
+HOST:  load input_matrix, weight_matrix, bias_vector into UB
+
+Step 1 -- Load weights:
+  host sets: ub_rd_start_in=1, ub_ptr_select=1 (weight), ub_rd_addr_in=<weight_addr>
+  UB streams: sys_weight_in_11/12 with sys_accept_w_1/2 HIGH -> PEs load shadow registers
+
+Step 2 -- Switch weights active:
+  host sets: sys_switch_in=1
+  All PEs: weight_reg_inactive -> weight_reg_active simultaneously
+
+Step 3 -- Stream inputs + compute:
+  host sets: ub_rd_start_in=1, ub_ptr_select=0 (input), ub_rd_addr_in=<input_addr>
+             ub_rd_start_in=1, ub_ptr_select=2 (bias), ub_rd_addr_in=<bias_addr>
+  host sets: vpu_data_pathway = 4'b1100  (bias + leaky_relu)
+  UB streams: sys_data_in_11, sys_data_in_21 with sys_start_1, sys_start_2
+  Systolic: accumulates MAC results -> sys_data_out_21/22 valid after 1/2 cycles
+  VPU: applies bias then leaky_relu -> vpu_data_out_1/2 valid after 3 cycles total
+  UB: receives vpu_data_out via ub_wr_valid -> writes H matrix to wr_ptr
 ```
 
-### Backward Pass (computing weight/bias gradients):
+### Transition Pass (Output Layer Backward)
 
 ```
-1. dL/dH is in UB; load H values into ptr_sel=4
-2. vpu_pathway=0001 (derivative only)
-3. UB sends gradient×input through systolic → gradient with respect to weights
-4. UB sends to gradient_descent modules → W_new = W_old - lr × grad
-5. Updated weights written back to UB
+  host sets: vpu_data_pathway = 4'b1111 (all stages)
+  host sets: ub_ptr_select=3 to stream Y labels, ub_ptr_select=2 for biases
+  Systolic: computes input x weight
+  VPU bias: adds bias
+  VPU leaky_relu: applies activation, H is captured in last_H_data cache
+  VPU loss: computes (2/N)(H - Y) gradient using H from cache and Y from UB
+  VPU lrd: applies derivative using cached H
+  UB: receives gradient -> gradient_descent computes new_value = old - lr*grad -> writes back
 ```
 
-### The Clock Cycle Count for a Forward Pass
+### Backward Pass (Hidden Layer)
 
-With a 2×2 weight matrix and 2-row input batch:
-- Weight loading: 2 cycles (one per PE column, staggered)
-- Input feeding: 3 cycles (2-row input + 1 overlap due to stagger)
-- Systolic output delay: 2 cycles for col 1, 3 for col 2
-- Bias: +1 cycle
-- Leaky ReLU: +1 cycle
+```
+  host sets: vpu_data_pathway = 4'b0001 (lrd only)
+  host sets: ub_ptr_select=4 to stream H matrix from UB
+  Systolic: computes input x weight (transposed weight matrix for backprop)
+  VPU: directly applies lrd using H from UB
+  UB: writes gradient result back
+  Then gradient_descent runs separately on the stored old weights
+```
 
-Total from start to final output: about 6-7 clock cycles.
+### Signal Summary Table
+
+| Signal | Source | Destination | What it carries |
+|--------|--------|-------------|-----------------|
+| `sys_data_in_11` | UB ptr=0 ch[0] | pe11 input | Row-1 input data |
+| `sys_data_in_21` | UB ptr=0 ch[1] | pe21 input | Row-2 input data |
+| `sys_start_1` | UB input valid[0] | pe11 valid_in | Row-1 timing signal |
+| `sys_start_2` | UB input valid[1] | pe21 valid_in | Row-2 timing signal (1 cycle skewed) |
+| `sys_weight_in_11` | UB ptr=1 ch[0] | pe11 weight load | Column-1 weight value |
+| `sys_accept_w_1` | UB weight valid[0] | pe11/pe21 accept_w | Load column-1 shadow register |
+| `sys_switch_in` | host | all PEs switch_in | atomic weight swap command |
+| `sys_data_out_21` | pe21 psum | vpu_data_in_1 | Column-1 MAC result |
+| `sys_data_out_22` | pe22 psum | vpu_data_in_2 | Column-2 MAC result |
+| `ub_rd_col_size_out` | UB (registered) | systolic pe_enabled | How many PE columns are active |
+| `bias_scalar_in_1` | UB ptr=2 ch[0] | VPU bias stage | Bias constant for column 1 |
+| `Y_in_1` | UB ptr=3 ch[0] | VPU loss stage | Ground truth label for column 1 |
+| `H_in_1` | UB ptr=4 ch[0] | VPU lrd stage | Stored forward activation for column 1 |
+| `vpu_data_pathway` | host/CU | VPU routing | Which pipeline stages are active |
+| `vpu_data_out_1` | VPU output reg | UB wr_data[0] | Processed result for column 1 back to memory |
+| `learning_rate_in` | host | UB grad_descent | Learning rate for weight update |
+| `pe_overflow_out` | each PE | (not at top) | Sticky overflow flag per PE cell |
+
+### Overflow Flags
+
+Every arithmetic stage outputs a **sticky overflow flag**:
+- `pe_overflow_out` (per PE in systolic)
+- `bias_overflow_out` (per column in VPU)
+- `lr_overflow_out` (per column in VPU)
+- `lr_d_overflow_out` (per column in VPU)
+- `loss_overflow_out` (per column in VPU)
+- `grad_overflow_out` (per gradient_descent instance in UB)
+
+These flags go HIGH and stay HIGH if the Q8.8 representable range (-127.996 to +127.996) is exceeded at any point. In `tpu.sv` these are left unconnected at the top level (the `.pe_overflow_out()` syntax means "connect but don't bring to a port"). They are accessible in simulation through hierarchical signal references or waveform dumps, useful for debugging numerical range issues.
 
 ---
 
-## Summary Table — All Modules at a Glance
-
-| Module | Type | Purpose | Key operation |
-|--------|------|---------|---------------|
-| `fixedpoint.sv` | Library | Signed arithmetic | fxp_add, fxp_mul, fxp_addsub |
-| `pe.sv` | Sequential | One MAC unit | `psum = (input × weight) + psum_in` |
-| `systolic.sv` | Mixed | 2×2 mat-mul grid | 4 PEs wired in 2 rows × 2 cols |
-| `bias_child.sv` | Sequential | Add bias to one column | `output = data + bias` (registered) |
-| `bias_parent.sv` | Structural | Wrap 2 bias children | No logic |
-| `leaky_relu_child.sv` | Sequential | Activation function | Pass if ≥0, scale if <0 |
-| `leaky_relu_parent.sv` | Structural | Wrap 2 ReLU children | No logic |
-| `loss_child.sv` | Mixed | MSE gradient | `grad = (2/N) × (H - Y)` |
-| `loss_parent.sv` | Structural | Wrap 2 loss children | No logic |
-| `leaky_relu_derivative_child.sv` | Sequential | Backprop through ReLU | Pass if H≥0, scale if H<0 |
-| `leaky_relu_derivative_parent.sv` | Structural | Wrap 2 derivative children | No logic |
-| `gradient_descent.sv` | Mixed | Weight update | `W = W - lr × grad` |
-| `control_unit.sv` | Combinational | Instruction decoder | 88-bit field splitter |
-| `vpu.sv` | Mixed | Configurable pipeline | 4-stage routing + H cache |
-| `unified_buffer.sv` | Sequential | 128-word memory + GD | 7 read channels, write-back logic |
-| `tpu.sv` | Structural | Top-level integration | Connects UB + systolic + VPU |
+*End of Walkthrough.*
+*For formal verification assertions covering each module, see the `sva/` directory.*
+*For Python simulation tests, see the `test/` directory.*
+*For numpy reference implementation, see `jupyter/single_pass_numpy.ipynb`.*

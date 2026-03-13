@@ -93,13 +93,14 @@ Out of scope:
 | Systolic array size | 2 Ã— 2 (parameterised via `SYSTOLIC_ARRAY_WIDTH`) |
 | Memory | 128 Ã— 16-bit unified buffer |
 | Arithmetic library | `fixedpoint.sv` â€” `fxp_mul`, `fxp_add`, `fxp_addsub` (configurable `ROUND` parameter) |
-| Instruction word width | 88 bits |
+| Instruction word width | 130 bits |
 
 ### 2.2 Module Hierarchy
 
 ```
 tpu (top)
 â”œâ”€â”€ unified_buffer
+â”‚ â”” gradient_descent (Ã—2)
 â”œâ”€â”€ systolic
 â”‚   â”œâ”€â”€ pe (pe11)
 â”‚   â”œâ”€â”€ pe (pe12)
@@ -109,8 +110,7 @@ tpu (top)
     â”œâ”€â”€ bias_child (Ã—2)
     â”œâ”€â”€ leaky_relu_child (Ã—2)
     â”œâ”€â”€ loss_child (Ã—2)
-    â”œâ”€â”€ leaky_relu_derivative_child (Ã—2)
-    â””â”€â”€ gradient_descent (Ã—2, inside unified_buffer)
+    â””â”€â”€ leaky_relu_derivative_child (Ã—2)
 ```
 
 ### 2.3 RTL File Inventory
@@ -138,10 +138,10 @@ tpu (top)
 
 | `vpu_data_pathway` | Name | Stages Active | Pipeline Latency |
 |--------------------|------|---------------|-----------------|
-| `4'b0000` | Passthrough | None | 0 cycles (combinational) |
-| `4'b1100` | Forward pass | Bias â†’ LeakyReLU | 2 cycles |
-| `4'b1111` | Transition | Bias â†’ LeakyReLU â†’ Loss â†’ LRDerivative | 4 cycles |
-| `4'b0001` | Backward pass | LRDerivative only | 1 cycle |
+| `4'b0000` | Passthrough | None | 1 cycle (output register) |
+| `4'b1100` | Forward pass | Bias → LeakyReLU | 3 cycles |
+| `4'b1111` | Transition | Bias → LeakyReLU → Loss → LRDerivative | 5 cycles |
+| `4'b0001` | Backward pass | LRDerivative only | 2 cycles |
 
 ### 2.5 Instruction Word Bit-Field Map
 
@@ -152,15 +152,15 @@ tpu (top)
 | [2] | 1 | `ub_rd_transpose` | Transpose matrix on UB read |
 | [3] | 1 | `ub_wr_host_valid_in_1` | Host write valid, port 1 |
 | [4] | 1 | `ub_wr_host_valid_in_2` | Host write valid, port 2 |
-| [6:5] | 2 | `ub_rd_col_size` | Number of active systolic columns |
-| [14:7] | 8 | `ub_rd_row_size` | Number of matrix rows to read |
-| [16:15] | 2 | `ub_rd_addr_in` | UB read address |
-| [19:17] | 3 | `ub_ptr_sel` | UB pointer selector |
-| [35:20] | 16 | `ub_wr_host_data_in_1` | Host write data, port 1 |
-| [51:36] | 16 | `ub_wr_host_data_in_2` | Host write data, port 2 |
-| [55:52] | 4 | `vpu_data_pathway` | VPU pipeline routing |
-| [71:56] | 16 | `inv_batch_size_times_two_in` | 2/N constant for MSE |
-| [87:72] | 16 | `vpu_leak_factor_in` | Leaky ReLU alpha factor |
+| [20:5] | 16 | `ub_rd_col_size` | Number of active systolic columns |
+| [36:21] | 16 | `ub_rd_row_size` | Number of matrix rows to read |
+| [52:37] | 16 | `ub_rd_addr_in` | UB read address |
+| [61:53] | 9 | `ub_ptr_select` | UB pointer selector |
+| [77:62] | 16 | `ub_wr_host_data_in_1` | Host write data, port 1 |
+| [93:78] | 16 | `ub_wr_host_data_in_2` | Host write data, port 2 |
+| [97:94] | 4 | `vpu_data_pathway` | VPU pipeline routing |
+| [113:98] | 16 | `inv_batch_size_times_two_in` | 2/N constant for MSE |
+| [129:114] | 16 | `vpu_leak_factor_in` | Leaky ReLU alpha factor |
 
 ---
 
@@ -192,7 +192,7 @@ The formal verification uses the **Assume-Assert-Cover (AAC)** methodology:
 |-------------|----------|-----------|
 | Purely combinational (`control_unit`) | Combinational proof | 0 |
 | Shallow pipeline (1â€“2 registers deep) | Bounded Model Checking (BMC) | 4â€“8 |
-| Deeper pipeline (`vpu` 4-stage) | BMC + induction | 10 |
+| Deeper pipeline (`vpu` 5-stage, including output register) | BMC + induction | 10 |
 | Memory-heavy (`unified_buffer`) | BMC with abstracted memory | 32 |
 | Full top-level (`tpu`) | Black-box / connectivity only | 4 |
 
@@ -376,15 +376,15 @@ Both `rst` and `!pe_enabled` force all registers to 0.
 
 **Source:** `src/systolic.sv`
 **Assertion file:** `sva/systolic_assertions.sv`
-**Verification approach:** Bounded proof, k = 8 (covers 2-cycle latency with margin)
+**Verification approach:** Bounded proof, k = 8 (covers 3-cycle latency with margin)
 
 #### RTL Summary
 
 | Signal | Derivation |
 |--------|-----------|
 | `pe_enabled` | Registered: `(1 << ub_rd_col_size_in) - 1` on `ub_rd_col_size_valid_in` |
-| `sys_valid_out_21` | `pe_valid_out_11` â†’ `pe21.pe_valid_out` = 2 clock cycles from `sys_start` |
-| `sys_valid_out_22` | `pe_valid_out_12` â†’ `pe22.pe_valid_out` = 3 clock cycles from `sys_start` |
+| `sys_valid_out_21` | `pe_valid_out_11` → `pe21.pe_valid_out` = 1 clock cycle from `sys_start_2` |
+| `sys_valid_out_22` | `sys_start_1` → pe11 → pe12 → pe22 (3 register stages) = **3 clock cycles** from `sys_start_1` |
 | `sys_data_out_21` | `pe21.pe_psum_out` |
 | `sys_data_out_22` | `pe22.pe_psum_out` |
 
@@ -396,9 +396,9 @@ Both `rst` and `!pe_enabled` force all registers to 0.
 | SYS-A02 | `p_rst_clears_valid_out_22` | RST | `rst \|=> !sys_valid_out_22` | Unbounded | P1 | Open |
 | SYS-A03 | `p_rst_clears_data_out_21` | RST | `rst \|=> sys_data_out_21 == 0` | Unbounded | P1 | Open |
 | SYS-A04 | `p_rst_clears_data_out_22` | RST | `rst \|=> sys_data_out_22 == 0` | Unbounded | P1 | Open |
-| SYS-A05 | `p_valid_21_two_cycle_delay` | VP | `sys_start \|=> ##1 sys_valid_out_21` | BMC k=8 | P1 | Open |
-| SYS-A06 | `p_valid_22_one_cycle_after_21` | VP | `sys_valid_out_21 \|=> sys_valid_out_22` | BMC k=8 | P1 | Open |
-| SYS-A07 | `p_no_valid_without_start` | VP | `!sys_start \|=> ##[0:1] !sys_valid_out_21` | BMC k=8 | P2 | Open |
+| SYS-A05 | `p_valid_21_one_cycle_delay` | VP | `sys_start_2 \|=> sys_valid_out_21` | BMC k=8 | P1 | Open |
+| SYS-A06 | `p_valid_22_three_cycles_after_start1` | VP | `sys_start_1 \|=> ##2 sys_valid_out_22` — 3 register stages: pe11→pe12→pe22 | BMC k=8 | P1 | Open |
+| SYS-A07 | `p_no_valid_without_start` | VP | `!sys_start_2 \|=> !sys_valid_out_21` | BMC k=8 | P2 | Open |
 | SYS-A08 | `p_col_size_1_disables_col2` | ME | `(ub_rd_col_size_valid_in && ub_rd_col_size_in==1) \|=> !sys_valid_out_22` | BMC k=8 | P1 | Open |
 | SYS-A09 | `p_col_size_encodes_as_mask` | SD | `(ub_rd_col_size_valid_in && ub_rd_col_size_in==2) \|=> (pe_enabled == 2'b11)` | BMC k=4 | P2 | Open |
 | SYS-A10 | `p_accept_w_cols_independent` | ME | `sys_accept_w_1 && !sys_accept_w_2 â€” no spurious weight update on col2` | BMC k=4 | P2 | Open |
@@ -523,7 +523,7 @@ Sign check is performed on the wire value at the clock edge (`bit[15]` = sign bi
 | LC-A01 | `p_rst_clears_gradient` | RST | `rst \|=> gradient_out == 0` | Unbounded | P1 | Open |
 | LC-A02 | `p_rst_clears_valid` | RST | `rst \|=> !valid_out` | Unbounded | P1 | Open |
 | LC-A03 | `p_valid_out_registered` | VP | `1'b1 \|=> valid_out == $past(valid_in)` | BMC k=4 | P1 | Open |
-| LC-A04 | `p_gradient_always_registered` | DP | `1'b1 \|=> gradient_out == $past(final_gradient)` | BMC k=4 | P1 | Open |
+| LC-A04 | `p_valid_out_low_when_in_low` | VP | `!valid_in \|=> !valid_out` — RTL clears `gradient_out` to 0 when `valid_in=0`; internal wire `final_gradient` cannot be bound in SVA port list | BMC k=4 | P1 | Open |
 | LC-A05 | `p_gradient_sign_H_gt_Y` | FA | `(valid_in && H_in > Y_in) \|=> !gradient_out[15]` | BMC k=4 | P2 | Open |
 | LC-A06 | `p_gradient_sign_H_lt_Y` | FA | `(valid_in && H_in < Y_in) \|=> gradient_out[15]` | BMC k=4 | P2 | Open |
 | LC-A07 | `p_gradient_zero_when_H_eq_Y` | FA | `(valid_in && H_in == Y_in) \|=> gradient_out == 0` | BMC k=4 | P2 | Open |
@@ -555,7 +555,7 @@ The bias mode creates a **feedback loop** (`value_updated_out â†’ sub_in_a`
 | GD-A01 | `p_rst_clears_output` | RST | `rst \|=> value_updated_out == 0` | Unbounded | P1 | Open |
 | GD-A02 | `p_rst_clears_done` | RST | `rst \|=> !grad_descent_done_out` | Unbounded | P1 | Open |
 | GD-A03 | `p_done_one_cycle_delay` | VP | `1'b1 \|=> grad_descent_done_out == $past(grad_descent_valid_in)` | BMC k=6 | P1 | Open |
-| GD-A04 | `p_output_zero_when_invalid` | DP | `!grad_descent_valid_in \|=> value_updated_out == 0` | BMC k=6 | P1 | Open |
+| GD-A04 | `p_output_holds_when_invalid` | DP | `!grad_descent_valid_in \|=> value_updated_out == $past(value_updated_out)` | BMC k=6 | P1 | Open |
 | GD-A05 | `p_weight_mode_update_formula` | FA | `(grad_descent_valid_in && grad_bias_or_weight) \|=> value_updated_out == $past(value_old_in) - $past(mul_out)` | BMC k=6 | P1 | Open |
 | GD-A06 | `p_done_implies_valid_was_set` | VP | `grad_descent_done_out \|-> $past(grad_descent_valid_in)` | BMC k=6 | P1 | Open |
 | GD-A07 | `p_not_done_implies_valid_was_clear` | VP | `!grad_descent_done_out \|-> !$past(grad_descent_valid_in)` | BMC k=6 | P1 | Open |
@@ -577,7 +577,7 @@ The bias mode creates a **feedback loop** (`value_updated_out â†’ sub_in_a`
 
 #### RTL Summary
 
-The control unit decodes an 88-bit instruction word into named field outputs using continuous `assign` statements. There is no clock, no state, and no reset.
+The control unit decodes a 130-bit instruction word (`[129:0]`) into named field outputs using continuous `assign` statements. There is no clock, no state, and no reset.
 
 #### Assertions
 
@@ -588,16 +588,16 @@ The control unit decodes an 88-bit instruction word into named field outputs usi
 | CU-A03 | `p_ub_rd_transpose_bit` | SD | [2] | `ub_rd_transpose === instruction[2]` | Comb | P1 | Open |
 | CU-A04 | `p_ub_wr_host_valid_1_bit` | SD | [3] | `ub_wr_host_valid_in_1 === instruction[3]` | Comb | P1 | Open |
 | CU-A05 | `p_ub_wr_host_valid_2_bit` | SD | [4] | `ub_wr_host_valid_in_2 === instruction[4]` | Comb | P1 | Open |
-| CU-A06 | `p_ub_rd_col_size_field` | SD | [6:5] | `ub_rd_col_size === instruction[6:5]` | Comb | P1 | Open |
-| CU-A07 | `p_ub_rd_row_size_field` | SD | [14:7] | `ub_rd_row_size === instruction[14:7]` | Comb | P1 | Open |
-| CU-A08 | `p_ub_rd_addr_field` | SD | [16:15] | `ub_rd_addr_in === instruction[16:15]` | Comb | P1 | Open |
-| CU-A09 | `p_ub_ptr_sel_field` | SD | [19:17] | `ub_ptr_sel === instruction[19:17]` | Comb | P1 | Open |
-| CU-A10 | `p_host_data_1_field` | SD | [35:20] | `ub_wr_host_data_in_1 === instruction[35:20]` | Comb | P1 | Open |
-| CU-A11 | `p_host_data_2_field` | SD | [51:36] | `ub_wr_host_data_in_2 === instruction[51:36]` | Comb | P1 | Open |
-| CU-A12 | `p_vpu_data_pathway_field` | SD | [55:52] | `vpu_data_pathway === instruction[55:52]` | Comb | P1 | Open |
-| CU-A13 | `p_inv_batch_size_field` | SD | [71:56] | `inv_batch_size_times_two_in === instruction[71:56]` | Comb | P1 | Open |
-| CU-A14 | `p_vpu_leak_factor_field` | SD | [87:72] | `vpu_leak_factor_in === instruction[87:72]` | Comb | P1 | Open |
-| CU-A15 | `p_bit_field_no_overlap` | SD | [87:0] | All named fields together cover bits [87:0] with no gap and no overlap (static structural check) | Comb | P1 | Open |
+| CU-A06 | `p_ub_rd_col_size_field` | SD | [20:5] | `ub_rd_col_size === instruction[20:5]` | Comb | P1 | Open |
+| CU-A07 | `p_ub_rd_row_size_field` | SD | [36:21] | `ub_rd_row_size === instruction[36:21]` | Comb | P1 | Open |
+| CU-A08 | `p_ub_rd_addr_field` | SD | [52:37] | `ub_rd_addr_in === instruction[52:37]` | Comb | P1 | Open |
+| CU-A09 | `p_ub_ptr_select_field` | SD | [61:53] | `ub_ptr_select === instruction[61:53]` | Comb | P1 | Open |
+| CU-A10 | `p_host_data_1_field` | SD | [77:62] | `ub_wr_host_data_in_1 === instruction[77:62]` | Comb | P1 | Open |
+| CU-A11 | `p_host_data_2_field` | SD | [93:78] | `ub_wr_host_data_in_2 === instruction[93:78]` | Comb | P1 | Open |
+| CU-A12 | `p_vpu_data_pathway_field` | SD | [97:94] | `vpu_data_pathway === instruction[97:94]` | Comb | P1 | Open |
+| CU-A13 | `p_inv_batch_size_field` | SD | [113:98] | `inv_batch_size_times_two_in === instruction[113:98]` | Comb | P1 | Open |
+| CU-A14 | `p_vpu_leak_factor_field` | SD | [129:114] | `vpu_leak_factor_in === instruction[129:114]` | Comb | P1 | Open |
+| CU-A15 | `p_bit_field_no_overlap` | SD | [129:0] | All named fields together cover bits [129:0] with no gap and no overlap (static structural check) | Comb | P1 | Open |
 
 ---
 
@@ -605,7 +605,7 @@ The control unit decodes an 88-bit instruction word into named field outputs usi
 
 **Source:** `src/vpu.sv`
 **Assertion file:** `sva/vpu_assertions.sv`
-**Verification approach:** Bounded proof, k = 10 (covers 4-stage pipeline)
+**Verification approach:** Bounded proof, k = 10 (covers 5-stage pipeline including output register)
 
 #### RTL Summary
 
@@ -616,7 +616,7 @@ The control unit decodes an 88-bit instruction word into named field outputs usi
 | [1] | `loss_child` | +1 cycle |
 | [0] | `leaky_relu_derivative_child` | +1 cycle |
 
-When a pathway bit is 0, the combinational mux bypasses that stage entirely (zero latency contribution). Total latency = number of set bits in `vpu_data_pathway`.
+When a pathway bit is 0, the combinational mux bypasses that stage entirely (zero latency contribution from that stage). The VPU always adds +1 cycle for the output register (`always_ff` BUG-VPU-1 fix). Total latency = (number of set bits in `vpu_data_pathway`) + 1.
 
 The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); otherwise `lr_d_H_data_in` is sourced from UB `H_in` ports.
 
@@ -626,12 +626,12 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 |-----------|------|----------|----------|------------|----------|--------|
 | VPU-A01 | `p_rst_clears_valid_out` | RST | `rst \|=> (!vpu_valid_out_1 && !vpu_valid_out_2)` | Unbounded | P1 | Open |
 | VPU-A02 | `p_rst_clears_data_out` | RST | `rst \|=> (vpu_data_out_1==0 && vpu_data_out_2==0)` | Unbounded | P1 | Open |
-| VPU-A03 | `p_zero_pathway_comb_valid` | VP | `vpu_data_pathway==4'b0000 \|-> (vpu_valid_out_1==vpu_valid_in_1 && vpu_valid_out_2==vpu_valid_in_2)` | Comb | P1 | Open |
-| VPU-A04 | `p_zero_pathway_comb_data` | DP | `vpu_data_pathway==4'b0000 \|-> (vpu_data_out_1==vpu_data_in_1 && vpu_data_out_2==vpu_data_in_2)` | Comb | P1 | Open |
-| VPU-A05 | `p_forward_path_2cy_latency` | VP | `(vpu_data_pathway==4'b1100 && vpu_valid_in_1) \|=> ##1 vpu_valid_out_1` | BMC k=8 | P1 | Open |
-| VPU-A06 | `p_backward_path_1cy_latency` | VP | `(vpu_data_pathway==4'b0001 && vpu_valid_in_1) \|=> vpu_valid_out_1` | BMC k=6 | P1 | Open |
-| VPU-A07 | `p_transition_path_4cy_latency` | VP | `(vpu_data_pathway==4'b1111 && vpu_valid_in_1) \|=> ##3 vpu_valid_out_1` | BMC k=10 | P1 | Open |
-| VPU-A08 | `p_no_output_without_input_comb` | VP | `(vpu_data_pathway==4'b0000 && !vpu_valid_in_1) \|-> !vpu_valid_out_1` | Comb | P2 | Open |
+| VPU-A03 | `p_zero_pathway_reg_valid` | VP | `vpu_data_pathway==4'b0000 \|=> (vpu_valid_out_1==$past(vpu_valid_in_1) && vpu_valid_out_2==$past(vpu_valid_in_2))` | BMC k=4 | P1 | Open |
+| VPU-A04 | `p_zero_pathway_reg_data` | DP | `vpu_data_pathway==4'b0000 \|=> (vpu_data_out_1==$past(vpu_data_in_1) && vpu_data_out_2==$past(vpu_data_in_2))` | BMC k=4 | P1 | Open |
+| VPU-A05 | `p_forward_path_3cy_latency` | VP | `(vpu_data_pathway==4'b1100 && vpu_valid_in_1) \|=> ##2 vpu_valid_out_1` | BMC k=8 | P1 | Open |
+| VPU-A06 | `p_backward_path_2cy_latency` | VP | `(vpu_data_pathway==4'b0001 && vpu_valid_in_1) \|=> ##1 vpu_valid_out_1` | BMC k=6 | P1 | Open |
+| VPU-A07 | `p_transition_path_5cy_latency` | VP | `(vpu_data_pathway==4'b1111 && vpu_valid_in_1) \|=> ##4 vpu_valid_out_1` | BMC k=10 | P1 | Open |
+| VPU-A08 | `p_no_output_without_input_reg` | VP | `(vpu_data_pathway==4'b0000 && !vpu_valid_in_1) \|=> !vpu_valid_out_1` | BMC k=4 | P2 | Open |
 | VPU-A09 | `p_dual_column_simultaneous` | VP | `vpu_valid_in_1 && vpu_valid_in_2 \|=> vpu_valid_out_1 && vpu_valid_out_2` (pathway=0000) | Comb | P2 | Open |
 | VPU-A10 | `p_last_H_registered_when_loss_active` | DP | `vpu_data_pathway[1] && vpu_valid_in_1 \|=> last_H_data_1_out == $past(last_H_data_1_in)` | BMC k=6 | P2 | Open |
 
@@ -670,7 +670,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | UB-A04 | `p_rst_clears_weight_valid` | RST | `rst \|=> (!ub_rd_weight_valid_out_0 && !ub_rd_weight_valid_out_1)` | Unbounded | P1 | Open |
 | UB-A05 | `p_host_wr_no_collision` | ME | `!(ub_wr_host_valid_in[0] && ub_wr_valid_in[0])` â€” host write and VPU write to same port never simultaneously active | BMC k=8 | P1 | Open |
 | UB-A06 | `p_col_size_valid_follows_rd_start` | VP | `ub_rd_start_in \|=> ub_rd_col_size_valid_out` | BMC k=8 | P1 | Open |
-| UB-A07 | `p_wr_ptr_increments_on_vpu_write` | DP | `ub_wr_valid_in[0] \|=> wr_ptr == $past(wr_ptr) + 1` | BMC k=8 | P2 | Open |
+| UB-A07 | `p_wr_ptr_increments_on_vpu_write` | DP | `(ub_wr_valid_in[0] && ub_wr_valid_in[1]) \|=> wr_ptr == $past(wr_ptr) + 2` — RTL writes both channels simultaneously and advances by 2 | BMC k=8 | P2 | Open |
 | UB-A08 | `p_read_ptrs_bounded` | SD | `rd_input_ptr < UNIFIED_BUFFER_WIDTH` | BMC k=32 | P2 | Open |
 | UB-A09 | `p_gradient_done_propagates_to_output` | VP | `grad_descent_done_out (inst0) \|=> ub write-back triggers` | BMC k=8 | P2 | Open |
 
@@ -707,9 +707,9 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | SYS-A02 | systolic | p_rst_clears_valid_out_22 | RST | P1 | `rst \|=> !sys_valid_out_22` | Unbounded | â€” | None | Open |
 | SYS-A03 | systolic | p_rst_clears_data_out_21 | RST | P1 | `rst \|=> sys_data_out_21==0` | Unbounded | â€” | None | Open |
 | SYS-A04 | systolic | p_rst_clears_data_out_22 | RST | P1 | `rst \|=> sys_data_out_22==0` | Unbounded | â€” | None | Open |
-| SYS-A05 | systolic | p_valid_21_two_cycle_delay | VP | P1 | `sys_start \|=> ##1 sys_valid_out_21` | BMC | 8 | None | Open |
-| SYS-A06 | systolic | p_valid_22_one_cycle_after_21 | VP | P1 | `sys_valid_out_21 \|=> sys_valid_out_22` | BMC | 8 | None | Open |
-| SYS-A07 | systolic | p_no_valid_without_start | VP | P2 | `!sys_start \|=> ##[0:1] !sys_valid_out_21` | BMC | 8 | None | Open |
+| SYS-A05 | systolic | p_valid_21_one_cycle_delay | VP | P1 | `sys_start_2 \|=> sys_valid_out_21` | BMC | 8 | None | Open |
+| SYS-A06 | systolic | p_valid_22_three_cycles_after_start1 | VP | P1 | `sys_start_1 \|=> ##2 sys_valid_out_22` | BMC | 8 | None | Open |
+| SYS-A07 | systolic | p_no_valid_without_start | VP | P2 | `!sys_start_2 \|=> !sys_valid_out_21` | BMC | 8 | None | Open |
 | SYS-A08 | systolic | p_col_size_1_disables_col2 | ME | P1 | `(ub_rd_col_size_valid_in&&col==1) \|=> !sys_valid_out_22` | BMC | 8 | None | Open |
 | SYS-A09 | systolic | p_col_size_encodes_as_mask | SD | P2 | `(ub_rd_col_size_valid_in&&col==2) \|=> pe_enabled==2'b11` | BMC | 4 | None | Open |
 | SYS-A10 | systolic | p_accept_w_cols_independent | ME | P2 | Weight load on col1 does not affect col2 registers | BMC | 4 | None | Open |
@@ -741,7 +741,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | GD-A01 | gradient_descent | p_rst_clears_output | RST | P1 | `rst \|=> value_updated_out==0` | Unbounded | â€” | None | Open |
 | GD-A02 | gradient_descent | p_rst_clears_done | RST | P1 | `rst \|=> !grad_descent_done_out` | Unbounded | â€” | None | Open |
 | GD-A03 | gradient_descent | p_done_one_cycle_delay | VP | P1 | `1'b1 \|=> done==$past(valid_in)` | BMC | 6 | None | Open |
-| GD-A04 | gradient_descent | p_output_zero_when_invalid | DP | P1 | `!grad_descent_valid_in \|=> value_updated_out==0` | BMC | 6 | None | Open |
+| GD-A04 | gradient_descent | p_output_holds_when_invalid | DP | P1 | `!valid_in \|=> value_updated_out==$past(value_updated_out)` | BMC | 6 | None | Open |
 | GD-A05 | gradient_descent | p_weight_mode_update_formula | FA | P1 | `(valid_in&&mode=weight) \|=> out==$past(old)-$past(mul_out)` | BMC | 6 | None | Open |
 | GD-A06 | gradient_descent | p_done_implies_valid_was_set | VP | P1 | `done \|-> $past(valid_in)` | BMC | 6 | None | Open |
 | GD-A07 | gradient_descent | p_not_done_implies_valid_clear | VP | P1 | `!done \|-> !$past(valid_in)` | BMC | 6 | None | Open |
@@ -750,24 +750,24 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | CU-A03 | control_unit | p_ub_rd_transpose_bit | SD | P1 | `ub_rd_transpose===instruction[2]` | Comb | 0 | None | Open |
 | CU-A04 | control_unit | p_ub_wr_host_valid_1_bit | SD | P1 | `ub_wr_host_valid_in_1===instruction[3]` | Comb | 0 | None | Open |
 | CU-A05 | control_unit | p_ub_wr_host_valid_2_bit | SD | P1 | `ub_wr_host_valid_in_2===instruction[4]` | Comb | 0 | None | Open |
-| CU-A06 | control_unit | p_ub_rd_col_size_field | SD | P1 | `ub_rd_col_size===instruction[6:5]` | Comb | 0 | None | Open |
-| CU-A07 | control_unit | p_ub_rd_row_size_field | SD | P1 | `ub_rd_row_size===instruction[14:7]` | Comb | 0 | None | Open |
-| CU-A08 | control_unit | p_ub_rd_addr_field | SD | P1 | `ub_rd_addr_in===instruction[16:15]` | Comb | 0 | None | Open |
-| CU-A09 | control_unit | p_ub_ptr_sel_field | SD | P1 | `ub_ptr_sel===instruction[19:17]` | Comb | 0 | None | Open |
-| CU-A10 | control_unit | p_host_data_1_field | SD | P1 | `ub_wr_host_data_in_1===instruction[35:20]` | Comb | 0 | None | Open |
-| CU-A11 | control_unit | p_host_data_2_field | SD | P1 | `ub_wr_host_data_in_2===instruction[51:36]` | Comb | 0 | None | Open |
-| CU-A12 | control_unit | p_vpu_data_pathway_field | SD | P1 | `vpu_data_pathway===instruction[55:52]` | Comb | 0 | None | Open |
-| CU-A13 | control_unit | p_inv_batch_size_field | SD | P1 | `inv_batch_size_times_two_in===instruction[71:56]` | Comb | 0 | None | Open |
-| CU-A14 | control_unit | p_vpu_leak_factor_field | SD | P1 | `vpu_leak_factor_in===instruction[87:72]` | Comb | 0 | None | Open |
-| CU-A15 | control_unit | p_bit_field_no_overlap | SD | P1 | Full 88-bit field coverage and uniqueness check | Comb | 0 | None | Open |
+| CU-A06 | control_unit | p_ub_rd_col_size_field | SD | P1 | `ub_rd_col_size===instruction[20:5]` | Comb | 0 | None | Open |
+| CU-A07 | control_unit | p_ub_rd_row_size_field | SD | P1 | `ub_rd_row_size===instruction[36:21]` | Comb | 0 | None | Open |
+| CU-A08 | control_unit | p_ub_rd_addr_field | SD | P1 | `ub_rd_addr_in===instruction[52:37]` | Comb | 0 | None | Open |
+| CU-A09 | control_unit | p_ub_ptr_select_field | SD | P1 | `ub_ptr_select===instruction[61:53]` | Comb | 0 | None | Open |
+| CU-A10 | control_unit | p_host_data_1_field | SD | P1 | `ub_wr_host_data_in_1===instruction[77:62]` | Comb | 0 | None | Open |
+| CU-A11 | control_unit | p_host_data_2_field | SD | P1 | `ub_wr_host_data_in_2===instruction[93:78]` | Comb | 0 | None | Open |
+| CU-A12 | control_unit | p_vpu_data_pathway_field | SD | P1 | `vpu_data_pathway===instruction[97:94]` | Comb | 0 | None | Open |
+| CU-A13 | control_unit | p_inv_batch_size_field | SD | P1 | `inv_batch_size_times_two_in===instruction[113:98]` | Comb | 0 | None | Open |
+| CU-A14 | control_unit | p_vpu_leak_factor_field | SD | P1 | `vpu_leak_factor_in===instruction[129:114]` | Comb | 0 | None | Open |
+| CU-A15 | control_unit | p_bit_field_no_overlap | SD | P1 | Full 130-bit field coverage and uniqueness check | Comb | 0 | None | Open |
 | VPU-A01 | vpu | p_rst_clears_valid_out | RST | P1 | `rst \|=> (!vpu_valid_out_1&&!vpu_valid_out_2)` | Unbounded | â€” | None | Open |
 | VPU-A02 | vpu | p_rst_clears_data_out | RST | P1 | `rst \|=> (data_out_1==0&&data_out_2==0)` | Unbounded | â€” | None | Open |
-| VPU-A03 | vpu | p_zero_pathway_comb_valid | VP | P1 | `pathway==0 \|-> valid_out==valid_in` | Comb | 0 | None | Open |
-| VPU-A04 | vpu | p_zero_pathway_comb_data | DP | P1 | `pathway==0 \|-> data_out==data_in` | Comb | 0 | None | Open |
-| VPU-A05 | vpu | p_forward_path_2cy_latency | VP | P1 | `(pathway==1100&&valid_in) \|=> ##1 valid_out` | BMC | 8 | None | Open |
-| VPU-A06 | vpu | p_backward_path_1cy_latency | VP | P1 | `(pathway==0001&&valid_in) \|=> valid_out` | BMC | 6 | None | Open |
-| VPU-A07 | vpu | p_transition_path_4cy_latency | VP | P1 | `(pathway==1111&&valid_in) \|=> ##3 valid_out` | BMC | 10 | None | Open |
-| VPU-A08 | vpu | p_no_output_without_input_comb | VP | P2 | `(pathway==0&&!valid_in) \|-> !valid_out` | Comb | 0 | None | Open |
+| VPU-A03 | vpu | p_zero_pathway_reg_valid | VP | P1 | `pathway==0 \|=> valid_out==$past(valid_in)` | BMC | 4 | None | Open |
+| VPU-A04 | vpu | p_zero_pathway_reg_data | DP | P1 | `pathway==0 \|=> data_out==$past(data_in)` | BMC | 4 | None | Open |
+| VPU-A05 | vpu | p_forward_path_3cy_latency | VP | P1 | `(pathway==1100&&valid_in) \|=> ##2 valid_out` | BMC | 8 | None | Open |
+| VPU-A06 | vpu | p_backward_path_2cy_latency | VP | P1 | `(pathway==0001&&valid_in) \|=> ##1 valid_out` | BMC | 6 | None | Open |
+| VPU-A07 | vpu | p_transition_path_5cy_latency | VP | P1 | `(pathway==1111&&valid_in) \|=> ##4 valid_out` | BMC | 10 | None | Open |
+| VPU-A08 | vpu | p_no_output_without_input_reg | VP | P2 | `(pathway==0&&!valid_in) \|=> !valid_out` | BMC | 4 | None | Open |
 | VPU-A09 | vpu | p_dual_column_simultaneous | VP | P2 | Both columns active simultaneously produce outputs | Comb | 0 | None | Open |
 | VPU-A10 | vpu | p_last_H_registered_when_loss | DP | P2 | `pathway[1]&&valid_in \|=> last_H_out==$past(last_H_in)` | BMC | 6 | None | Open |
 | UB-A01 | unified_buffer | p_rst_clears_wr_ptr | RST | P1 | `rst \|=> wr_ptr==0` | Unbounded | â€” | None | Open |
@@ -776,7 +776,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | UB-A04 | unified_buffer | p_rst_clears_weight_valid | RST | P1 | `rst \|=> (!ub_rd_weight_valid_out_0&&!ub_rd_weight_valid_out_1)` | Unbounded | â€” | None | Open |
 | UB-A05 | unified_buffer | p_host_wr_no_collision | ME | P1 | Host write and VPU write never simultaneously active on same port | BMC | 8 | UB-W01 | Open |
 | UB-A06 | unified_buffer | p_col_size_valid_follows_rd_start | VP | P1 | `ub_rd_start_in \|=> ub_rd_col_size_valid_out` | BMC | 8 | None | Open |
-| UB-A07 | unified_buffer | p_wr_ptr_increments_on_vpu_write | DP | P2 | `ub_wr_valid_in[0] \|=> wr_ptr==$past(wr_ptr)+1` | BMC | 8 | None | Open |
+| UB-A07 | unified_buffer | p_wr_ptr_increments_on_vpu_write | DP | P2 | `(ub_wr_valid_in[0] && ub_wr_valid_in[1]) \|=> wr_ptr==$past(wr_ptr)+2` | BMC | 8 | None | Open |
 | UB-A08 | unified_buffer | p_read_ptrs_bounded | SD | P2 | `rd_input_ptr < UNIFIED_BUFFER_WIDTH` | BMC | 32 | None | Open |
 | UB-A09 | unified_buffer | p_gradient_done_triggers_writeback | VP | P2 | Gradient done propagates to write-back sequence | BMC | 8 | None | Open |
 
@@ -835,10 +835,10 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | CU-COV04 | control_unit | `sys_switch_in == 1` | Must reach | Open |
 | CU-COV05 | control_unit | `ub_rd_transpose == 1` | Must reach | Open |
 | CU-COV06 | control_unit | Both `ub_wr_host_valid_in_1` and `ub_wr_host_valid_in_2` asserted | Must reach | Open |
-| VPU-COV01 | vpu | Forward pathway (`1100`) completes â€” both columns | Must reach | Open |
-| VPU-COV02 | vpu | Transition pathway (`1111`) completes â€” both columns | Must reach | Open |
-| VPU-COV03 | vpu | Backward pathway (`0001`) completes â€” both columns | Must reach | Open |
-| VPU-COV04 | vpu | Zero pathway direct passthrough | Must reach | Open |
+| VPU-COV01 | vpu | Forward pathway (`1100`) completes after 3 cycles — both columns | Must reach | Open |
+| VPU-COV02 | vpu | Transition pathway (`1111`) completes after 5 cycles — both columns | Must reach | Open |
+| VPU-COV03 | vpu | Backward pathway (`0001`) completes after 2 cycles — both columns | Must reach | Open |
+| VPU-COV04 | vpu | Zero pathway passes through with 1-cycle output register delay | Must reach | Open |
 | VPU-COV05 | vpu | Both `vpu_valid_in_1` and `vpu_valid_in_2` simultaneously asserted | Must reach | Open |
 | UB-COV01 | unified_buffer | Full input read burst (row_size = 2, col_size = 2) completes | Must reach | Open |
 | UB-COV02 | unified_buffer | Host write followed immediately by VPU read-back | Must reach | Open |
@@ -869,8 +869,8 @@ The 128 Ã— 16-bit `ub_memory` array creates significant state space for the f
 | Module | Chosen k | Justification |
 |--------|----------|---------------|
 | pe | 6 | Covers 1-cycle register depth + weight shadow register (1 cycle) + 4 cycles margin |
-| systolic | 8 | Covers 2-cycle valid chain + switch propagation (1 cycle) + margin |
-| vpu (transition path) | 10 | Covers full 4-stage pipeline + valid propagation + 2 cycles margin |
+| systolic | 8 | Covers 1-cycle valid chain (sys_start_2→valid_out_21) + switch propagation + margin |
+| vpu (transition path) | 10 | Covers full 5-stage pipeline (4 stages + output register) + valid propagation + margin |
 | unified_buffer | 32 | Covers longest read burst (row_size=2, multiple data types) |
 | control_unit | 0 | Purely combinational; no time bound required |
 

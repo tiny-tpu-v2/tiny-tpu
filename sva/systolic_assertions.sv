@@ -79,21 +79,24 @@ module systolic_assertions #(
     endproperty
 
     // ------------------------------------------------------------------
-    // S-A6: sys_valid_out_22 appears exactly 2 clock cycles after
+    // S-A6: sys_valid_out_22 appears exactly 3 clock cycles after
     //       sys_start_1 is asserted.
     //
-    // Path: sys_start_1 → pe11 (register, 1 cycle) → pe_valid_out_11
-    //       pe_valid_out_11 → pe12 (register, 1 cycle) → pe_valid_out_12
-    //       pe_valid_out_12 → pe22 (register, 1 cycle) → sys_valid_out_22
+    // Path (3 register stages):
+    //   sys_start_1 → pe11 (register, +1 cycle) → pe_valid_out_11  [T+1]
+    //   pe_valid_out_11 → pe12 (register, +1 cycle) → pe_valid_out_12 [T+2]
+    //   pe_valid_out_12 → pe22 (register, +1 cycle) → sys_valid_out_22 [T+3]
     //
-    // Note: sys_valid_out_21 and sys_valid_out_22 are now driven by
+    // Total: 3 cycles.  Use |=> ##2 (checks at T+1+2 = T+3).
+    //
+    // Note: sys_valid_out_21 and sys_valid_out_22 are driven by
     // independent start signals (sys_start_2 and sys_start_1 respectively).
     // They have no guaranteed phase relationship unless both starts are
     // driven together by the control unit.
     // ------------------------------------------------------------------
-    property p_valid_22_two_cycles_after_start1;
+    property p_valid_22_three_cycles_after_start1;
         @(posedge clk) disable iff (rst)
-        sys_start_1 |=> ##1 sys_valid_out_22;
+        sys_start_1 |=> ##2 sys_valid_out_22;
     endproperty
 
     // ------------------------------------------------------------------
@@ -166,7 +169,7 @@ module systolic_assertions #(
     S_A3:  assert property (p_rst_clears_data_out_21)               else $error("S-A3  FAIL: rst did not clear sys_data_out_21");
     S_A4:  assert property (p_rst_clears_data_out_22)               else $error("S-A4  FAIL: rst did not clear sys_data_out_22");
     S_A5:  assert property (p_valid_21_one_cycle_delay)             else $error("S-A5  FAIL: sys_valid_out_21 did not appear 1 cycle after sys_start_2");
-    S_A6:  assert property (p_valid_22_two_cycles_after_start1)     else $error("S-A6  FAIL: sys_valid_out_22 did not appear 2 cycles after sys_start_1");
+    S_A6:  assert property (p_valid_22_three_cycles_after_start1)   else $error("S-A6  FAIL: sys_valid_out_22 did not appear 3 cycles after sys_start_1");
     S_A7:  assert property (p_valid_21_deasserts_after_start2)      else $error("S-A7  FAIL: sys_valid_out_21 did not deassert after sys_start_2 fell");
     S_A8:  assert property (p_col_size_1_disables_col2_valid)       else $error("S-A8  FAIL: col_size=1 but sys_valid_out_22 was asserted");
     S_A9:  assert property (p_col_size_2_both_outputs_reachable)    else $error("S-A9  FAIL: both outputs did not become valid with col_size=2");

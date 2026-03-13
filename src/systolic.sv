@@ -49,7 +49,7 @@ module systolic #(
     
     // valid_out for each PE (top to bottom)
     wire pe_valid_out_11;   // this wire will connect the valid signal from pe11 to pe12
-    wire pe_valid_out_12;   // this wire will connect the valid signal from pe21 to pe22
+    wire pe_valid_out_12;   // this wire will connect the valid signal from pe12 to pe22 (BUG-COMMENT-FIX: was incorrectly labelled pe21→pe22)
 
     // PE columns to enable
     logic [1:0] pe_enabled;
