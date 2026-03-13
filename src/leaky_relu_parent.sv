@@ -16,7 +16,10 @@ module leaky_relu_parent (
     output logic signed [15:0] lr_data_2_out,
     
     output logic lr_valid_1_out,
-    output logic lr_valid_2_out
+    output logic lr_valid_2_out,
+
+    output logic lr_overflow_out_1,  // BUG-OVF-1 fix
+    output logic lr_overflow_out_2   // BUG-OVF-1 fix
 );
 
     leaky_relu_child leaky_relu_col_1 (
@@ -26,7 +29,8 @@ module leaky_relu_parent (
         .lr_data_in(lr_data_1_in),
         .lr_leak_factor_in(lr_leak_factor_in),
         .lr_data_out(lr_data_1_out),
-        .lr_valid_out(lr_valid_1_out)
+        .lr_valid_out(lr_valid_1_out),
+        .lr_overflow_out(lr_overflow_out_1)
     );
 
     leaky_relu_child leaky_relu_col_2 (
@@ -36,7 +40,8 @@ module leaky_relu_parent (
         .lr_data_in(lr_data_2_in),
         .lr_leak_factor_in(lr_leak_factor_in),
         .lr_data_out(lr_data_2_out),
-        .lr_valid_out(lr_valid_2_out)
+        .lr_valid_out(lr_valid_2_out),
+        .lr_overflow_out(lr_overflow_out_2)
     );
 
 endmodule

@@ -134,8 +134,8 @@ module tpu #(
         // input signals from left side of systolic array
         .sys_data_in_11(ub_rd_input_data_out_0),
         .sys_data_in_21(ub_rd_input_data_out_1),
-        .sys_start(ub_rd_input_valid_out_0),    // start signal
-        // .sys_start_2(ub_rd_input_valid_out_1),    // start signal propagates only from left to right in row 2
+        .sys_start_1(ub_rd_input_valid_out_0),   // start signal for row 1 (BUG-CU-2 fix)
+        .sys_start_2(ub_rd_input_valid_out_1),   // start signal for row 2 (independent channel)
 
         .sys_data_out_21(sys_data_out_21),
         .sys_data_out_22(sys_data_out_22),

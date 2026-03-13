@@ -16,8 +16,10 @@ module bias_child_assertions (
     input logic               bias_sys_valid_in,
     input logic signed [15:0] bias_sys_data_in,
 
-    output logic              bias_Z_valid_out,
-    output logic signed [15:0] bias_z_data_out
+// DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
+    input logic               bias_Z_valid_out,
+    input logic signed [15:0] bias_z_data_out,
+    input logic               bias_overflow_out  // BUG-OVF-1 sticky overflow flag
 );
 
     // ------------------------------------------------------------------

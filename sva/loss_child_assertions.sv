@@ -17,8 +17,10 @@ module loss_child_assertions (
     input logic               valid_in,
     input logic signed [15:0] inv_batch_size_times_two_in,
 
-    output logic signed [15:0] gradient_out,
-    output logic               valid_out
+    // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
+    input logic signed [15:0] gradient_out,
+    input logic               valid_out,
+    input logic               loss_overflow_out  // BUG-OVF-1 sticky overflow flag
 );
 
     // ------------------------------------------------------------------

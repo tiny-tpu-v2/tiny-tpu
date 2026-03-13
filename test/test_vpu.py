@@ -97,7 +97,7 @@ async def test_vector_unit(dut):
     ### Test forward pass pathway
     # ub/input -> bias -> lr -> ub/output
     dut.rst.value = 0
-    dut.data_pathway.value = 0b1100 
+    dut.vpu_data_pathway.value = 0b1100 
     
     dut.vpu_valid_in_1.value = 1
     dut.vpu_valid_in_2.value = 1
@@ -123,7 +123,7 @@ async def test_vector_unit(dut):
     await RisingEdge(dut.clk)
 
     dut.rst.value = 0
-    dut.data_pathway.value = 0b1111
+    dut.vpu_data_pathway.value = 0b1111
     dut.vpu_valid_in_1.value = 1
     dut.vpu_valid_in_2.value = 1
 
@@ -176,7 +176,7 @@ async def test_vector_unit(dut):
 
     # Test forward pass pathway
     dut.rst.value = 0
-    dut.data_pathway.value = 0b0001 
+    dut.vpu_data_pathway.value = 0b0001 
 
     ## PREMATURELY start inputting Hs 1 clk cycle before we input the dL/dH values because it takes 1 clk cycle to compute its dH/dZ.
     ## ^^ maybe its a good assumption to have in future that activation derivatives are NOT combinational, but take multiple clk cycles. 

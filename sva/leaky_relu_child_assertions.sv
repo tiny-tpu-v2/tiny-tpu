@@ -16,8 +16,10 @@ module leaky_relu_child_assertions (
     input logic signed [15:0] lr_data_in,
     input logic signed [15:0] lr_leak_factor_in,
 
-    output logic signed [15:0] lr_data_out,
-    output logic               lr_valid_out
+    // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
+    input logic signed [15:0] lr_data_out,
+    input logic               lr_valid_out,
+    input logic               lr_overflow_out  // BUG-OVF-1 sticky overflow flag
 );
 
     // ------------------------------------------------------------------

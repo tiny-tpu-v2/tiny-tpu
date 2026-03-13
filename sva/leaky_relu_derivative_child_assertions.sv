@@ -18,8 +18,10 @@ module leaky_relu_derivative_child_assertions (
     input logic signed [15:0] lr_leak_factor_in,
     input logic signed [15:0] lr_d_H_data_in,
 
-    output logic               lr_d_valid_out,
-    output logic signed [15:0] lr_d_data_out
+    // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
+    input logic               lr_d_valid_out,
+    input logic signed [15:0] lr_d_data_out,
+    input logic               lr_d_overflow_out  // BUG-OVF-1 sticky overflow flag
 );
 
     // ------------------------------------------------------------------

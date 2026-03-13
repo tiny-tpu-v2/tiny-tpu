@@ -1,5 +1,3 @@
-// TODO: get rid of the mixing of non blocking and blocking assignments
-
 `timescale 1ns/1ps
 `default_nettype none
 
@@ -128,6 +126,17 @@ module unified_buffer #(
     // Whether the gradients are biases or weights (0 for biases, 1 for weights)
     logic grad_bias_or_weight;
 
+    // BUG-UB-1 fix: within-cycle tracking variables replacing blocking assignments in always block.
+    // Each _next variable is set with blocking (=) to track intermediate address within one clock
+    // edge, then written to the corresponding register with a single non-blocking (<=).
+    logic [15:0]        wr_ptr_next;
+    logic [15:0]        rd_input_ptr_next;
+    logic signed [15:0] rd_weight_ptr_next;
+    logic [15:0]        rd_Y_ptr_next;
+    logic [15:0]        rd_H_ptr_next;
+    logic [15:0]        rd_grad_weight_ptr_next;
+    logic [15:0]        grad_descent_ptr_next;
+
     genvar i;
     generate
         for (i=0; i<SYSTOLIC_ARRAY_WIDTH; i++) begin : gradient_descent_gen
@@ -140,7 +149,8 @@ module unified_buffer #(
                 .grad_descent_valid_in(grad_descent_valid_in[i]),
                 .grad_bias_or_weight(grad_bias_or_weight),
                 .value_updated_out(value_updated_out[i]),
-                .grad_descent_done_out(grad_descent_done_out[i])
+                .grad_descent_done_out(grad_descent_done_out[i]),
+                .grad_overflow_out()  // BUG-OVF-1: overflow observable via hierarchical reference
             );
         end
     endgenerate
@@ -165,10 +175,19 @@ module unified_buffer #(
     assign ub_rd_H_data_out_0 = ub_rd_H_data_out[0];
     assign ub_rd_H_data_out_1 = ub_rd_H_data_out[1];
 
-    // Combinational: notify systolic array of column count when loading weights
-    assign ub_rd_col_size_valid_out = (ub_rd_start_in && (ub_ptr_select == 9'd1));
-    assign ub_rd_col_size_out = (ub_rd_start_in && (ub_ptr_select == 9'd1)) ?
-                                (ub_rd_transpose ? ub_rd_row_size : ub_rd_col_size) : 16'b0;
+    // BUG-UB-3 fix: register ub_rd_col_size_valid_out to eliminate combinational glitch path.
+    // Previously these were pure combinational assigns; glitches on ub_rd_start_in would
+    // propagate directly into the systolic array's pe_enabled update.
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            ub_rd_col_size_valid_out <= 1'b0;
+            ub_rd_col_size_out       <= '0;
+        end else begin
+            ub_rd_col_size_valid_out <= (ub_rd_start_in && (ub_ptr_select == 9'd1));
+            ub_rd_col_size_out       <= (ub_rd_start_in && (ub_ptr_select == 9'd1)) ?
+                                        (ub_rd_transpose ? ub_rd_row_size : ub_rd_col_size) : 16'b0;
+        end
+    end
 
     always_comb begin   // Automatically turn on gradient descent modules when bias or weight gradient descent pointers have been set by a read command
         if (
@@ -185,7 +204,7 @@ module unified_buffer #(
         end
     end 
 
-    always @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             // reset all memory to 0
             for (int i = 0; i < UNIFIED_BUFFER_WIDTH; i++) begin
@@ -248,22 +267,26 @@ module unified_buffer #(
             // WRITING LOGIC
             // matrices are stored in row major format
             // if there are two columns, the first column will be stored at even indices and the second column will be stored at odd indices
-            for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin     // FOR LOOP SHOULD DECREMENT TO STORE IN ROW MAJOR ORDER!!! yooooooooo
+            // BUG-UB-2 note: loop decrements so channel[1] is at lower address than channel[0] (intentional row-major order)
+            wr_ptr_next = wr_ptr;  // BUG-UB-1 fix: use _next variable; single <= at end
+            for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin     // FOR LOOP SHOULD DECREMENT TO STORE IN ROW MAJOR ORDER!!!
                 if (ub_wr_valid_in[i]) begin
-                    ub_memory[wr_ptr] <= ub_wr_data_in[i];
-                    wr_ptr = wr_ptr + 1;                                // I should get rid of this (not good to mix non blocking and blocking assignments) but it works for now
+                    ub_memory[wr_ptr_next] <= ub_wr_data_in[i];
+                    wr_ptr_next = wr_ptr_next + 1;
                 end else if (ub_wr_host_valid_in[i]) begin
-                    ub_memory[wr_ptr] <= ub_wr_host_data_in[i];
-                    wr_ptr = wr_ptr + 1;
+                    ub_memory[wr_ptr_next] <= ub_wr_host_data_in[i];
+                    wr_ptr_next = wr_ptr_next + 1;
                 end
             end
+            wr_ptr <= wr_ptr_next;
 
             //WRITING LOGIC (for gradient descent modules to UB)
+            grad_descent_ptr_next = grad_descent_ptr;  // BUG-UB-1 fix
             if (grad_bias_or_weight) begin
                 for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
                     if (grad_descent_done_out[i]) begin
-                        ub_memory[grad_descent_ptr] <= value_updated_out[i];
-                        grad_descent_ptr = grad_descent_ptr + 1;
+                        ub_memory[grad_descent_ptr_next] <= value_updated_out[i];
+                        grad_descent_ptr_next = grad_descent_ptr_next + 1;
                     end
                 end
             end else begin
@@ -273,16 +296,18 @@ module unified_buffer #(
                     end
                 end
             end
+            grad_descent_ptr <= grad_descent_ptr_next;
 
             // READING LOGIC (for input from UB to left side of systolic array)
             if (rd_input_time_counter + 1 < rd_input_row_size + rd_input_col_size) begin
+                rd_input_ptr_next = rd_input_ptr;  // BUG-UB-1 fix
                 if(rd_input_transpose) begin
                     // For transposed matrices (for loop should increment)
                     for (int i = 0; i < SYSTOLIC_ARRAY_WIDTH; i++) begin
                         if(rd_input_time_counter >= i && rd_input_time_counter < rd_input_row_size + i && i < rd_input_col_size) begin 
                             ub_rd_input_valid_out[i] <= 1'b1;
-                            ub_rd_input_data_out[i] <= ub_memory[rd_input_ptr];
-                            rd_input_ptr = rd_input_ptr + 1;            // I should get rid of this (not good to mix non blocking and blocking assignments) but it works for now
+                            ub_rd_input_data_out[i] <= ub_memory[rd_input_ptr_next];
+                            rd_input_ptr_next = rd_input_ptr_next + 1;
                         end else begin 
                             ub_rd_input_valid_out[i] <= 1'b0;
                             ub_rd_input_data_out[i] <= '0;
@@ -293,8 +318,8 @@ module unified_buffer #(
                     for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
                         if(rd_input_time_counter >= i && rd_input_time_counter < rd_input_row_size + i && i < rd_input_col_size) begin 
                             ub_rd_input_valid_out[i] <= 1'b1;
-                            ub_rd_input_data_out[i] <= ub_memory[rd_input_ptr];
-                            rd_input_ptr = rd_input_ptr + 1;            // I should get rid of this (not good to mix non blocking and blocking assignments) but it works for now    
+                            ub_rd_input_data_out[i] <= ub_memory[rd_input_ptr_next];
+                            rd_input_ptr_next = rd_input_ptr_next + 1;
                         end else begin 
                             ub_rd_input_valid_out[i] <= 1'b0;
                             ub_rd_input_data_out[i] <= '0;
@@ -302,6 +327,7 @@ module unified_buffer #(
                     end
                 end
                 rd_input_time_counter <= rd_input_time_counter + 1;
+                rd_input_ptr <= rd_input_ptr_next;
             end else begin 
                 rd_input_ptr <= 0;
                 rd_input_row_size <= 0;
@@ -315,34 +341,36 @@ module unified_buffer #(
 
             // READING LOGIC (for weights from UB to top of systolic array)
             if (rd_weight_time_counter + 1 < rd_weight_row_size + rd_weight_col_size) begin
+                rd_weight_ptr_next = rd_weight_ptr;  // BUG-UB-1 fix
                 if(rd_weight_transpose) begin
                     // For transposed matrices (for loop should increment)
                     for (int i = 0; i < SYSTOLIC_ARRAY_WIDTH; i++) begin
                         if(rd_weight_time_counter >= i && rd_weight_time_counter < rd_weight_row_size + i && i < rd_weight_col_size) begin
                             ub_rd_weight_valid_out[i] <= 1'b1;
-                            ub_rd_weight_data_out[i] <= ub_memory[rd_weight_ptr];
-                            rd_weight_ptr = rd_weight_ptr + rd_weight_skip_size;
+                            ub_rd_weight_data_out[i] <= ub_memory[rd_weight_ptr_next];
+                            rd_weight_ptr_next = rd_weight_ptr_next + rd_weight_skip_size;
                         end else begin
                             ub_rd_weight_valid_out[i] <= 0;
                             ub_rd_weight_data_out[i] <= '0;
                         end
                     end
-                    rd_weight_ptr = rd_weight_ptr - rd_weight_skip_size - 1;
+                    rd_weight_ptr_next = rd_weight_ptr_next - rd_weight_skip_size - 1;
                 end else begin
                     // For untransposed matrices (for loop should decrement)
                     for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
                         if(rd_weight_time_counter >= i && rd_weight_time_counter < rd_weight_row_size + i && i < rd_weight_col_size) begin
                             ub_rd_weight_valid_out[i] <= 1'b1;
-                            ub_rd_weight_data_out[i] <= ub_memory[rd_weight_ptr];
-                            rd_weight_ptr = rd_weight_ptr - rd_weight_skip_size;
+                            ub_rd_weight_data_out[i] <= ub_memory[rd_weight_ptr_next];
+                            rd_weight_ptr_next = rd_weight_ptr_next - rd_weight_skip_size;
                         end else begin
                             ub_rd_weight_valid_out[i] <= 0;
                             ub_rd_weight_data_out[i] <= '0;
                         end
                     end
-                    rd_weight_ptr = rd_weight_ptr + rd_weight_skip_size + 1;
+                    rd_weight_ptr_next = rd_weight_ptr_next + rd_weight_skip_size + 1;
                 end
                 rd_weight_time_counter <= rd_weight_time_counter + 1;
+                rd_weight_ptr <= rd_weight_ptr_next;
             end else begin
                 rd_weight_ptr <= 0;
                 rd_weight_row_size <= 0;
@@ -376,15 +404,17 @@ module unified_buffer #(
 
             // READING LOGIC (for Y inputs from UB to loss modules in VPU)
             if (rd_Y_time_counter + 1 < rd_Y_row_size + rd_Y_col_size) begin
+                rd_Y_ptr_next = rd_Y_ptr;  // BUG-UB-1 fix
                 for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
                     if(rd_Y_time_counter >= i && rd_Y_time_counter < rd_Y_row_size + i && i < rd_Y_col_size) begin
-                        ub_rd_Y_data_out[i] <= ub_memory[rd_Y_ptr];
-                        rd_Y_ptr = rd_Y_ptr + 1;
+                        ub_rd_Y_data_out[i] <= ub_memory[rd_Y_ptr_next];
+                        rd_Y_ptr_next = rd_Y_ptr_next + 1;
                     end else begin
                         ub_rd_Y_data_out[i] <= '0;
                     end
                 end
                 rd_Y_time_counter <= rd_Y_time_counter + 1;
+                rd_Y_ptr <= rd_Y_ptr_next;
             end else begin
                 rd_Y_ptr <= 0;
                 rd_Y_row_size <= 0;
@@ -397,15 +427,17 @@ module unified_buffer #(
 
             // READING LOGIC (for H inputs from UB to activation derivative modules in VPU)
             if (rd_H_time_counter + 1 < rd_H_row_size + rd_H_col_size) begin
+                rd_H_ptr_next = rd_H_ptr;  // BUG-UB-1 fix
                 for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
                     if(rd_H_time_counter >= i && rd_H_time_counter < rd_H_row_size + i && i < rd_H_col_size) begin
-                        ub_rd_H_data_out[i] <= ub_memory[rd_H_ptr];
-                        rd_H_ptr = rd_H_ptr + 1;
+                        ub_rd_H_data_out[i] <= ub_memory[rd_H_ptr_next];
+                        rd_H_ptr_next = rd_H_ptr_next + 1;
                     end else begin
                         ub_rd_H_data_out[i] <= '0;
                     end
                 end
                 rd_H_time_counter <= rd_H_time_counter + 1;
+                rd_H_ptr <= rd_H_ptr_next;
             end else begin
                 rd_H_ptr <= 0;
                 rd_H_row_size <= 0;
@@ -427,15 +459,17 @@ module unified_buffer #(
                 end
                 rd_grad_bias_time_counter <= rd_grad_bias_time_counter + 1;
             end else if (rd_grad_weight_time_counter + 1 < rd_grad_weight_row_size + rd_grad_weight_col_size) begin
+                rd_grad_weight_ptr_next = rd_grad_weight_ptr;  // BUG-UB-1 fix
                 for (int i = SYSTOLIC_ARRAY_WIDTH-1; i >= 0; i--) begin
                     if(rd_grad_weight_time_counter >= i && rd_grad_weight_time_counter < rd_grad_weight_row_size + i && i < rd_grad_weight_col_size) begin 
-                        value_old_in[i] <= ub_memory[rd_grad_weight_ptr];
-                        rd_grad_weight_ptr = rd_grad_weight_ptr + 1;            // I should get rid of this (not good to mix non blocking and blocking assignments) but it works for now    
+                        value_old_in[i] <= ub_memory[rd_grad_weight_ptr_next];
+                        rd_grad_weight_ptr_next = rd_grad_weight_ptr_next + 1;
                     end else begin 
                         value_old_in[i] <= '0;
                     end
                 end
                 rd_grad_weight_time_counter <= rd_grad_weight_time_counter + 1;
+                rd_grad_weight_ptr <= rd_grad_weight_ptr_next;
             end else begin
                 rd_grad_bias_ptr <= 0;
                 rd_grad_bias_row_size <= 0;

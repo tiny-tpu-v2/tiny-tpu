@@ -1,0 +1,26 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/visha/Desktop/FV/tiny-tpu/src/fixedpoint.sv" into library work
+INFO: [VRFC 10-311] analyzing module fxp_zoom
+INFO: [VRFC 10-311] analyzing module fxp_add
+INFO: [VRFC 10-311] analyzing module fxp_addsub
+INFO: [VRFC 10-311] analyzing module fxp_mul
+INFO: [VRFC 10-311] analyzing module fxp_mul_pipe
+INFO: [VRFC 10-311] analyzing module fxp_div
+INFO: [VRFC 10-311] analyzing module fxp_div_pipe
+INFO: [VRFC 10-311] analyzing module fxp_sqrt
+INFO: [VRFC 10-311] analyzing module fxp_sqrt_pipe
+INFO: [VRFC 10-311] analyzing module fxp2float
+INFO: [VRFC 10-311] analyzing module fxp2float_pipe
+INFO: [VRFC 10-311] analyzing module float2fxp
+INFO: [VRFC 10-311] analyzing module float2fxp_pipe
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv" into library work
+INFO: [VRFC 10-311] analyzing module pe
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'clk' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:5]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'rst' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:6]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_psum_in' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:9]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_weight_in' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:10]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_accept_w_in' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:11]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_input_in' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:14]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_valid_in' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:15]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_switch_in' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:16]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'pe_enabled' when default_nettype is none [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:17]
+ERROR: [VRFC 10-1040] module pe ignored due to previous errors [C:/Users/visha/Desktop/FV/tiny-tpu/src/pe.sv:4]

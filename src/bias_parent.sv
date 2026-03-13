@@ -18,7 +18,10 @@ module bias_parent(
     input wire bias_sys_valid_in_2,
 
     output logic signed [15:0] bias_z_data_out_1,
-    output logic signed [15:0] bias_z_data_out_2
+    output logic signed [15:0] bias_z_data_out_2,
+
+    output logic bias_overflow_out_1,  // BUG-OVF-1 fix
+    output logic bias_overflow_out_2   // BUG-OVF-1 fix
 
 ); 
     // Each bias module handles a feature column for a pre-activation matrix. 
@@ -30,7 +33,8 @@ module bias_parent(
         .bias_Z_valid_out(bias_Z_valid_out_1),
         .bias_sys_data_in(bias_sys_data_in_1),
         .bias_sys_valid_in(bias_sys_valid_in_1),
-        .bias_z_data_out(bias_z_data_out_1)
+        .bias_z_data_out(bias_z_data_out_1),
+        .bias_overflow_out(bias_overflow_out_1)
     );
 
     bias_child column_2 (
@@ -40,7 +44,8 @@ module bias_parent(
         .bias_Z_valid_out(bias_Z_valid_out_2),
         .bias_sys_data_in(bias_sys_data_in_2),
         .bias_sys_valid_in(bias_sys_valid_in_2),
-        .bias_z_data_out(bias_z_data_out_2)
+        .bias_z_data_out(bias_z_data_out_2),
+        .bias_overflow_out(bias_overflow_out_2)
     );
 
 
