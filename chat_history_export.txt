@@ -1,0 +1,493 @@
+Chat History Export
+Generated: 2026-03-15
+Note: This export includes all user/assistant messages available in the current session context.
+
+[User]
+i'm on wsl, is it possible to setup arduino programming for an arduino uno?
+
+[User]
+help me do all of this
+
+[User]
+PS C:\Users\surya> winget install usbipd
+Found usbipd-win [dorssel.usbipd-win] Version 5.3.0
+This application is licensed to you by its owner.
+Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Downloading https://github.com/dorssel/usbipd-win/releases/download/v5.3.0/usbipd-win_5.3.0_x64.msi
+  ██████████████████████████████  4.29 MB / 4.29 MB
+Successfully verified installer hash
+Starting package install...
+The installer will request to run as administrator. Expect a prompt.
+Successfully installed
+PS C:\Users\surya> winget install --interactive --exact dorssel.usbipd-win
+Found an existing package already installed. Trying to upgrade the installed package...
+No available upgrade found.
+No newer package versions are available from the configured sources.
+PS C:\Users\surya> usbipd list
+usbipd : The term 'usbipd' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct
+and try again.
+At line:1 char:1
++ usbipd list
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (usbipd:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+
+PS C:\Users\surya>
+
+[User]
+one step at a time please -
+PS C:\WINDOWS\system32>  & 'C:\Program Files\usbipd-win\usbipd.exe' list
+>>   & 'C:\Program Files\usbipd-win\usbipd.exe' bind --busid 1-3
+>>   & 'C:\Program Files\usbipd-win\usbipd.exe' attach --wsl --busid 1-3
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-4    09fb:6010  Altera USB-Blaster II (JTAG interface), Altera USB-Blaste...  Not shared
+1-8    13d3:56eb  USB2.0 HD UVC WebCam, USB2.0 IR UVC WebCam, Camera DFU De...  Not shared
+1-9    0b05:19b6  USB Input Device                                              Not shared
+1-10   8087:0033  Intel(R) Wireless Bluetooth(R)                                Not shared
+
+Persisted:
+GUID                                  DEVICE
+
+usbipd: error: There is no device with busid '1-3'.
+usbipd: error: There is no device with busid '1-3'.
+PS C:\WINDOWS\system32>
+
+[User]
+PS C:\WINDOWS\system32>   & 'C:\Program Files\usbipd-win\usbipd.exe' list
+Connected:
+BUSID  VID:PID    DEVICE                                                        STATE
+1-4    09fb:6010  Altera USB-Blaster II (JTAG interface), Altera USB-Blaste...  Not shared
+1-8    13d3:56eb  USB2.0 HD UVC WebCam, USB2.0 IR UVC WebCam, Camera DFU De...  Not shared
+1-9    0b05:19b6  USB Input Device                                              Not shared
+1-10   8087:0033  Intel(R) Wireless Bluetooth(R)                                Not shared
+
+Persisted:
+GUID                                  DEVICE
+
+PS C:\WINDOWS\system32>
+
+[User]
+wait try again now
+
+[User]
+Persisted:
+GUID                                  DEVICE
+
+PS C:\WINDOWS\system32> & 'C:\Program Files\usbipd-win\usbipd.exe' bind --busid 1-3
+PS C:\WINDOWS\system32>
+
+[User]
+Persisted:
+GUID                                  DEVICE
+
+PS C:\WINDOWS\system32> & 'C:\Program Files\usbipd-win\usbipd.exe' bind --busid 1-3
+PS C:\WINDOWS\system32>
+>>   & 'C:\Program Files\usbipd-win\usbipd.exe' attach --wsl --busid 1-3
+usbipd: info: Using WSL distribution 'Ubuntu' to attach; the device will be available in all WSL 2 distributions.
+usbipd: info: Loading vhci_hcd module.
+usbipd: info: Detected networking mode 'nat'.
+usbipd: info: Using IP address 172.29.192.1 to reach the host.
+PS C:\WINDOWS\system32>
+
+[User]
+➜  ~   ls /dev/ttyACM0 /dev/ttyUSB0 2>/dev/null
+/dev/ttyACM0
+➜  ~
+
+[User]
+you can proceed from here right?➜  ~   ls /dev/ttyACM0 /dev/ttyUSB0 2>/dev/null
+/dev/ttyACM0
+➜  ~  cd /tmp && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+Installing in /tmp/bin
+ARCH=64bit
+OS=Linux
+Using curl as download tool
+Downloading https://downloads.arduino.cc/arduino-cli/arduino-cli_1.4.1_Linux_64bit.tar.gz
+install.sh: arduino-cli not found. You might want to add "/tmp/bin" to your $PATH
+arduino-cli  Version: 1.4.1 Commit: e39419312 Date: 2026-01-19T16:13:12Z installed successfully in /tmp/bin
+➜  /tmp
+
+[User]
+is blinky working on it? can you output a markdown file in the folder ~/tiny-tpu explaining the setup for arduino on wsl, and all findings that we came across
+
+[User]
+wait what does the blinky program do for the arduino uno what should i see
+
+[User]
+i see an orange led stay on, and a green led stay on but nothing blinking
+
+[User]
+upload led blink so i can verify the full pipeline
+
+[User]
+add whatever you've learned over to the arduino markdown file
+
+[User]
+ok i think the neural network architecture is fine. so the architecture is 784 -> 64 -> 10? i think the problem with it's inaccuracy for real data is due to the data preprocessing steps in training. first of all, i want there to be an equal amount of each number in the dataset. then, i want you to think of creative augmentations to the data that will allow the model to generalize to real handwritten digits from the arduino. here are some ideas - i'm guessing mnist examples are probably ranges of values aka they encode each pixel as a val between 0 and 255, monochrome. expect that my handwritten digits will be super messy and also, the width of each digit drawn will be 3-5 pixels wide for ex. the width of a 1 drawn will be 3-5 pixels. let me know if this makes sense. if yes, you should come up with a rigorous plan to get the best weights for the model. let me know if a larger architecture would make much of a difference
+
+[User]
+if you can get the same architecture working, that's better since it's more risky to update the architecture, unless you think it will be easy to do. the arduino seems to have a brush stroke of 3-5 with my finger, unless this is intended. think of all possible data augmentations that would allow for generalization, be extreme with it. i'd also prefer not to collect data for step 1. not rlly clear on step 2. overall, just pick 1 plan, and retrain the model, then recompile, then reflash, thats it
+
+[User]
+continue
+
+[User]
+continue if not finished. push and document everything as well as all important artifacts. make sure
+  there is a startup script that is clear to use, for a one command startup, existing in the project
+  directory.
+  continue if not finished. push and document everything as well as all important artifacts. make sure
+    there is a startup script that is clear to use, for a one command startup, existing in the project
+    directory.
+  feel free to basically "draw" your own examples, as long as they look like handdrawn digits, benchmarking
+  them on the model
+
+[User]
+bash start mnist demo doesn't work
+
+[User]
+➜  tiny-tpu git:(tiny-tpu/fpga-mnist-jtag) bash start_mnist_demo.sh
+[start] launching quickstart_jtag_demo.sh
+[quickstart] Setup attempt 1/10
+[quickstart] Attaching Arduino busid 1-4 to WSL
+[quickstart] Using serial port /dev/ttyACM0
+[quickstart] Programming FPGA
+missing bitstream: /mnt/c/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/output_files_jtag/de1_soc_mnist_jtag_top.sof
+run build_quartus_jtag.sh first
+[quickstart] FPGA programming failed, retrying in 2s
+[quickstart] Setup attempt 2/10
+[quickstart] Attaching Arduino busid 1-4 to WSL
+[quickstart] Using serial port /dev/ttyACM0
+[quickstart] Programming FPGA
+missing bitstream: /mnt/c/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/output_files_jtag/de1_soc_mnist_jtag_top.sof
+run build_quartus_jtag.sh first
+[quickstart] FPGA programming failed, retrying in 2s
+^C
+➜  tiny-tpu git:(tiny-tpu/fpga-mnist-jtag)
+
+[User]
+move all markdown files to a folder i created called docs
+
+[User]
+verify this is also expected - ➜  tiny-tpu git:(tiny-tpu/fpga-mnist-jtag) bash start_mnist_demo.sh
+[start] launching quickstart_jtag_demo.sh
+[quickstart] Setup attempt 1/10
+[quickstart] Attaching Arduino busid 1-4 to WSL
+[quickstart] Using serial port /dev/ttyACM0
+[quickstart] Programming FPGA
+1) DE-SoC [USB-1]
+  4BA00477   SOCVHPS
+  02D120DD   5CSE(BA5|MA5)/5CSTFD5D5/..
+
+TBBmalloc: skip allocation functions replacement in ucrtbase.dll: unknown prologue for function _msize
+Info: *******************************************************************
+Info: Running Quartus Prime Programmer
+    Info: Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+    Info: Copyright (C) 2025  Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions
+    Info: and other software and tools, and any partner logic
+    Info: functions, and any output files from any of the foregoing
+    Info: (including device programming or simulation files), and any
+    Info: associated documentation or information are expressly subject
+    Info: to the terms and conditions of the Altera Program License
+    Info: Subscription Agreement, the Altera Quartus Prime License Agreement,
+    Info: the Altera IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Altera and sold by Altera or its authorized distributors.  Please
+    Info: refer to the Altera Software License Subscription Agreements
+    Info: on the Quartus Prime software download page.
+    Info: Processing started: Sun Mar 15 01:38:07 2026
+Info: Command: quartus_pgm -m JTAG -c "DE-SoC [USB-1]" -o s;SOCVHPS@1 -o p;\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\artifacts_jtag\de1_soc_mnist_jtag_top.sof@2
+Info (213045): Using programming cable "DE-SoC [USB-1]"
+Info (213011): Using programming file //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts_jtag/de1_soc_mnist_jtag_top.sof with checksum 0x03023A6A for device 5CSEMA5F31@2
+Info (209060): Started Programmer operation at Sun Mar 15 01:38:08 2026
+Info (209016): Configuring device index 2
+Info (209017): Device 2 contains JTAG ID code 0x02D120DD
+Info (209007): Configuration succeeded -- 1 device(s) configured
+Info (209011): Successfully performed operation(s)
+Info (209061): Ended Programmer operation at Sun Mar 15 01:38:11 2026
+Info: Quartus Prime Programmer was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 4497 megabytes
+    Info: Processing ended: Sun Mar 15 01:38:11 2026
+    Info: Elapsed time: 00:00:04
+    Info: Total CPU time (on all processors): 00:00:01
+[quickstart] Running MMIO health check
+--------------------------------------------------------------------------------
+ Version 25.1 1129
+ Copyright (C) 2025 Intel Corporation. All rights reserved.
+ Your use of Intel Corporation's design tools, logic functions
+ and other software and tools, and its AMPP partner logic
+ functions, and any output files from any of the foregoing
+ (including device programming or simulation files), and any
+ associated documentation or information is expressly subject
+ to the terms and conditions of the Intel Program License
+ Subscription Agreement, the Intel Quartus Prime License Agreement,
+ the Intel MegaCore Function License Agreement, or other
+ applicable license agreement, including, without limitation,
+ that your use is for the sole purpose of programming logic
+ devices manufactured by Intel and sold by Intel or its
+ authorized distributors.  Please refer to the applicable
+ agreement for further details.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+ Welcome to Intel's FPGA System Console
+
+ This Tcl console provides access to the hardware modules instantiated in your
+ FPGA. You can use System Console for all of the following purposes:
+
+    * To start, stop, or step a Nios II processor
+    * To read or write Avalon Memory-Mapped (Avalon-MM) slaves using special
+     masters
+    * To sample the SOPC system clock as well as system reset signal
+    * To run JTAG loopback tests to analyze board noise problems
+    * To shift arbitrary instruction register and data register values to
+     instantiated system level debug (SLD) nodes
+
+ In addition, the directory <QuartusII Dir>/sopc_builder/system_console/scripts
+ contains Tcl files that provide miscellaneous utilities and examples of how to
+ access the functionality provided. You can include those macros in your
+ scripts by issuing Tcl source commands.
+--------------------------------------------------------------------------------
+% java.lang.Exception: no master service found
+    while executing
+"error "no master service found""
+    invoked from within
+"if {$master_path eq ""} {
+    error "no master service found"
+}"
+[quickstart] JTAG health check failed, retrying in 2s
+[quickstart] Setup attempt 2/10
+[quickstart] Attaching Arduino busid 1-4 to WSL
+[quickstart] Using serial port /dev/ttyACM0
+[quickstart] Programming FPGA
+1) DE-SoC [USB-1]
+  4BA00477   SOCVHPS
+  02D120DD   5CSE(BA5|MA5)/5CSTFD5D5/..
+
+TBBmalloc: skip allocation functions replacement in ucrtbase.dll: unknown prologue for function _msize
+Info: *******************************************************************
+Info: Running Quartus Prime Programmer
+    Info: Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+    Info: Copyright (C) 2025  Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions
+    Info: and other software and tools, and any partner logic
+    Info: functions, and any output files from any of the foregoing
+    Info: (including device programming or simulation files), and any
+    Info: associated documentation or information are expressly subject
+    Info: to the terms and conditions of the Altera Program License
+    Info: Subscription Agreement, the Altera Quartus Prime License Agreement,
+    Info: the Altera IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Altera and sold by Altera or its authorized distributors.  Please
+    Info: refer to the Altera Software License Subscription Agreements
+    Info: on the Quartus Prime software download page.
+    Info: Processing started: Sun Mar 15 01:38:26 2026
+Info: Command: quartus_pgm -m JTAG -c "DE-SoC [USB-1]" -o s;SOCVHPS@1 -o p;\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\artifacts_jtag\de1_soc_mnist_jtag_top.sof@2
+Info (213045): Using programming cable "DE-SoC [USB-1]"
+Info (213011): Using programming file //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/artifacts_jtag/de1_soc_mnist_jtag_top.sof with checksum 0x03023A6A for device 5CSEMA5F31@2
+Info (209060): Started Programmer operation at Sun Mar 15 01:38:27 2026
+Info (209016): Configuring device index 2
+Info (209017): Device 2 contains JTAG ID code 0x02D120DD
+Info (209007): Configuration succeeded -- 1 device(s) configured
+Info (209011): Successfully performed operation(s)
+Info (209061): Ended Programmer operation at Sun Mar 15 01:38:30 2026
+Info: Quartus Prime Programmer was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 4497 megabytes
+    Info: Processing ended: Sun Mar 15 01:38:30 2026
+    Info: Elapsed time: 00:00:04
+    Info: Total CPU time (on all processors): 00:00:01
+[quickstart] Running MMIO health check
+--------------------------------------------------------------------------------
+ Version 25.1 1129
+ Copyright (C) 2025 Intel Corporation. All rights reserved.
+ Your use of Intel Corporation's design tools, logic functions
+ and other software and tools, and its AMPP partner logic
+ functions, and any output files from any of the foregoing
+ (including device programming or simulation files), and any
+ associated documentation or information is expressly subject
+ to the terms and conditions of the Intel Program License
+ Subscription Agreement, the Intel Quartus Prime License Agreement,
+ the Intel MegaCore Function License Agreement, or other
+ applicable license agreement, including, without limitation,
+ that your use is for the sole purpose of programming logic
+ devices manufactured by Intel and sold by Intel or its
+ authorized distributors.  Please refer to the applicable
+ agreement for further details.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+ Welcome to Intel's FPGA System Console
+
+ This Tcl console provides access to the hardware modules instantiated in your
+ FPGA. You can use System Console for all of the following purposes:
+
+    * To start, stop, or step a Nios II processor
+    * To read or write Avalon Memory-Mapped (Avalon-MM) slaves using special
+     masters
+    * To sample the SOPC system clock as well as system reset signal
+    * To run JTAG loopback tests to analyze board noise problems
+    * To shift arbitrary instruction register and data register values to
+     instantiated system level debug (SLD) nodes
+
+ In addition, the directory <QuartusII Dir>/sopc_builder/system_console/scripts
+ contains Tcl files that provide miscellaneous utilities and examples of how to
+ access the functionality provided. You can include those macros in your
+ scripts by issuing Tcl source commands.
+--------------------------------------------------------------------------------
+% MASTER /devices/5CSE(BA5|MA5)|5CSTFD5D5|..@2#USB-1#DE-SoC/(link)/JTAG/(110:132 v1 #0)/phy_0/master
+VERSION 0x4D4E4953
+STATUS 0x00000000
+[quickstart] Running one-shot predict_bits
+--------------------------------------------------------------------------------
+ Version 25.1 1129
+ Copyright (C) 2025 Intel Corporation. All rights reserved.
+ Your use of Intel Corporation's design tools, logic functions
+ and other software and tools, and its AMPP partner logic
+ functions, and any output files from any of the foregoing
+ (including device programming or simulation files), and any
+ associated documentation or information is expressly subject
+ to the terms and conditions of the Intel Program License
+ Subscription Agreement, the Intel Quartus Prime License Agreement,
+ the Intel MegaCore Function License Agreement, or other
+ applicable license agreement, including, without limitation,
+ that your use is for the sole purpose of programming logic
+ devices manufactured by Intel and sold by Intel or its
+ authorized distributors.  Please refer to the applicable
+ agreement for further details.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+ Welcome to Intel's FPGA System Console
+
+ This Tcl console provides access to the hardware modules instantiated in your
+ FPGA. You can use System Console for all of the following purposes:
+
+    * To start, stop, or step a Nios II processor
+    * To read or write Avalon Memory-Mapped (Avalon-MM) slaves using special
+     masters
+    * To sample the SOPC system clock as well as system reset signal
+    * To run JTAG loopback tests to analyze board noise problems
+    * To shift arbitrary instruction register and data register values to
+     instantiated system level debug (SLD) nodes
+
+ In addition, the directory <QuartusII Dir>/sopc_builder/system_console/scripts
+ contains Tcl files that provide miscellaneous utilities and examples of how to
+ access the functionality provided. You can include those macros in your
+ scripts by issuing Tcl source commands.
+--------------------------------------------------------------------------------
+% WRITE_BITS_OK count=784 verify=1
+PREDICTION 8
+STATUS 0x00000006
+RESULT 0x00000008
+[quickstart] Starting continuous Arduino->JTAG loop
+
+[Assistant]
+- User asked to set up Arduino-on-WSL flow, then ML retrain/build/flash workflow.
+- We completed many steps and pushed multiple commits to branch `tiny-tpu/fpga-mnist-jtag` on `origin`.
+
+## Recent key outcomes
+1. **Model retrain + build + flash done**
+   - Architecture kept at `784 -> 64 -> 10`.
+   - `de1_soc_mnist_demo/train_mnist.py` was extended with aggressive augmentation options:
+     - `--augment-mode` (`none|strong|extreme`)
+     - `--augment-copies`
+   - Retrain command used:
+     - `train-limit=50000`, `test-limit=8000`, `max-iter=80`, `augment-mode=extreme`, `augment-copies=1`, hidden 64.
+   - New model summary:
+     - accuracy `0.954375`, effective train samples `100000`.
+   - Quartus serial build and programming were executed successfully.
+   - JTAG build artifacts were updated in `de1_soc_mnist_demo/artifacts_jtag`.
+
+2. **Startup scripts added**
+   - `de1_soc_mnist_demo/start_mnist_demo.sh` (wrapper around `quickstart_jtag_demo.sh`).
+   - Root-level `/home/surya/tiny-tpu/start_mnist_demo.sh` wrapper added so command works from repo root.
+
+3. **JTAG fallback bug fixed**
+   - `de1_soc_mnist_demo/program_fpga_jtag.sh` had incorrect fallback:
+     - from `artifacts/de1_soc_mnist_jtag_top.sof`
+     - fixed to `artifacts_jtag/de1_soc_mnist_jtag_top.sof` with legacy fallback retained.
+   - Verified by running `program_fpga_jtag.sh` and `bash start_mnist_demo.sh --no-loop`.
+
+4. **Docs and artifacts**
+   - Added report:
+     - `de1_soc_mnist_demo/RETRAIN_REFLASH_REPORT_2026-03-15.md`
+   - Updated:
+     - `de1_soc_mnist_demo/README.md`
+   - Added synthetic benchmark tool and artifacts:
+     - script: `de1_soc_mnist_demo/tools/benchmark_synthetic_handdrawn.py`
+     - output folder: `de1_soc_mnist_demo/synthetic_handdrawn_benchmark/`
+     - stress benchmark result recorded: accuracy `0.4700 (564/1200)`.
+
+5. **Export preview tools/artifacts tracked**
+   - `de1_soc_mnist_demo/tools/export_bitmask_previews.py`
+   - `de1_soc_mnist_demo/tools/export_mnist_dataset_previews.py`
+   - generated folders:
+     - `de1_soc_mnist_demo/bitmask_previews/`
+     - `de1_soc_mnist_demo/mnist_dataset_previews/`
+
+## Latest user issue and response
+- User ran `bash start_mnist_demo.sh` and posted logs:
+  - First setup attempt failed MMIO health with `java.lang.Exception: no master service found`.
+  - Retry succeeded; health and one-shot inference passed; continuous loop started.
+- I replied this is acceptable transient behavior after FPGA reconfiguration:
+  - first health probe can fail while JTAG services re-enumerate.
+  - retry success indicates healthy flow.
+  - `TBBmalloc` warning is benign.
+
+## Git / push status
+- Commits pushed to `origin/tiny-tpu/fpga-mnist-jtag` include:
+  - `5d74fdf` (major retrain/build/docs/artifacts)
+  - `946fab6` (root startup wrapper)
+  - `5cdb4a1` (fix JTAG bitstream fallback path)
+- At one point working tree was clean after pushes; later user asked to move markdown files.
+
+## Important pending state: markdown move
+- User requested: “move all markdown files to docs”.
+- I executed move:
+  - moved all `*.md` outside `docs/` into `docs/` preserving relative paths.
+  - Example now: `docs/de1_soc_mnist_demo/README.md`, `docs/ARDUINO_WSL_SETUP.md`, etc.
+- `rg --files -g '*.md'` now shows markdown only under `docs/`.
+- **This created large unstaged git changes**:
+  - many tracked markdown files are now deletions at original paths and additions under `docs/`.
+  - also affected `veri_nn/README.md`; `veri_nn` is a nested git repo (`veri_nn/.git` exists), so moving that README changed nested-repo state (parent status showed ` m veri_nn` previously).
+- I informed user of this caveat and offered to undo nested-repo move if desired.
+- No commit/push was made yet for the markdown move.
+
+## If continuing now
+- Current conversation last message from user was verification of startup log, and I confirmed it as expected.
+- Next likely user action may ask to proceed with or revert markdown move; you should check current `git status` before any new changes.
+
+[User]
+# AGENTS.md instructions for /home/surya/tiny-tpu
+
+<INSTRUCTIONS>
+## Skills
+A skill is a set of local instructions to follow that is stored in a `SKILL.md` file. Below is the list of skills that can be used. Each entry includes a name, description, and file path so you can open the source for full instructions when using a specific skill.
+### Available skills
+- skill-creator: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integrations. (file: /home/surya/.codex/skills/.system/skill-creator/SKILL.md)
+- skill-installer: Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos). (file: /home/surya/.codex/skills/.system/skill-installer/SKILL.md)
+### How to use skills
+- Discovery: The list above is the skills available in this session (name + description + file path). Skill bodies live on disk at the listed paths.
+- Trigger rules: If the user names a skill (with `$SkillName` or plain text) OR the task clearly matches a skill's description shown above, you must use that skill for that turn. Multiple mentions mean use them all. Do not carry skills across turns unless re-mentioned.
+- Missing/blocked: If a named skill isn't in the list or the path can't be read, say so briefly and continue with the best fallback.
+- How to use a skill (progressive disclosure):
+  1) After deciding to use a skill, open its `SKILL.md`. Read only enough to follow the workflow.
+  2) When `SKILL.md` references relative paths (e.g., `scripts/foo.py`), resolve them relative to the skill directory listed above first, and only consider other paths if needed.
+  3) If `SKILL.md` points to extra folders such as `references/`, load only the specific files needed for the request; don't bulk-load everything.
+  4) If `scripts/` exist, prefer running or patching them instead of retyping large code blocks.
+  5) If `assets/` or templates exist, reuse them instead of recreating from scratch.
+- Coordination and sequencing:
+  - If multiple skills apply, choose the minimal set that covers the request and state the order you'll use them.
+  - Announce which skill(s) you're using and why (one short line). If you skip an obvious skill, say why.
+- Context hygiene:
+  - Keep context small: summarize long sections instead of pasting them; only load extra files when needed.
+  - Avoid deep reference-chasing: prefer opening only files directly linked from `SKILL.md` unless you're blocked.
+  - When variants exist (frameworks, providers, domains), pick only the relevant reference file(s) and note that choice.
+- Safety and fallback: If a skill can't be applied cleanly (missing files, unclear instructions), state the issue, pick the next-best approach, and continue.
+</INSTRUCTIONS><environment_context>
+  <cwd>/home/surya/tiny-tpu</cwd>
+  <shell>zsh</shell>
+</environment_context>
+
+[User]
+can you export this entire chat history to a .txt file?
