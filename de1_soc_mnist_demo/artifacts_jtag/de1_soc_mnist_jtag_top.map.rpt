@@ -1,5 +1,5 @@
 Analysis & Synthesis report for de1_soc_mnist_jtag_top
-Sat Mar  7 21:23:23 2026
+Sat Mar  7 23:47:23 2026
 Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
 
 
@@ -171,7 +171,7 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                      ;
 +---------------------------------+-------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sat Mar  7 21:23:22 2026           ;
+; Analysis & Synthesis Status     ; Successful - Sat Mar  7 23:47:23 2026           ;
 ; Quartus Prime Version           ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
 ; Revision Name                   ; de1_soc_mnist_jtag_top                          ;
 ; Top-level Entity Name           ; de1_soc_mnist_jtag_top                          ;
@@ -291,14 +291,14 @@ on the Quartus Prime software download page.
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   9.4%      ;
-;     Processor 3            ;   9.4%      ;
-;     Processor 4            ;   9.4%      ;
-;     Processor 5            ;   9.4%      ;
-;     Processor 6            ;   5.9%      ;
-;     Processor 7            ;   5.9%      ;
-;     Processor 8            ;   5.9%      ;
-;     Processor 9            ;   5.8%      ;
+;     Processor 2            ;   9.8%      ;
+;     Processor 3            ;   9.7%      ;
+;     Processor 4            ;   9.7%      ;
+;     Processor 5            ;   9.7%      ;
+;     Processor 6            ;   7.4%      ;
+;     Processor 7            ;   6.0%      ;
+;     Processor 8            ;   4.3%      ;
+;     Processor 9            ;   4.3%      ;
 ;     Processor 10           ;   2.0%      ;
 ;     Processors 11-14       ;   0.0%      ;
 +----------------------------+-------------+
@@ -413,14 +413,14 @@ on the Quartus Prime software download page.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 8055           ;
+; Estimate of Logic utilization (ALMs needed) ; 8056           ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 10291          ;
+; Combinational ALUT usage for logic          ; 10295          ;
 ;     -- 7 input functions                    ; 35             ;
-;     -- 6 input functions                    ; 5419           ;
-;     -- 5 input functions                    ; 587            ;
-;     -- 4 input functions                    ; 708            ;
-;     -- <=3 input functions                  ; 3542           ;
+;     -- 6 input functions                    ; 5418           ;
+;     -- 5 input functions                    ; 583            ;
+;     -- 4 input functions                    ; 710            ;
+;     -- <=3 input functions                  ; 3549           ;
 ;                                             ;                ;
 ; Dedicated logic registers                   ; 5366           ;
 ;                                             ;                ;
@@ -432,7 +432,7 @@ on the Quartus Prime software download page.
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
 ; Maximum fan-out                             ; 5207           ;
-; Total fan-out                               ; 75790          ;
+; Total fan-out                               ; 75779          ;
 ; Average fan-out                             ; 4.76           ;
 +---------------------------------------------+----------------+
 
@@ -442,8 +442,8 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+-------------------+
 ; Compilation Hierarchy Node                                                                                                              ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                                                                                                                                                                                                                                ; Entity Name                        ; Library Name      ;
 +-----------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------+-------------------+
-; |de1_soc_mnist_jtag_top                                                                                                                 ; 10291 (9)           ; 5366 (0)                  ; 813568            ; 7          ; 57   ; 0            ; |de1_soc_mnist_jtag_top                                                                                                                                                                                                                                                                                                                                            ; de1_soc_mnist_jtag_top             ; work              ;
-;    |mnist_classifier_core:classifier_inst|                                                                                              ; 7833 (1156)         ; 3888 (1417)               ; 813056            ; 7          ; 0    ; 0            ; |de1_soc_mnist_jtag_top|mnist_classifier_core:classifier_inst                                                                                                                                                                                                                                                                                                      ; mnist_classifier_core              ; work              ;
+; |de1_soc_mnist_jtag_top                                                                                                                 ; 10295 (9)           ; 5366 (0)                  ; 813568            ; 7          ; 57   ; 0            ; |de1_soc_mnist_jtag_top                                                                                                                                                                                                                                                                                                                                            ; de1_soc_mnist_jtag_top             ; work              ;
+;    |mnist_classifier_core:classifier_inst|                                                                                              ; 7837 (1160)         ; 3888 (1417)               ; 813056            ; 7          ; 0    ; 0            ; |de1_soc_mnist_jtag_top|mnist_classifier_core:classifier_inst                                                                                                                                                                                                                                                                                                      ; mnist_classifier_core              ; work              ;
 ;       |mnist_sync_rom_2r:model_preload.w1_rom|                                                                                          ; 92 (0)              ; 6 (0)                     ; 802816            ; 0          ; 0    ; 0            ; |de1_soc_mnist_jtag_top|mnist_classifier_core:classifier_inst|mnist_sync_rom_2r:model_preload.w1_rom                                                                                                                                                                                                                                                               ; mnist_sync_rom_2r                  ; work              ;
 ;          |altsyncram:mem_rtl_0|                                                                                                         ; 92 (0)              ; 6 (0)                     ; 802816            ; 0          ; 0    ; 0            ; |de1_soc_mnist_jtag_top|mnist_classifier_core:classifier_inst|mnist_sync_rom_2r:model_preload.w1_rom|altsyncram:mem_rtl_0                                                                                                                                                                                                                                          ; altsyncram                         ; work              ;
 ;             |altsyncram_rk32:auto_generated|                                                                                            ; 92 (0)              ; 6 (6)                     ; 802816            ; 0          ; 0    ; 0            ; |de1_soc_mnist_jtag_top|mnist_classifier_core:classifier_inst|mnist_sync_rom_2r:model_preload.w1_rom|altsyncram:mem_rtl_0|altsyncram_rk32:auto_generated                                                                                                                                                                                                           ; altsyncram_rk32                    ; work              ;
@@ -4458,23 +4458,23 @@ Note: In order to hide this table in the UI and the text report file, please set
 ;     ENA SCLR          ; 76                          ;
 ;     ENA SLD           ; 26                          ;
 ;     plain             ; 37                          ;
-; arriav_lcell_comb     ; 10197                       ;
+; arriav_lcell_comb     ; 10201                       ;
 ;     arith             ; 747                         ;
 ;         0 data inputs ; 8                           ;
 ;         1 data inputs ; 477                         ;
-;         2 data inputs ; 222                         ;
-;         3 data inputs ; 15                          ;
-;         4 data inputs ; 25                          ;
+;         2 data inputs ; 234                         ;
+;         3 data inputs ; 1                           ;
+;         4 data inputs ; 27                          ;
 ;     extend            ; 35                          ;
 ;         7 data inputs ; 35                          ;
-;     normal            ; 9415                        ;
+;     normal            ; 9419                        ;
 ;         0 data inputs ; 2                           ;
 ;         1 data inputs ; 11                          ;
-;         2 data inputs ; 280                         ;
-;         3 data inputs ; 2484                        ;
+;         2 data inputs ; 282                         ;
+;         3 data inputs ; 2491                        ;
 ;         4 data inputs ; 670                         ;
-;         5 data inputs ; 564                         ;
-;         6 data inputs ; 5404                        ;
+;         5 data inputs ; 560                         ;
+;         6 data inputs ; 5403                        ;
 ; arriav_mac            ; 7                           ;
 ; boundary_port         ; 86                          ;
 ; stratixv_ram_block    ; 136                         ;
@@ -4489,7 +4489,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:24     ;
+; Top            ; 00:00:27     ;
 +----------------+--------------+
 
 
@@ -4513,7 +4513,7 @@ Info: Running Quartus Prime Analysis & Synthesis
     Info: Altera and sold by Altera or its authorized distributors.  Please
     Info: refer to the Altera Software License Subscription Agreements 
     Info: on the Quartus Prime software download page.
-    Info: Processing started: Sat Mar  7 21:21:49 2026
+    Info: Processing started: Sat Mar  7 23:45:48 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off de1_soc_mnist_jtag_top -c de1_soc_mnist_jtag_top
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 14 of the 14 processors detected
@@ -4753,7 +4753,7 @@ Info (12128): Elaborating entity "loss_child" for hierarchy "mnist_classifier_co
 Info (12128): Elaborating entity "leaky_relu_derivative_parent" for hierarchy "mnist_classifier_core:classifier_inst|tpu_mnist:tpu_inst|vpu:vpu_inst|leaky_relu_derivative_parent:leaky_relu_derivative_parent_inst" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/rtl/vpu.v Line: 185
 Info (12128): Elaborating entity "leaky_relu_derivative_child" for hierarchy "mnist_classifier_core:classifier_inst|tpu_mnist:tpu_inst|vpu:vpu_inst|leaky_relu_derivative_parent:leaky_relu_derivative_parent_inst|leaky_relu_derivative_child:lr_d_col_1" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/rtl/leaky_relu_derivative_parent.v Line: 34
 Info (11170): Starting IP generation for the debug fabric: alt_sld_fab.
-Info (11172): 2026.03.07.21:22:48 Progress: Loading sldac771456/alt_sld_fab_wrapper_hw.tcl
+Info (11172): 2026.03.07.23:46:46 Progress: Loading sldac771456/alt_sld_fab_wrapper_hw.tcl
 Info (11172): Alt_sld_fab.alt_sld_fab: SLD fabric agents which did not specify prefer_host were connected to JTAG
 Info (11172): Alt_sld_fab: Generating "alt_sld_fab" for QUARTUS_SYNTH
 Info (11172): Alt_sld_fab: "alt_sld_fab" instantiated alt_sld_fab "alt_sld_fab"
@@ -4956,17 +4956,17 @@ Warning (21074): Design contains 3 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "KEY[0]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
     Warning (15610): No output dependent on input pin "KEY[1]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
     Warning (15610): No output dependent on input pin "KEY[2]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
-Info (21057): Implemented 13212 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 13216 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 8 input pins
     Info (21059): Implemented 53 output pins
-    Info (21061): Implemented 13007 logic cells
+    Info (21061): Implemented 13011 logic cells
     Info (21064): Implemented 136 RAM segments
     Info (21062): Implemented 7 DSP elements
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 81 warnings
-    Info: Peak virtual memory: 5227 megabytes
-    Info: Processing ended: Sat Mar  7 21:23:23 2026
-    Info: Elapsed time: 00:01:34
-    Info: Total CPU time (on all processors): 00:02:38
+    Info: Peak virtual memory: 5211 megabytes
+    Info: Processing ended: Sat Mar  7 23:47:23 2026
+    Info: Elapsed time: 00:01:35
+    Info: Total CPU time (on all processors): 00:02:48
 
 
 +------------------------------------------+

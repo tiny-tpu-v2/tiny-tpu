@@ -14,10 +14,12 @@ It includes:
 - the Quartus JTAG project in [de1_soc_mnist_jtag_top.qpf](de1_soc_mnist_jtag_top.qpf)
 - the Arduino touchscreen sender in [arduino_touch_sender.ino](arduino_touch_sender/arduino_touch_sender.ino)
 - the training/export flow in [train_mnist.py](train_mnist.py)
+- the one-command startup wrapper in [start_mnist_demo.sh](start_mnist_demo.sh)
 - the ModelSim regressions in [sim](sim)
 - the generated model in [model](model)
 - the captured Quartus outputs in [artifacts](artifacts)
 - the captured JTAG-top Quartus outputs in [artifacts_jtag](artifacts_jtag)
+- the synthetic hand-drawn benchmark artifacts in [synthetic_handdrawn_benchmark](synthetic_handdrawn_benchmark)
 - the WSL Arduino attach note in [ARDUINO_WSL_SETUP.md](ARDUINO_WSL_SETUP.md)
 - the Arduino smoke-test sketch in [arduino-blink.ino](arduino-blink/arduino-blink.ino)
 - the no-wire JTAG feasibility report in [JTAG_FEASIBILITY_REPORT.md](JTAG_FEASIBILITY_REPORT.md)
@@ -25,6 +27,7 @@ It includes:
 - the JTAG workflow in [JTAG_MNIST_WORKFLOW.md](JTAG_MNIST_WORKFLOW.md)
 - the JTAG verification and bring-up checklist in [JTAG_TEST_PLAN.md](JTAG_TEST_PLAN.md)
 - the full project journey and engineering log in [START_TO_FINISH_MNIST_JTAG.md](START_TO_FINISH_MNIST_JTAG.md)
+- the latest retrain/reflash report in [RETRAIN_REFLASH_REPORT_2026-03-15.md](RETRAIN_REFLASH_REPORT_2026-03-15.md)
 
 The finished runtime path is:
 
@@ -77,7 +80,10 @@ The current trained model summary is in [summary.json](model/summary.json):
 - output size: `10`
 - tile width: `2`
 - split mode: `balanced` (equal per-class counts for train/test subsets)
-- recorded software-side test accuracy: `0.959` on the exported training run
+- augmentation mode: `extreme`
+- augmentation copies per source sample: `1`
+- effective train sample count: `100000`
+- recorded software-side test accuracy: `0.954375` on the exported training run
 
 ## Original Starting Point
 
@@ -217,6 +223,12 @@ This is the primary, known-good workflow.
 If both boards are plugged in and you want the fastest repeatable bring-up path, run:
 
 ```bash
+bash start_mnist_demo.sh
+```
+
+This wrapper calls:
+
+```bash
 bash quickstart_jtag_demo.sh
 ```
 
@@ -239,13 +251,19 @@ Useful variants:
 
 ```bash
 # setup + smoke test only (no continuous loop)
-bash quickstart_jtag_demo.sh --no-loop
+bash start_mnist_demo.sh --no-loop
 
 # include a fresh JTAG Quartus build before programming
-bash quickstart_jtag_demo.sh --build
+bash start_mnist_demo.sh --build
 
 # fastest per-frame loop (skip readback verify)
-bash quickstart_jtag_demo.sh --no-verify-writeback
+bash start_mnist_demo.sh --no-verify-writeback
+```
+
+For wrapper help:
+
+```bash
+bash start_mnist_demo.sh --help
 ```
 
 ### 1. Arduino: compile and upload the touchscreen sketch
@@ -603,6 +621,27 @@ The system works, but these are the honest remaining limitations:
 - There is no recentering or normalization pass on the Arduino yet.
 - Accuracy depends on drawing thickness, centering, and how “MNIST-like” the digit is.
 - The UART path is one-way only. There is no acknowledgment path back to the Arduino.
+
+Synthetic handwritten stress-test benchmark artifacts are committed in:
+
+- [synthetic_handdrawn_benchmark/results.json](synthetic_handdrawn_benchmark/results.json)
+- [synthetic_handdrawn_benchmark/predictions.csv](synthetic_handdrawn_benchmark/predictions.csv)
+- [synthetic_handdrawn_benchmark/previews](synthetic_handdrawn_benchmark/previews)
+
+Benchmark command used:
+
+```bash
+../.venv-mnist/bin/python tools/benchmark_synthetic_handdrawn.py \
+    --samples-per-digit 120 \
+    --preview-per-digit 4 \
+    --seed 1234
+```
+
+Recorded stress-test result for this run:
+
+- overall accuracy: `0.4700` (`564/1200`)
+- strongest classes: `0`, `7`
+- weakest classes: `6`, `8`, `4`
 
 ## Recommended Next Improvements
 

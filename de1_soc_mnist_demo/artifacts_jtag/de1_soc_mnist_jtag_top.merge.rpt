@@ -1,5 +1,5 @@
 Partition Merge report for de1_soc_mnist_jtag_top
-Sat Mar  7 20:26:35 2026
+Sat Mar  7 23:47:25 2026
 Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
 
 
@@ -41,7 +41,7 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------------------------------------+
 ; Partition Merge Summary                                                           ;
 +---------------------------------+-------------------------------------------------+
-; Partition Merge Status          ; Successful - Sat Mar  7 20:26:34 2026           ;
+; Partition Merge Status          ; Successful - Sat Mar  7 23:47:25 2026           ;
 ; Quartus Prime Version           ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
 ; Revision Name                   ; de1_soc_mnist_jtag_top                          ;
 ; Top-level Entity Name           ; de1_soc_mnist_jtag_top                          ;
@@ -77,14 +77,14 @@ on the Quartus Prime software download page.
 +---------------------------------------------+--------+------------------+--------------------------------+
 ; Statistic                                   ; Top    ; sld_hub:auto_hub ; hard_block:auto_generated_inst ;
 +---------------------------------------------+--------+------------------+--------------------------------+
-; Estimate of Logic utilization (ALMs needed) ; 6076   ; 54               ; 0                              ;
+; Estimate of Logic utilization (ALMs needed) ; 6078   ; 54               ; 0                              ;
 ;                                             ;        ;                  ;                                ;
-; Combinational ALUT usage for logic          ; 10197  ; 94               ; 0                              ;
+; Combinational ALUT usage for logic          ; 10201  ; 94               ; 0                              ;
 ;     -- 7 input functions                    ; 35     ; 0                ; 0                              ;
-;     -- 6 input functions                    ; 5404   ; 15               ; 0                              ;
-;     -- 5 input functions                    ; 564    ; 23               ; 0                              ;
-;     -- 4 input functions                    ; 695    ; 13               ; 0                              ;
-;     -- <=3 input functions                  ; 3499   ; 43               ; 0                              ;
+;     -- 6 input functions                    ; 5403   ; 15               ; 0                              ;
+;     -- 5 input functions                    ; 560    ; 23               ; 0                              ;
+;     -- 4 input functions                    ; 697    ; 13               ; 0                              ;
+;     -- <=3 input functions                  ; 3506   ; 43               ; 0                              ;
 ; Memory ALUT usage                           ; 0      ; 0                ; 0                              ;
 ;     -- 64-address deep                      ; 0      ; 0                ; 0                              ;
 ;     -- 32-address deep                      ; 0      ; 0                ; 0                              ;
@@ -106,8 +106,8 @@ on the Quartus Prime software download page.
 ;     -- Registered Output Connections        ; 0      ; 216              ; 0                              ;
 ;                                             ;        ;                  ;                                ;
 ; Internal Connections                        ;        ;                  ;                                ;
-;     -- Total Connections                    ; 75414  ; 805              ; 342                            ;
-;     -- Registered Connections               ; 30551  ; 634              ; 0                              ;
+;     -- Total Connections                    ; 75403  ; 805              ; 342                            ;
+;     -- Registered Connections               ; 30521  ; 634              ; 0                              ;
 ;                                             ;        ;                  ;                                ;
 ; External Connections                        ;        ;                  ;                                ;
 ;     -- Top                                  ; 0      ; 220              ; 224                            ;
@@ -451,14 +451,14 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 8055           ;
+; Estimate of Logic utilization (ALMs needed) ; 8056           ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 10291          ;
+; Combinational ALUT usage for logic          ; 10295          ;
 ;     -- 7 input functions                    ; 35             ;
-;     -- 6 input functions                    ; 5419           ;
-;     -- 5 input functions                    ; 587            ;
-;     -- 4 input functions                    ; 708            ;
-;     -- <=3 input functions                  ; 3542           ;
+;     -- 6 input functions                    ; 5418           ;
+;     -- 5 input functions                    ; 583            ;
+;     -- 4 input functions                    ; 710            ;
+;     -- <=3 input functions                  ; 3549           ;
 ;                                             ;                ;
 ; Dedicated logic registers                   ; 5366           ;
 ;                                             ;                ;
@@ -470,7 +470,7 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
 ; Maximum fan-out                             ; 5207           ;
-; Total fan-out                               ; 75790          ;
+; Total fan-out                               ; 75779          ;
 ; Average fan-out                             ; 4.76           ;
 +---------------------------------------------+----------------+
 
@@ -520,7 +520,7 @@ Info: Running Quartus Prime Partition Merge
     Info: Altera and sold by Altera or its authorized distributors.  Please
     Info: refer to the Altera Software License Subscription Agreements 
     Info: on the Quartus Prime software download page.
-    Info: Processing started: Sat Mar  7 20:26:32 2026
+    Info: Processing started: Sat Mar  7 23:47:23 2026
 Info: Command: quartus_cdb de1_soc_mnist_jtag_top -c de1_soc_mnist_jtag_top --merge=on
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (35007): Using synthesis netlist for partition "Top"
@@ -532,16 +532,16 @@ Warning (21074): Design contains 3 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "KEY[0]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
     Warning (15610): No output dependent on input pin "KEY[1]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
     Warning (15610): No output dependent on input pin "KEY[2]" File: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_mnist_demo/de1_soc_mnist_jtag_top.v Line: 13
-Info (21057): Implemented 13212 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 13216 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 8 input pins
     Info (21059): Implemented 53 output pins
-    Info (21061): Implemented 13007 logic cells
+    Info (21061): Implemented 13011 logic cells
     Info (21064): Implemented 136 RAM segments
     Info (21062): Implemented 7 DSP elements
 Info: Quartus Prime Partition Merge was successful. 0 errors, 5 warnings
-    Info: Peak virtual memory: 4808 megabytes
-    Info: Processing ended: Sat Mar  7 20:26:35 2026
-    Info: Elapsed time: 00:00:03
-    Info: Total CPU time (on all processors): 00:00:26
+    Info: Peak virtual memory: 4823 megabytes
+    Info: Processing ended: Sat Mar  7 23:47:25 2026
+    Info: Elapsed time: 00:00:02
+    Info: Total CPU time (on all processors): 00:00:02
 
 

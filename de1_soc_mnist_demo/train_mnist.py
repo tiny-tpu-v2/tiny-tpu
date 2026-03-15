@@ -24,6 +24,8 @@ from de1_soc_mnist_demo.mnist_tools import to_u16_hex
 MNIST_TRAIN_SAMPLES = 60000
 MNIST_TEST_SAMPLES = 10000
 Q8_8_SHIFT = 8
+IMAGE_SIDE = 28
+IMAGE_PIXELS = IMAGE_SIDE * IMAGE_SIDE
 
 
 def parse_args() -> argparse.Namespace:
@@ -35,6 +37,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-iter", type=int, default=20)
     parser.add_argument("--pixel-threshold", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--augment-copies", type=int, default=0)
+    parser.add_argument(
+        "--augment-mode",
+        choices=["none", "strong", "extreme"],
+        default="none",
+    )
     parser.add_argument(
         "--split-mode",
         choices=["balanced", "contiguous"],
@@ -150,6 +158,300 @@ def load_binarized_mnist(
     return train_x, train_y, test_x, test_y, train_counts, test_counts
 
 
+def shift_binary_image(image: np.ndarray, row_shift: int, col_shift: int) -> np.ndarray:
+    shifted = np.zeros_like(image)
+    src_row_start = max(0, -row_shift)
+    src_row_stop = IMAGE_SIDE - max(0, row_shift)
+    src_col_start = max(0, -col_shift)
+    src_col_stop = IMAGE_SIDE - max(0, col_shift)
+    dst_row_start = max(0, row_shift)
+    dst_row_stop = IMAGE_SIDE - max(0, -row_shift)
+    dst_col_start = max(0, col_shift)
+    dst_col_stop = IMAGE_SIDE - max(0, -col_shift)
+
+    if src_row_start < src_row_stop and src_col_start < src_col_stop:
+        shifted[dst_row_start:dst_row_stop, dst_col_start:dst_col_stop] = image[
+            src_row_start:src_row_stop,
+            src_col_start:src_col_stop,
+        ]
+    return shifted
+
+
+def dilate_binary_image(image: np.ndarray, radius: int) -> np.ndarray:
+    if radius <= 0:
+        return image.copy()
+
+    dilated = np.zeros_like(image)
+    for row_delta in range(-radius, radius + 1):
+        for col_delta in range(-radius, radius + 1):
+            dilated = np.maximum(dilated, shift_binary_image(image, row_delta, col_delta))
+    return dilated
+
+
+def erode_binary_image(image: np.ndarray, radius: int) -> np.ndarray:
+    if radius <= 0:
+        return image.copy()
+    return 1.0 - dilate_binary_image(1.0 - image, radius)
+
+
+def apply_affine_nearest(
+    image: np.ndarray,
+    transform: np.ndarray,
+    row_shift: float,
+    col_shift: float,
+) -> np.ndarray:
+    center = (IMAGE_SIDE - 1) / 2.0
+    dst_rows, dst_cols = np.indices((IMAGE_SIDE, IMAGE_SIDE), dtype=np.float32)
+    centered_cols = dst_cols.ravel() - center - col_shift
+    centered_rows = dst_rows.ravel() - center - row_shift
+    dst_points = np.stack([centered_cols, centered_rows], axis=0)
+
+    try:
+        inverse_transform = np.linalg.inv(transform)
+    except np.linalg.LinAlgError:
+        return image.copy()
+
+    src_points = inverse_transform @ dst_points
+    src_cols = np.rint(src_points[0] + center).astype(np.int64)
+    src_rows = np.rint(src_points[1] + center).astype(np.int64)
+    valid = (
+        (src_rows >= 0)
+        & (src_rows < IMAGE_SIDE)
+        & (src_cols >= 0)
+        & (src_cols < IMAGE_SIDE)
+    )
+
+    output = np.zeros_like(image)
+    output_flat = output.ravel()
+    valid_positions = np.flatnonzero(valid)
+    output_flat[valid_positions] = image[src_rows[valid], src_cols[valid]]
+    return output
+
+
+def apply_row_slant(image: np.ndarray, slant: int) -> np.ndarray:
+    if slant == 0:
+        return image.copy()
+
+    center = (IMAGE_SIDE - 1) / 2.0
+    slanted = np.zeros_like(image)
+    for row in range(IMAGE_SIDE):
+        row_from_center = row - center
+        row_ratio = row_from_center / center if center != 0 else 0.0
+        row_shift = int(round(row_ratio * slant))
+        if row_shift >= 0:
+            slanted[row, row_shift:] = image[row, : IMAGE_SIDE - row_shift]
+        else:
+            slanted[row, : IMAGE_SIDE + row_shift] = image[row, -row_shift:]
+    return slanted
+
+
+def carve_random_holes(
+    image: np.ndarray,
+    rng: np.random.Generator,
+    max_holes: int,
+    max_size: int,
+) -> np.ndarray:
+    carved = image.copy()
+    holes = int(rng.integers(0, max_holes + 1))
+    for _ in range(holes):
+        hole_height = int(rng.integers(1, max_size + 1))
+        hole_width = int(rng.integers(1, max_size + 1))
+        row_start = int(rng.integers(0, IMAGE_SIDE - hole_height + 1))
+        col_start = int(rng.integers(0, IMAGE_SIDE - hole_width + 1))
+        carved[row_start:row_start + hole_height, col_start:col_start + hole_width] = 0.0
+    return carved
+
+
+def add_random_blobs(
+    image: np.ndarray,
+    rng: np.random.Generator,
+    max_blobs: int,
+    max_size: int,
+) -> np.ndarray:
+    blobbed = image.copy()
+    blobs = int(rng.integers(0, max_blobs + 1))
+    for _ in range(blobs):
+        blob_height = int(rng.integers(1, max_size + 1))
+        blob_width = int(rng.integers(1, max_size + 1))
+        row_start = int(rng.integers(0, IMAGE_SIDE - blob_height + 1))
+        col_start = int(rng.integers(0, IMAGE_SIDE - blob_width + 1))
+        blobbed[row_start:row_start + blob_height, col_start:col_start + blob_width] = 1.0
+    return blobbed
+
+
+def random_binary_augmentation(
+    flat_bits: np.ndarray,
+    rng: np.random.Generator,
+    mode: str,
+) -> np.ndarray:
+    if flat_bits.shape[0] != IMAGE_PIXELS:
+        raise ValueError(f"expected {IMAGE_PIXELS} pixels, got {flat_bits.shape[0]}")
+
+    image = flat_bits.reshape(IMAGE_SIDE, IMAGE_SIDE).astype(np.float32, copy=True)
+    original = image.copy()
+
+    if mode == "strong":
+        max_angle = 15.0
+        scale_min = 0.80
+        scale_max = 1.20
+        max_shear = 0.18
+        max_translate = 3.5
+        max_slant = 3
+        max_holes = 2
+        max_hole_size = 4
+        max_blobs = 1
+        max_blob_size = 2
+        drop_max = 0.08
+        salt_max = 0.015
+        pepper_max = 0.025
+    elif mode == "extreme":
+        max_angle = 25.0
+        scale_min = 0.70
+        scale_max = 1.30
+        max_shear = 0.30
+        max_translate = 5.0
+        max_slant = 5
+        max_holes = 3
+        max_hole_size = 6
+        max_blobs = 2
+        max_blob_size = 3
+        drop_max = 0.18
+        salt_max = 0.03
+        pepper_max = 0.05
+    else:
+        return flat_bits.astype(np.float32, copy=True)
+
+    # Occasional recentering keeps the source shape aligned before heavy jitter.
+    if rng.random() < 0.35:
+        nonzero = np.argwhere(image > 0.5)
+        if nonzero.size > 0:
+            center_row = float(np.mean(nonzero[:, 0]))
+            center_col = float(np.mean(nonzero[:, 1]))
+            row_shift = int(round(((IMAGE_SIDE - 1) / 2.0) - center_row))
+            col_shift = int(round(((IMAGE_SIDE - 1) / 2.0) - center_col))
+            image = shift_binary_image(image, row_shift, col_shift)
+
+    angle = float(rng.uniform(-max_angle, max_angle))
+    angle_rad = np.deg2rad(angle)
+    scale_x = float(rng.uniform(scale_min, scale_max))
+    scale_y = float(rng.uniform(scale_min, scale_max))
+    shear_x = float(rng.uniform(-max_shear, max_shear))
+    shear_y = float(rng.uniform(-max_shear, max_shear))
+    row_shift_f = float(rng.uniform(-max_translate, max_translate))
+    col_shift_f = float(rng.uniform(-max_translate, max_translate))
+
+    rotation = np.array(
+        [
+            [np.cos(angle_rad), -np.sin(angle_rad)],
+            [np.sin(angle_rad), np.cos(angle_rad)],
+        ],
+        dtype=np.float32,
+    )
+    shear = np.array(
+        [
+            [1.0, shear_x],
+            [shear_y, 1.0],
+        ],
+        dtype=np.float32,
+    )
+    scale = np.array(
+        [
+            [scale_x, 0.0],
+            [0.0, scale_y],
+        ],
+        dtype=np.float32,
+    )
+    transform = rotation @ shear @ scale
+    image = apply_affine_nearest(
+        image=image,
+        transform=transform,
+        row_shift=row_shift_f,
+        col_shift=col_shift_f,
+    )
+
+    slant = int(rng.integers(-max_slant, max_slant + 1))
+    image = apply_row_slant(image, slant)
+
+    if rng.random() < 0.90:
+        dilation_radius = int(rng.integers(1, 3))
+        image = dilate_binary_image(image, dilation_radius)
+    if rng.random() < 0.30:
+        erosion_radius = int(rng.integers(1, 3))
+        image = erode_binary_image(image, erosion_radius)
+
+    image = carve_random_holes(
+        image=image,
+        rng=rng,
+        max_holes=max_holes,
+        max_size=max_hole_size,
+    )
+    image = add_random_blobs(
+        image=image,
+        rng=rng,
+        max_blobs=max_blobs,
+        max_size=max_blob_size,
+    )
+
+    active_drop_prob = float(rng.uniform(0.0, drop_max))
+    salt_prob = float(rng.uniform(0.0, salt_max))
+    pepper_prob = float(rng.uniform(0.0, pepper_max))
+
+    active_mask = image > 0.5
+    if active_drop_prob > 0:
+        drop_mask = (rng.random(image.shape) < active_drop_prob) & active_mask
+        image[drop_mask] = 0.0
+    if salt_prob > 0:
+        image[rng.random(image.shape) < salt_prob] = 1.0
+    if pepper_prob > 0:
+        image[rng.random(image.shape) < pepper_prob] = 0.0
+
+    image = (image > 0.5).astype(np.float32)
+    if not np.any(image):
+        image = original
+
+    return image.reshape(IMAGE_PIXELS)
+
+
+def augment_training_set(
+    train_x: np.ndarray,
+    train_y: np.ndarray,
+    copies: int,
+    mode: str,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    if copies <= 0 or mode == "none":
+        return train_x, train_y
+
+    if train_x.shape[1] != IMAGE_PIXELS:
+        raise ValueError(f"expected flattened 28x28 inputs, got shape {train_x.shape}")
+
+    rng = np.random.default_rng(seed)
+    base_count = train_x.shape[0]
+    total_count = base_count * (copies + 1)
+
+    augmented_x = np.empty((total_count, train_x.shape[1]), dtype=np.float32)
+    augmented_y = np.empty((total_count,), dtype=train_y.dtype)
+
+    augmented_x[:base_count] = train_x
+    augmented_y[:base_count] = train_y
+    write_index = base_count
+
+    for sample_index in range(base_count):
+        sample_bits = train_x[sample_index]
+        sample_label = train_y[sample_index]
+        for _ in range(copies):
+            augmented_x[write_index] = random_binary_augmentation(
+                flat_bits=sample_bits,
+                rng=rng,
+                mode=mode,
+            )
+            augmented_y[write_index] = sample_label
+            write_index += 1
+
+    permutation = rng.permutation(total_count)
+    return augmented_x[permutation], augmented_y[permutation]
+
+
 def quantize_matrix(matrix: np.ndarray) -> list[list[int]]:
     return [
         [quantize_q8_8(float(value)) for value in row]
@@ -237,6 +539,9 @@ def export_model(
     split_mode: str,
     train_class_counts: dict[str, int],
     test_class_counts: dict[str, int],
+    augment_mode: str,
+    augment_copies: int,
+    effective_train_samples: int,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -280,6 +585,9 @@ def export_model(
             "tile_width": tile_width,
             "train_limit": train_limit,
             "train_class_counts": train_class_counts,
+            "augment_mode": augment_mode,
+            "augment_copies": augment_copies,
+            "effective_train_samples": effective_train_samples,
         },
     )
 
@@ -294,6 +602,15 @@ def main() -> None:
         seed=args.seed,
         split_mode=args.split_mode,
     )
+
+    train_x, train_y = augment_training_set(
+        train_x=train_x,
+        train_y=train_y,
+        copies=args.augment_copies,
+        mode=args.augment_mode,
+        seed=args.seed + 101,
+    )
+    train_counts = summarize_class_counts(train_y, 10)
 
     model = MLPClassifier(
         hidden_layer_sizes=(args.hidden_size,),
@@ -323,6 +640,9 @@ def main() -> None:
         split_mode=args.split_mode,
         train_class_counts=train_counts,
         test_class_counts=test_counts,
+        augment_mode=args.augment_mode,
+        augment_copies=args.augment_copies,
+        effective_train_samples=int(train_x.shape[0]),
     )
 
     print(
@@ -337,6 +657,9 @@ def main() -> None:
                 "tile_width": args.tile_width,
                 "train_limit": args.train_limit,
                 "train_class_counts": train_counts,
+                "augment_mode": args.augment_mode,
+                "augment_copies": args.augment_copies,
+                "effective_train_samples": int(train_x.shape[0]),
             },
             sort_keys=True,
         )
