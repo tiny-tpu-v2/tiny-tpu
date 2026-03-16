@@ -1,0 +1,15 @@
+	component probe_jtag_bridge is
+		port (
+			clk_clk                   : in  std_logic                     := 'X';             -- clk
+			jtag_master_address       : out std_logic_vector(31 downto 0);                    -- address
+			jtag_master_readdata      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- readdata
+			jtag_master_read          : out std_logic;                                        -- read
+			jtag_master_write         : out std_logic;                                        -- write
+			jtag_master_writedata     : out std_logic_vector(31 downto 0);                    -- writedata
+			jtag_master_waitrequest   : in  std_logic                     := 'X';             -- waitrequest
+			jtag_master_readdatavalid : in  std_logic                     := 'X';             -- readdatavalid
+			jtag_master_byteenable    : out std_logic_vector(3 downto 0);                     -- byteenable
+			reset_reset_n             : in  std_logic                     := 'X'              -- reset_n
+		);
+	end component probe_jtag_bridge;
+

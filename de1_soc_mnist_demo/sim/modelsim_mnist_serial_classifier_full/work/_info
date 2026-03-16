@@ -1,0 +1,535 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/sim/modelsim_mnist_serial_classifier_full
+vbias_child
+Z1 !s110 1773642163
+!i10b 1
+!s100 DnZ;Fb_[H^23H@Lc@:iGB3
+ID>a84nz122;h8WlLYL^T93
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+Z3 w1772342862
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_child.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_child.v
+L0 4
+Z4 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z5 !s108 1773642162.000000
+Z6 !s107 \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_serial_classifier_full.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_serial_classifier.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_classifier_core.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\tpu_mnist.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_uart_ingress.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_frame_receiver.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\vpu.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\unified_buffer.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\systolic.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\pe.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\gradient_descent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\fixedpoint_simple.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_child.v|
+Z7 !s90 -work|work|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\fixedpoint_simple.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\gradient_descent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_child.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_parent.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\pe.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\systolic.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\unified_buffer.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\vpu.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_frame_receiver.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_uart_ingress.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\tpu_mnist.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_classifier_core.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_serial_classifier.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_serial_classifier_full.v|
+!i113 1
+Z8 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z9 tCvgOpt 0
+vbias_parent
+R1
+!i10b 1
+!s100 f9CJd`6DmGCQNiDPTjhJb1
+I4EWGoQfjD5Nh^4]59`Cz_3
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_parent.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_parent.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vfxp_add
+R1
+!i10b 1
+!s100 f[l0c=^[ebWM5:0PJKF`73
+I=H5=8IUK_zKdnLBX>DK[o0
+R2
+R0
+R3
+Z10 8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\fixedpoint_simple.v
+Z11 F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\fixedpoint_simple.v
+L0 8
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vfxp_addsub
+R1
+!i10b 1
+!s100 bKTO]RmO0`WF;Z@YMZcff3
+Io871=X@cE_SCI[H8SfzHG3
+R2
+R0
+R3
+R10
+R11
+L0 69
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vfxp_mul
+R1
+!i10b 1
+!s100 IY>=g[IgMNZzj4GMXQHJ<3
+IFLFefKXIYO0h0o2C8XJZC0
+R2
+R0
+R3
+R10
+R11
+L0 38
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vgradient_descent
+R1
+!i10b 1
+!s100 agS0^^JHVP]CVfDULBAKG1
+ICD]`dWjX<5:e8fB4aFPaI2
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\gradient_descent.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\gradient_descent.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vleaky_relu_child
+R1
+!i10b 1
+!s100 K`dc5MfjgdheGaLagThnA2
+I7=033=ezcToYef3zgbR^K2
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_child.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_child.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vleaky_relu_derivative_child
+R1
+!i10b 1
+!s100 L0jAnnU=W=4h_U>39hXUd3
+IBaJ]23R9<BdFiLKoH`>WV1
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_child.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_child.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vleaky_relu_derivative_parent
+R1
+!i10b 1
+!s100 kgK6CfGg;=ijaYLmmR8Vl3
+I>7BJ3b;m9Yo0ad4lSkhdE3
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_parent.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_parent.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vleaky_relu_parent
+R1
+!i10b 1
+!s100 9j<n@:XPGeLdjk]zY:>]U3
+I]Dl;KLY6zFKaI@a[LbCdA3
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_parent.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_parent.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vloss_child
+R1
+!i10b 1
+!s100 @8=YbHgU>zTBYF?IFoNgh2
+Ibn<fLbZ;Pn`UF7PWm]LYi2
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_child.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_child.v
+L0 6
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vloss_parent
+R1
+!i10b 1
+!s100 X:^YVJflOCWooiFTW3Rd=1
+IGBc7`ij4z>Sl^2f2oQI[B3
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_parent.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_parent.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmnist_classifier_core
+Z12 !s110 1773642164
+!i10b 1
+!s100 0]YFoVgc2QlknJOK`9Tbm0
+IIbHM57nbN2[_`Q3na]]S?3
+R2
+R0
+Z13 w1772345418
+Z14 8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_classifier_core.v
+Z15 F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_classifier_core.v
+L0 29
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmnist_frame_buffer
+R1
+!i10b 1
+!s100 5TQ41bC0aZRjLPIfRVfCg1
+IEjO?18d_8?C@GSHW0_LA;2
+R2
+R0
+w1772340608
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmnist_serial_classifier
+R12
+!i10b 1
+!s100 O2k:;jfAiF1>K6>llZH;^1
+I8S_hPWKKo0;G6R`JP64<;3
+R2
+R0
+w1772342710
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_serial_classifier.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_serial_classifier.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmnist_sync_rom_2r
+R12
+!i10b 1
+!s100 2Z35B07_Ro2A:SbE2XMHY3
+Iz;:Bogeh0G?a24ZUVAMGD3
+R2
+R0
+R13
+R14
+R15
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vmnist_uart_ingress
+R12
+!i10b 1
+!s100 mG7L9jMDU3Ko0olAbDQ4l1
+IX@^]HjKVFP:MMcY<i9S5G1
+R2
+R0
+w1772340662
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_uart_ingress.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_uart_ingress.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vpe
+R1
+!i10b 1
+!s100 ZZDiTK]]X=k6hd;IDS8E<0
+IP9RV_81IdHTEmc[;1P9IU3
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\pe.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\pe.v
+L0 4
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vsystolic
+R1
+!i10b 1
+!s100 DMa2C53NPJNKGRieXPK0E3
+I3al?5KH`lCF17^h>A96:?2
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\systolic.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\systolic.v
+L0 5
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vtb_mnist_serial_classifier_full
+R12
+!i10b 1
+!s100 7lSXN1F8MBkB[dTO:j0VM3
+IG?]L>l^j0d?[[zc7ZLzE41
+R2
+R0
+w1772943578
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_serial_classifier_full.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_serial_classifier_full.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vtpu_mnist
+R12
+!i10b 1
+!s100 fWgeP3;^Se9_?KPZI5mI`0
+Ib@?5oK3PW1gA=efXCVi>o2
+R2
+R0
+w1772341163
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\tpu_mnist.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\tpu_mnist.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vuart_frame_receiver
+R1
+!i10b 1
+!s100 ODA;RR0cN8e90@_jZJ:840
+IoJ=k<]A@JiBjH;faQ4=Og0
+R2
+R0
+w1772339861
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_frame_receiver.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_frame_receiver.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vuart_rx
+R1
+!i10b 1
+!s100 O=?eKM7A9j_Qz>6A[_A;h1
+I0hHRPSN@IcmZa0:lX@SkX2
+R2
+R0
+w1772339765
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v
+L0 7
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vunified_buffer
+R1
+!i10b 1
+!s100 z9CH][9mD2SY@kzKfM`hX0
+IIE6z2VVZ?7:[:ED3InW6?2
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\unified_buffer.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\unified_buffer.v
+L0 6
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9
+vvpu
+R1
+!i10b 1
+!s100 HMn=5Z5>fTj<KYXi^X`mg0
+IKU6UD1=J=CQ7PB@zij>ed1
+R2
+R0
+R3
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\vpu.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\vpu.v
+L0 19
+R4
+r1
+!s85 0
+31
+R5
+R6
+R7
+!i113 1
+R8
+R9

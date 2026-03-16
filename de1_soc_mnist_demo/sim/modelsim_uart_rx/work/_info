@@ -1,0 +1,52 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/sim/modelsim_uart_rx
+vtb_uart_rx
+Z1 !s110 1772339955
+!i10b 1
+!s100 7`5^UAl;n:aI3YQBKa@PA1
+I]ZNB^Tf<1;54mg?QTEl>@0
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1772339726
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_uart_rx.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_uart_rx.v
+L0 7
+Z3 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z4 !s108 1772339955.000000
+Z5 !s107 \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_uart_rx.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v|
+Z6 !s90 -work|work|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_uart_rx.v|
+!i113 1
+Z7 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z8 tCvgOpt 0
+vuart_rx
+R1
+!i10b 1
+!s100 O=?eKM7A9j_Qz>6A[_A;h1
+I0hHRPSN@IcmZa0:lX@SkX2
+R2
+R0
+w1772339765
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v
+L0 7
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8

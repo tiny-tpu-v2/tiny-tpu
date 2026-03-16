@@ -1,0 +1,90 @@
+Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+vmap work \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\modelsim_mnist_serial_classifier_full\work 
+Copying C:/altera/24.1std/questa_fse/win64/../modelsim.ini to modelsim.ini
+Modifying modelsim.ini
+Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+Start time: 23:19:55 on Mar 07,2026
+vlog -work work \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_child.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\bias_parent.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\fixedpoint_simple.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\gradient_descent.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_child.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_child.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_derivative_parent.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\leaky_relu_parent.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_child.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\loss_parent.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\pe.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\systolic.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\unified_buffer.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\vpu.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_rx.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\uart_frame_receiver.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_uart_ingress.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\tpu_mnist.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_classifier_core.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_serial_classifier.v \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_serial_classifier_full.v 
+-- Compiling module bias_child
+-- Compiling module bias_parent
+-- Compiling module fxp_add
+-- Compiling module fxp_mul
+-- Compiling module fxp_addsub
+-- Compiling module gradient_descent
+-- Compiling module leaky_relu_child
+-- Compiling module leaky_relu_derivative_child
+-- Compiling module leaky_relu_derivative_parent
+-- Compiling module leaky_relu_parent
+-- Compiling module loss_child
+-- Compiling module loss_parent
+-- Compiling module pe
+-- Compiling module systolic
+-- Compiling module unified_buffer
+-- Compiling module vpu
+-- Compiling module uart_rx
+-- Compiling module uart_frame_receiver
+-- Compiling module mnist_frame_buffer
+-- Compiling module mnist_uart_ingress
+-- Compiling module tpu_mnist
+-- Compiling module mnist_sync_rom_2r
+-- Compiling module mnist_classifier_core
+-- Compiling module mnist_serial_classifier
+-- Compiling module tb_mnist_serial_classifier_full
+
+Top level modules:
+	tb_mnist_serial_classifier_full
+End time: 23:19:57 on Mar 07,2026, Elapsed time: 0:00:02
+Errors: 0, Warnings: 0
+Reading C:/intelFPGA/18.1/modelsim_ase/tcl/vsim/pref.tcl
+
+# 10.5b
+
+# vsim -c -do "run -all; quit -f" work.tb_mnist_serial_classifier_full 
+# Start time: 23:19:57 on Mar 07,2026
+# Loading work.tb_mnist_serial_classifier_full
+# Loading work.mnist_serial_classifier
+# Loading work.mnist_uart_ingress
+# Loading work.uart_frame_receiver
+# Loading work.uart_rx
+# Loading work.mnist_frame_buffer
+# Loading work.mnist_classifier_core
+# Loading work.tpu_mnist
+# Loading work.unified_buffer
+# Loading work.gradient_descent
+# Loading work.fxp_mul
+# Loading work.fxp_addsub
+# Loading work.systolic
+# Loading work.pe
+# Loading work.fxp_add
+# Loading work.vpu
+# Loading work.bias_parent
+# Loading work.bias_child
+# Loading work.leaky_relu_parent
+# Loading work.leaky_relu_child
+# Loading work.loss_parent
+# Loading work.loss_child
+# Loading work.leaky_relu_derivative_parent
+# Loading work.leaky_relu_derivative_child
+# Loading work.mnist_sync_rom_2r
+# ** Warning: (vsim-3017) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/bias_child.v(18): [TFMPC] - Too few port connections. Expected 4, found 3.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_mnist_serial_classifier_full/dut/classifier_inst/tpu_inst/vpu_inst/bias_parent_inst/column_1/add_inst File: //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/fixedpoint_simple.v
+# ** Warning: (vsim-3722) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/bias_child.v(18): [TFMPC] - Missing connection for port 'overflow'.
+# ** Warning: (vsim-3017) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/bias_child.v(18): [TFMPC] - Too few port connections. Expected 4, found 3.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_mnist_serial_classifier_full/dut/classifier_inst/tpu_inst/vpu_inst/bias_parent_inst/column_2/add_inst File: //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/fixedpoint_simple.v
+# ** Warning: (vsim-3722) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/bias_child.v(18): [TFMPC] - Missing connection for port 'overflow'.
+# ** Warning: (vsim-3017) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_child.v(16): [TFMPC] - Too few port connections. Expected 4, found 3.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_mnist_serial_classifier_full/dut/classifier_inst/tpu_inst/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/mul_inst File: //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/fixedpoint_simple.v
+# ** Warning: (vsim-3722) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_child.v(16): [TFMPC] - Missing connection for port 'overflow'.
+# ** Warning: (vsim-3017) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_child.v(16): [TFMPC] - Too few port connections. Expected 4, found 3.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_mnist_serial_classifier_full/dut/classifier_inst/tpu_inst/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/mul_inst File: //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/fixedpoint_simple.v
+# ** Warning: (vsim-3722) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_child.v(16): [TFMPC] - Missing connection for port 'overflow'.
+# ** Warning: (vsim-3017) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_derivative_child.v(18): [TFMPC] - Too few port connections. Expected 4, found 3.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_mnist_serial_classifier_full/dut/classifier_inst/tpu_inst/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_1/mul_inst File: //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/fixedpoint_simple.v
+# ** Warning: (vsim-3722) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_derivative_child.v(18): [TFMPC] - Missing connection for port 'overflow'.
+# ** Warning: (vsim-3017) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_derivative_child.v(18): [TFMPC] - Too few port connections. Expected 4, found 3.
+#    Time: 0 ps  Iteration: 0  Instance: /tb_mnist_serial_classifier_full/dut/classifier_inst/tpu_inst/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_2/mul_inst File: //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/fixedpoint_simple.v
+# ** Warning: (vsim-3722) //wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/rtl/leaky_relu_derivative_child.v(18): [TFMPC] - Missing connection for port 'overflow'.
+# run -all
+# PASS: mnist_serial_classifier inferred the expected digit 3 on the tracked sample
+# End time: 23:20:06 on Mar 07,2026, Elapsed time: 0:00:09
+# Errors: 0, Warnings: 12
