@@ -1,5 +1,5 @@
 Flow report for de1_soc_mnist_jtag_top
-Sun Mar  8 00:07:40 2026
+Mon Mar 16 02:41:55 2026
 Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
 
 
@@ -41,15 +41,15 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------------------------------------+
 ; Flow Summary                                                                      ;
 +---------------------------------+-------------------------------------------------+
-; Flow Status                     ; Successful - Sun Mar  8 00:07:40 2026           ;
+; Flow Status                     ; Successful - Mon Mar 16 02:41:55 2026           ;
 ; Quartus Prime Version           ; 25.1std.0 Build 1129 10/21/2025 SC Lite Edition ;
 ; Revision Name                   ; de1_soc_mnist_jtag_top                          ;
 ; Top-level Entity Name           ; de1_soc_mnist_jtag_top                          ;
 ; Family                          ; Cyclone V                                       ;
 ; Device                          ; 5CSEMA5F31C6                                    ;
 ; Timing Models                   ; Final                                           ;
-; Logic utilization (in ALMs)     ; 6,992 / 32,070 ( 22 % )                         ;
-; Total registers                 ; 5401                                            ;
+; Logic utilization (in ALMs)     ; 7,003 / 32,070 ( 22 % )                         ;
+; Total registers                 ; 5424                                            ;
 ; Total pins                      ; 57 / 457 ( 12 % )                               ;
 ; Total virtual pins              ; 0                                               ;
 ; Total block memory bits         ; 813,568 / 4,065,280 ( 20 % )                    ;
@@ -68,7 +68,7 @@ on the Quartus Prime software download page.
 +-------------------+------------------------+
 ; Option            ; Setting                ;
 +-------------------+------------------------+
-; Start date & time ; 03/07/2026 23:45:48    ;
+; Start date & time ; 03/16/2026 02:23:53    ;
 ; Main task         ; Compilation            ;
 ; Revision Name     ; de1_soc_mnist_jtag_top ;
 +-------------------+------------------------+
@@ -79,13 +79,13 @@ on the Quartus Prime software download page.
 +--------------------------+----------------------------------------------------------------------+---------------+-------------------+------------+
 ; Assignment Name          ; Value                                                                ; Default Value ; Entity Name       ; Section Id ;
 +--------------------------+----------------------------------------------------------------------+---------------+-------------------+------------+
-; COMPILER_SIGNATURE_ID    ; 248537414779219.177294514814124                                      ; --            ; --                ; --         ;
+; COMPILER_SIGNATURE_ID    ; 159167735284051.177364223310940                                      ; --            ; --                ; --         ;
 ; MISC_FILE                ; jtag_ip/mnist_jtag_bridge/synthesis/../mnist_jtag_bridge.cmp         ; --            ; --                ; --         ;
 ; MISC_FILE                ; jtag_ip/mnist_jtag_bridge/synthesis/../../mnist_jtag_bridge.qsys     ; --            ; --                ; --         ;
 ; PROJECT_OUTPUT_DIRECTORY ; output_files_jtag                                                    ; --            ; --                ; --         ;
 ; SEARCH_PATH              ; model                                                                ; --            ; --                ; --         ;
 ; SLD_FILE                 ; jtag_ip/mnist_jtag_bridge/synthesis/mnist_jtag_bridge.debuginfo      ; --            ; --                ; --         ;
-; SLD_INFO                 ; QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1772945140  ; --            ; mnist_jtag_bridge ; --         ;
+; SLD_INFO                 ; QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1773642214  ; --            ; mnist_jtag_bridge ; --         ;
 ; SOPCINFO_FILE            ; jtag_ip/mnist_jtag_bridge/synthesis/../../mnist_jtag_bridge.sopcinfo ; --            ; --                ; --         ;
 ; SYNTHESIS_ONLY_QIP       ; On                                                                   ; --            ; --                ; --         ;
 +--------------------------+----------------------------------------------------------------------+---------------+-------------------+------------+
@@ -96,11 +96,11 @@ on the Quartus Prime software download page.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:01:33     ; 1.6                     ; 5211 MB             ; 00:02:46                           ;
-; Partition Merge      ; 00:00:02     ; 1.0                     ; 4823 MB             ; 00:00:02                           ;
-; Fitter               ; 00:19:56     ; 1.1                     ; 7872 MB             ; 02:24:34                           ;
-; Assembler            ; 00:00:15     ; 1.0                     ; 5339 MB             ; 00:00:08                           ;
-; Total                ; 00:21:46     ; --                      ; --                  ; 02:27:30                           ;
+; Analysis & Synthesis ; 00:01:34     ; 1.6                     ; 5224 MB             ; 00:02:50                           ;
+; Partition Merge      ; 00:00:02     ; 1.0                     ; 4832 MB             ; 00:00:01                           ;
+; Fitter               ; 00:16:10     ; 1.1                     ; 7921 MB             ; 02:01:10                           ;
+; Assembler            ; 00:00:13     ; 1.0                     ; 5348 MB             ; 00:00:08                           ;
+; Total                ; 00:17:59     ; --                      ; --                  ; 02:04:09                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

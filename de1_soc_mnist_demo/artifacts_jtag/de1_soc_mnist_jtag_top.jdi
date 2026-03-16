@@ -89,7 +89,7 @@
   <sld_infos>
     <sld_info hpath="mnist_jtag_bridge:bridge_inst" name="bridge_inst">
       <assignment_values>
-        <assignment_value text="QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1772945140"/>
+        <assignment_value text="QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1773642214"/>
       </assignment_values>
       <parameters/>
     </sld_info>

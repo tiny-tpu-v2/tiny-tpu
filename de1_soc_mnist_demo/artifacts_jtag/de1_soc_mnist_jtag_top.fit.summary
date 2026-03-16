@@ -1,12 +1,12 @@
-Fitter Status : Successful - Sun Mar  8 00:07:21 2026
+Fitter Status : Successful - Mon Mar 16 02:41:39 2026
 Quartus Prime Version : 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
 Revision Name : de1_soc_mnist_jtag_top
 Top-level Entity Name : de1_soc_mnist_jtag_top
 Family : Cyclone V
 Device : 5CSEMA5F31C6
 Timing Models : Final
-Logic utilization (in ALMs) : 6,992 / 32,070 ( 22 % )
-Total registers : 5401
+Logic utilization (in ALMs) : 7,003 / 32,070 ( 22 % )
+Total registers : 5424
 Total pins : 57 / 457 ( 12 % )
 Total virtual pins : 0
 Total block memory bits : 813,568 / 4,065,280 ( 20 % )

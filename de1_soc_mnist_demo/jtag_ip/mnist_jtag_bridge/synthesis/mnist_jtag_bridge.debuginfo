@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="mnist_jtag_bridge" kind="system" version="25.1" fabric="QSYS">
  <!-- Format version 25.1 1129 (Future versions may contain additional information.) -->
- <!-- 2026.03.07.21:21:45 -->
+ <!-- 2026.03.16.02:23:36 -->
  <!-- A collection of modules and connections -->
  <parameter name="clockCrossingAdapter">
   <type>com.altera.sopcmodel.ensemble.EClockAdapter</type>
@@ -53,7 +53,7 @@
  </parameter>
  <parameter name="generationId">
   <type>int</type>
-  <value>1772936500</value>
+  <value>1773642214</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>true</visible>
@@ -1170,5 +1170,5 @@ parameters are a RESULT of the module parameters. -->
   <version>25.1</version>
  </plugin>
  <reportVersion>25.1 1129</reportVersion>
- <uniqueIdentifier>C8CB9E79D2E00000019CCB40178D</uniqueIdentifier>
+ <uniqueIdentifier>C8CB9E79D2E00000019CF5506ED1</uniqueIdentifier>
 </EnsembleReport>

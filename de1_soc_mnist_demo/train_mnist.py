@@ -1,16 +1,21 @@
-# ABOUTME: Trains and exports a quantized MNIST classifier for the DE1-SoC Tiny-TPU demo.
-# ABOUTME: Produces tile-ordered Q8.8 memory files that match the planned 2-lane TPU scheduler.
+# ABOUTME: Trains and exports a quantization-aware MNIST classifier for the DE1-SoC Tiny-TPU demo.
+# ABOUTME: Uses PyTorch, AdamW, bounded threshold sweeps, augmentation-strength schedules, and exact Q8.8 eval.
 
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from pathlib import Path
 import sys
 
 import numpy as np
 from sklearn.datasets import fetch_openml
-from sklearn.neural_network import MLPClassifier
+import torch
+from torch import nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -26,6 +31,8 @@ MNIST_TEST_SAMPLES = 10000
 Q8_8_SHIFT = 8
 IMAGE_SIDE = 28
 IMAGE_PIXELS = IMAGE_SIDE * IMAGE_SIDE
+Q8_8_MIN = -128.0
+Q8_8_MAX = 32767.0 / 256.0
 
 
 def parse_args() -> argparse.Namespace:
@@ -35,9 +42,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--train-limit", type=int, default=20000)
     parser.add_argument("--test-limit", type=int, default=2000)
     parser.add_argument("--max-iter", type=int, default=20)
-    parser.add_argument("--pixel-threshold", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--augment-copies", type=int, default=0)
+    parser.add_argument("--augment-levels", type=int, default=2)
     parser.add_argument(
         "--augment-mode",
         choices=["none", "strong", "extreme"],
@@ -48,6 +55,14 @@ def parse_args() -> argparse.Namespace:
         choices=["balanced", "contiguous"],
         default="balanced",
     )
+    parser.add_argument("--learning-rate", type=float, default=5e-4)
+    parser.add_argument("--weight-decay", type=float, default=1e-2)
+    parser.add_argument("--batch-size", type=int, default=256)
+    parser.add_argument("--pixel-threshold", type=float, default=None)
+    parser.add_argument("--threshold-min-raw", type=int, default=0)
+    parser.add_argument("--threshold-max-raw", type=int, default=75)
+    parser.add_argument("--threshold-step-raw", type=int, default=25)
+    parser.add_argument("--eval-threshold-raw", type=int, default=50)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -59,6 +74,10 @@ def parse_args() -> argparse.Namespace:
 def summarize_class_counts(labels: np.ndarray, num_classes: int) -> dict[str, int]:
     counts = np.bincount(labels, minlength=num_classes)
     return {str(index): int(counts[index]) for index in range(num_classes)}
+
+
+def scale_class_counts(counts: dict[str, int], factor: int) -> dict[str, int]:
+    return {key: int(value * factor) for key, value in counts.items()}
 
 
 def select_balanced_subset(
@@ -103,10 +122,9 @@ def select_balanced_subset(
     return subset_x, subset_y, summarize_class_counts(subset_y, num_classes)
 
 
-def load_binarized_mnist(
+def load_mnist_grayscale(
     train_limit: int,
     test_limit: int,
-    pixel_threshold: float,
     seed: int,
     split_mode: str,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, int], dict[str, int]]:
@@ -117,7 +135,7 @@ def load_binarized_mnist(
         return_X_y=True,
         parser="liac-arff",
     )
-    features = (features > pixel_threshold).astype(np.float32)
+    features = (features.astype(np.float32) / 255.0).clip(0.0, 1.0)
     labels = labels.astype(np.int64)
 
     if train_limit <= 0 or train_limit > MNIST_TRAIN_SAMPLES:
@@ -283,9 +301,12 @@ def random_binary_augmentation(
     flat_bits: np.ndarray,
     rng: np.random.Generator,
     mode: str,
+    strength: float,
 ) -> np.ndarray:
     if flat_bits.shape[0] != IMAGE_PIXELS:
         raise ValueError(f"expected {IMAGE_PIXELS} pixels, got {flat_bits.shape[0]}")
+    if strength <= 0.0 or mode == "none":
+        return flat_bits.astype(np.float32, copy=True)
 
     image = flat_bits.reshape(IMAGE_SIDE, IMAGE_SIDE).astype(np.float32, copy=True)
     original = image.copy()
@@ -318,10 +339,22 @@ def random_binary_augmentation(
         drop_max = 0.18
         salt_max = 0.03
         pepper_max = 0.05
-    else:
-        return flat_bits.astype(np.float32, copy=True)
+    max_angle *= strength
+    scale_span_low = (1.0 - scale_min) * strength
+    scale_span_high = (scale_max - 1.0) * strength
+    scale_min = 1.0 - scale_span_low
+    scale_max = 1.0 + scale_span_high
+    max_shear *= strength
+    max_translate *= strength
+    max_slant = int(round(max_slant * strength))
+    max_holes = int(round(max_holes * strength))
+    max_hole_size = max(1, int(round(max_hole_size * max(strength, 0.25)))) if max_holes > 0 else 0
+    max_blobs = int(round(max_blobs * strength))
+    max_blob_size = max(1, int(round(max_blob_size * max(strength, 0.25)))) if max_blobs > 0 else 0
+    drop_max *= strength
+    salt_max *= strength
+    pepper_max *= strength
 
-    # Occasional recentering keeps the source shape aligned before heavy jitter.
     if rng.random() < 0.35:
         nonzero = np.argwhere(image > 0.5)
         if nonzero.size > 0:
@@ -369,28 +402,31 @@ def random_binary_augmentation(
         col_shift=col_shift_f,
     )
 
-    slant = int(rng.integers(-max_slant, max_slant + 1))
-    image = apply_row_slant(image, slant)
+    if max_slant > 0:
+        slant = int(rng.integers(-max_slant, max_slant + 1))
+        image = apply_row_slant(image, slant)
 
-    if rng.random() < 0.90:
-        dilation_radius = int(rng.integers(1, 3))
+    if rng.random() < (0.90 * strength):
+        dilation_radius = max(1, int(rng.integers(1, 3)))
         image = dilate_binary_image(image, dilation_radius)
-    if rng.random() < 0.30:
-        erosion_radius = int(rng.integers(1, 3))
+    if rng.random() < (0.30 * strength):
+        erosion_radius = max(1, int(rng.integers(1, 3)))
         image = erode_binary_image(image, erosion_radius)
 
-    image = carve_random_holes(
-        image=image,
-        rng=rng,
-        max_holes=max_holes,
-        max_size=max_hole_size,
-    )
-    image = add_random_blobs(
-        image=image,
-        rng=rng,
-        max_blobs=max_blobs,
-        max_size=max_blob_size,
-    )
+    if max_holes > 0 and max_hole_size > 0:
+        image = carve_random_holes(
+            image=image,
+            rng=rng,
+            max_holes=max_holes,
+            max_size=max_hole_size,
+        )
+    if max_blobs > 0 and max_blob_size > 0:
+        image = add_random_blobs(
+            image=image,
+            rng=rng,
+            max_blobs=max_blobs,
+            max_size=max_blob_size,
+        )
 
     active_drop_prob = float(rng.uniform(0.0, drop_max))
     salt_prob = float(rng.uniform(0.0, salt_max))
@@ -412,44 +448,284 @@ def random_binary_augmentation(
     return image.reshape(IMAGE_PIXELS)
 
 
-def augment_training_set(
-    train_x: np.ndarray,
-    train_y: np.ndarray,
-    copies: int,
-    mode: str,
-    seed: int,
-) -> tuple[np.ndarray, np.ndarray]:
-    if copies <= 0 or mode == "none":
-        return train_x, train_y
+def build_threshold_schedule(args: argparse.Namespace) -> tuple[list[float], float]:
+    if args.pixel_threshold is not None:
+        threshold = float(args.pixel_threshold)
+        return [threshold], threshold
 
-    if train_x.shape[1] != IMAGE_PIXELS:
-        raise ValueError(f"expected flattened 28x28 inputs, got shape {train_x.shape}")
+    threshold_min_raw = int(args.threshold_min_raw)
+    threshold_max_raw = int(args.threshold_max_raw)
+    threshold_step_raw = int(args.threshold_step_raw)
+    eval_threshold_raw = int(args.eval_threshold_raw)
 
-    rng = np.random.default_rng(seed)
-    base_count = train_x.shape[0]
-    total_count = base_count * (copies + 1)
+    for name, value in (
+        ("threshold_min_raw", threshold_min_raw),
+        ("threshold_max_raw", threshold_max_raw),
+        ("eval_threshold_raw", eval_threshold_raw),
+    ):
+        if value < 0 or value > 255:
+            raise ValueError(f"{name} must be in [0, 255]")
+    if threshold_step_raw <= 0:
+        raise ValueError("threshold_step_raw must be positive")
+    if threshold_min_raw > threshold_max_raw:
+        raise ValueError("threshold_min_raw must be <= threshold_max_raw")
+    if eval_threshold_raw < threshold_min_raw or eval_threshold_raw > threshold_max_raw:
+        raise ValueError("eval_threshold_raw must fall inside the bounded threshold sweep")
 
-    augmented_x = np.empty((total_count, train_x.shape[1]), dtype=np.float32)
-    augmented_y = np.empty((total_count,), dtype=train_y.dtype)
+    threshold_values_raw = list(range(threshold_min_raw, threshold_max_raw + 1, threshold_step_raw))
+    if threshold_values_raw[-1] != threshold_max_raw:
+        threshold_values_raw.append(threshold_max_raw)
+    threshold_values = [float(value) / 255.0 for value in threshold_values_raw]
+    return threshold_values, float(eval_threshold_raw) / 255.0
 
-    augmented_x[:base_count] = train_x
-    augmented_y[:base_count] = train_y
-    write_index = base_count
 
-    for sample_index in range(base_count):
-        sample_bits = train_x[sample_index]
-        sample_label = train_y[sample_index]
-        for _ in range(copies):
-            augmented_x[write_index] = random_binary_augmentation(
-                flat_bits=sample_bits,
-                rng=rng,
-                mode=mode,
+def build_augmentation_strengths(args: argparse.Namespace) -> list[float]:
+    if args.augment_mode == "none":
+        return [0.0]
+    if args.augment_levels <= 1:
+        return [0.0, 1.0]
+
+    levels = int(args.augment_levels)
+    return [float(value) for value in np.linspace(0.0, 1.0, num=levels)]
+
+
+def binarize_grayscale(flat_pixels: np.ndarray, threshold: float) -> np.ndarray:
+    if flat_pixels.shape[0] != IMAGE_PIXELS:
+        raise ValueError(f"expected {IMAGE_PIXELS} pixels, got {flat_pixels.shape[0]}")
+    clipped_threshold = min(max(float(threshold), 0.0), 1.0)
+    return (flat_pixels > clipped_threshold).astype(np.float32)
+
+
+class SpectrumBinaryMnistDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
+    def __init__(
+        self,
+        raw_x: np.ndarray,
+        raw_y: np.ndarray,
+        *,
+        training: bool,
+        augment_copies: int,
+        augment_mode: str,
+        threshold_values: list[float],
+        augment_strengths: list[float],
+        seed: int,
+    ) -> None:
+        if raw_x.ndim != 2 or raw_x.shape[1] != IMAGE_PIXELS:
+            raise ValueError(f"expected [N, {IMAGE_PIXELS}] grayscale inputs")
+        if raw_y.ndim != 1 or raw_y.shape[0] != raw_x.shape[0]:
+            raise ValueError("labels must align with raw_x")
+        if augment_copies < 0:
+            raise ValueError("augment_copies must be non-negative")
+        if not threshold_values:
+            raise ValueError("threshold_values must be non-empty")
+        if not augment_strengths:
+            raise ValueError("augment_strengths must be non-empty")
+
+        self.raw_x = raw_x
+        self.raw_y = raw_y
+        self.training = training
+        self.augment_copies = augment_copies
+        self.augment_mode = augment_mode
+        self.threshold_values = [float(value) for value in threshold_values]
+        self.augment_strengths = [float(value) for value in augment_strengths]
+        self.seed = seed
+        self.epoch = 0
+        self.threshold_count = len(self.threshold_values)
+        self.augment_count = len(self.augment_strengths)
+        self.replica_count = (augment_copies + 1) if training else 1
+
+    def set_epoch(self, epoch: int) -> None:
+        self.epoch = max(0, int(epoch))
+
+    def __len__(self) -> int:
+        return int(self.raw_y.shape[0] * self.threshold_count * self.augment_count * self.replica_count)
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
+        base_count = int(self.raw_y.shape[0])
+        sample_index = index % base_count
+        combo_index = index // base_count
+        threshold_index = combo_index % self.threshold_count
+        combo_index //= self.threshold_count
+        strength_index = combo_index % self.augment_count
+        replica_index = combo_index // self.augment_count
+
+        rng_seed = self.seed + (self.epoch * max(1, len(self))) + index
+        rng = np.random.default_rng(rng_seed)
+
+        threshold = self.threshold_values[threshold_index]
+        strength = self.augment_strengths[strength_index]
+
+        bits = binarize_grayscale(self.raw_x[sample_index], threshold)
+
+        if self.training and self.augment_mode != "none" and strength > 0.0:
+            bits = random_binary_augmentation(bits, rng=rng, mode=self.augment_mode, strength=strength)
+        elif self.training and replica_index > 0 and self.augment_mode != "none" and strength == 0.0:
+            bits = bits.copy()
+
+        return (
+            torch.from_numpy(bits.astype(np.float32, copy=False)),
+            torch.tensor(int(self.raw_y[sample_index]), dtype=torch.long),
+        )
+
+
+def fake_quantize_q8_8_tensor(tensor: torch.Tensor) -> torch.Tensor:
+    clamped = torch.clamp(tensor, Q8_8_MIN, Q8_8_MAX)
+    quantized = torch.round(clamped * 256.0) / 256.0
+    return clamped + (quantized - clamped).detach()
+
+
+class QuantizedMnistMLP(nn.Module):
+    def __init__(self, input_size: int, hidden_size: int, output_size: int) -> None:
+        super().__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, output_size)
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        x = fake_quantize_q8_8_tensor(inputs)
+
+        w1 = fake_quantize_q8_8_tensor(self.fc1.weight)
+        b1 = fake_quantize_q8_8_tensor(self.fc1.bias)
+        x = F.linear(x, w1, b1)
+        x = fake_quantize_q8_8_tensor(x)
+        x = F.relu(x)
+        x = fake_quantize_q8_8_tensor(x)
+
+        w2 = fake_quantize_q8_8_tensor(self.fc2.weight)
+        b2 = fake_quantize_q8_8_tensor(self.fc2.bias)
+        x = F.linear(x, w2, b2)
+        x = fake_quantize_q8_8_tensor(x)
+        return x
+
+
+def quantize_tensor_to_q8_8_int(tensor: torch.Tensor) -> torch.Tensor:
+    quantized = torch.round(torch.clamp(tensor, Q8_8_MIN, Q8_8_MAX) * 256.0).to(torch.int32)
+    return torch.clamp(quantized, min=-0x8000, max=0x7FFF)
+
+
+def wrap_s16_tensor(tensor: torch.Tensor) -> torch.Tensor:
+    wrapped = torch.bitwise_and(tensor, 0xFFFF)
+    return torch.where(wrapped >= 0x8000, wrapped - 0x10000, wrapped)
+
+
+def sat_add_tensor(left: torch.Tensor, right: torch.Tensor) -> torch.Tensor:
+    return torch.clamp(left + right, min=-0x8000, max=0x7FFF)
+
+
+def extract_quantized_parameters(
+    model: QuantizedMnistMLP,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    with torch.no_grad():
+        w1 = quantize_tensor_to_q8_8_int(model.fc1.weight.detach().cpu()).transpose(0, 1).contiguous()
+        b1 = quantize_tensor_to_q8_8_int(model.fc1.bias.detach().cpu())
+        w2 = quantize_tensor_to_q8_8_int(model.fc2.weight.detach().cpu()).transpose(0, 1).contiguous()
+        b2 = quantize_tensor_to_q8_8_int(model.fc2.bias.detach().cpu())
+    return w1, b1, w2, b2
+
+
+def exact_q8_8_batch_inference(
+    bits_batch: torch.Tensor,
+    w1: torch.Tensor,
+    b1: torch.Tensor,
+    w2: torch.Tensor,
+    b2: torch.Tensor,
+) -> torch.Tensor:
+    q_inputs = torch.where(bits_batch > 0.5, 0x0100, 0x0000).to(torch.int32)
+
+    hidden_acc = torch.zeros((q_inputs.shape[0], w1.shape[1]), dtype=torch.int32)
+    for input_index in range(q_inputs.shape[1]):
+        products = wrap_s16_tensor((q_inputs[:, input_index:input_index + 1] * w1[input_index].unsqueeze(0)) >> Q8_8_SHIFT)
+        hidden_acc = sat_add_tensor(hidden_acc, products)
+
+    hidden = sat_add_tensor(hidden_acc, b1.unsqueeze(0))
+    hidden = torch.clamp(hidden, min=0, max=0x7FFF)
+
+    logits_acc = torch.zeros((hidden.shape[0], w2.shape[1]), dtype=torch.int32)
+    for hidden_index in range(hidden.shape[1]):
+        products = wrap_s16_tensor((hidden[:, hidden_index:hidden_index + 1] * w2[hidden_index].unsqueeze(0)) >> Q8_8_SHIFT)
+        logits_acc = sat_add_tensor(logits_acc, products)
+
+    return sat_add_tensor(logits_acc, b2.unsqueeze(0))
+
+
+def evaluate_exact_q8_8_accuracy(
+    model: QuantizedMnistMLP,
+    data_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+) -> float:
+    w1, b1, w2, b2 = extract_quantized_parameters(model)
+    correct = 0
+    total = 0
+
+    for batch_x, batch_y in data_loader:
+        logits = exact_q8_8_batch_inference(batch_x, w1, b1, w2, b2)
+        predictions = torch.argmax(logits, dim=1)
+        correct += int((predictions == batch_y.to(torch.int64)).sum().item())
+        total += int(batch_y.shape[0])
+
+    return (correct / total) if total else 0.0
+
+
+def train_model(
+    model: QuantizedMnistMLP,
+    train_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+    train_dataset: SpectrumBinaryMnistDataset,
+    test_loader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+    *,
+    epochs: int,
+    learning_rate: float,
+    weight_decay: float,
+    device: torch.device,
+) -> tuple[QuantizedMnistMLP, float]:
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=weight_decay,
+    )
+    criterion = nn.CrossEntropyLoss()
+    model.to(device)
+
+    best_accuracy = -1.0
+    best_state: dict[str, torch.Tensor] | None = None
+
+    for epoch in range(epochs):
+        model.train()
+        train_dataset.set_epoch(epoch)
+        running_loss = 0.0
+        batch_count = 0
+
+        for batch_x, batch_y in train_loader:
+            batch_x = batch_x.to(device)
+            batch_y = batch_y.to(device)
+
+            optimizer.zero_grad(set_to_none=True)
+            logits = model(batch_x)
+            loss = criterion(logits, batch_y)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += float(loss.item())
+            batch_count += 1
+
+        test_accuracy = evaluate_exact_q8_8_accuracy(model, test_loader)
+        if test_accuracy > best_accuracy:
+            best_accuracy = test_accuracy
+            best_state = copy.deepcopy(model.state_dict())
+
+        print(
+            json.dumps(
+                {
+                    "epoch": epoch + 1,
+                    "epochs": epochs,
+                    "loss": (running_loss / batch_count) if batch_count else 0.0,
+                    "test_accuracy": test_accuracy,
+                },
+                sort_keys=True,
             )
-            augmented_y[write_index] = sample_label
-            write_index += 1
+        )
 
-    permutation = rng.permutation(total_count)
-    return augmented_x[permutation], augmented_y[permutation]
+    if best_state is None:
+        raise RuntimeError("training did not produce any model state")
+
+    model.load_state_dict(best_state)
+    return model, best_accuracy
 
 
 def quantize_matrix(matrix: np.ndarray) -> list[list[int]]:
@@ -528,7 +804,7 @@ def run_quantized_inference(
 
 
 def export_model(
-    model: MLPClassifier,
+    model: QuantizedMnistMLP,
     output_dir: Path,
     tile_width: int,
     sample_bits: list[int],
@@ -541,14 +817,21 @@ def export_model(
     test_class_counts: dict[str, int],
     augment_mode: str,
     augment_copies: int,
+    augment_strengths: list[float],
     effective_train_samples: int,
+    threshold_values: list[float],
+    eval_threshold: float,
+    learning_rate: float,
+    weight_decay: float,
+    epochs: int,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    w1 = quantize_matrix(model.coefs_[0])
-    b1 = quantize_vector(model.intercepts_[0])
-    w2 = quantize_matrix(model.coefs_[1])
-    b2 = quantize_vector(model.intercepts_[1])
+    q_w1, q_b1, q_w2, q_b2 = extract_quantized_parameters(model)
+    w1 = q_w1.to(torch.int32).tolist()
+    b1 = q_b1.to(torch.int32).tolist()
+    w2 = q_w2.to(torch.int32).tolist()
+    b2 = q_b2.to(torch.int32).tolist()
 
     write_memh(output_dir / "w1_tiled_q8_8.memh", flatten_weights_for_tiles(w1, tile_width))
     write_memh(output_dir / "b1_q8_8.memh", b1)
@@ -569,97 +852,163 @@ def export_model(
     write_memh(output_dir / "sample_expected_hidden_0_q8_8.memh", hidden_values)
     write_memh(output_dir / "sample_expected_logits_0_q8_8.memh", logits)
     (output_dir / "sample_expected_prediction_0.txt").write_text(f"{prediction}\n", encoding="ascii")
-
     (output_dir / "sample_label_0.txt").write_text(f"{sample_label}\n", encoding="ascii")
 
     write_summary(
         output_dir / "summary.json",
         {
             "accuracy": accuracy,
+            "augment_copies": augment_copies,
+            "augment_levels": len(augment_strengths),
+            "augment_mode": augment_mode,
+            "augment_strengths": augment_strengths,
+            "effective_train_samples": effective_train_samples,
+            "epochs": epochs,
+            "eval_threshold": eval_threshold,
             "hidden_size": len(b1),
             "input_size": len(w1),
+            "learning_rate": learning_rate,
+            "optimizer": "adamw",
             "output_size": len(b2),
+            "q8_8_aware_training": True,
             "split_mode": split_mode,
-            "test_limit": test_limit,
             "test_class_counts": test_class_counts,
+            "test_limit": test_limit,
+            "threshold_values": threshold_values,
             "tile_width": tile_width,
-            "train_limit": train_limit,
             "train_class_counts": train_class_counts,
-            "augment_mode": augment_mode,
-            "augment_copies": augment_copies,
-            "effective_train_samples": effective_train_samples,
+            "train_limit": train_limit,
+            "training_backend": "pytorch",
+            "weight_decay": weight_decay,
         },
     )
 
 
 def main() -> None:
     args = parse_args()
+    threshold_values, eval_threshold = build_threshold_schedule(args)
+    augment_strengths = build_augmentation_strengths(args)
 
-    train_x, train_y, test_x, test_y, train_counts, test_counts = load_binarized_mnist(
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+
+    train_x, train_y, test_x, test_y, train_counts, test_counts = load_mnist_grayscale(
         train_limit=args.train_limit,
         test_limit=args.test_limit,
-        pixel_threshold=args.pixel_threshold,
         seed=args.seed,
         split_mode=args.split_mode,
     )
 
-    train_x, train_y = augment_training_set(
-        train_x=train_x,
-        train_y=train_y,
-        copies=args.augment_copies,
-        mode=args.augment_mode,
+    train_dataset = SpectrumBinaryMnistDataset(
+        raw_x=train_x,
+        raw_y=train_y,
+        training=True,
+        augment_copies=args.augment_copies,
+        augment_mode=args.augment_mode,
+        threshold_values=threshold_values,
+        augment_strengths=augment_strengths,
         seed=args.seed + 101,
     )
-    train_counts = summarize_class_counts(train_y, 10)
-
-    model = MLPClassifier(
-        hidden_layer_sizes=(args.hidden_size,),
-        activation="relu",
-        solver="adam",
-        alpha=1e-4,
-        batch_size=128,
-        learning_rate_init=1e-3,
-        max_iter=args.max_iter,
-        random_state=args.seed,
+    test_dataset = SpectrumBinaryMnistDataset(
+        raw_x=test_x,
+        raw_y=test_y,
+        training=False,
+        augment_copies=0,
+        augment_mode="none",
+        threshold_values=[eval_threshold],
+        augment_strengths=[0.0],
+        seed=args.seed + 202,
     )
-    model.fit(train_x, train_y)
 
-    accuracy = float(model.score(test_x, test_y))
-    sample_bits = [int(value) for value in test_x[0].tolist()]
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=args.batch_size,
+        shuffle=True,
+        num_workers=0,
+        drop_last=False,
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=0,
+        drop_last=False,
+    )
+
+    model = QuantizedMnistMLP(
+        input_size=IMAGE_PIXELS,
+        hidden_size=args.hidden_size,
+        output_size=10,
+    )
+    device = torch.device("cpu")
+
+    model, accuracy = train_model(
+        model=model,
+        train_loader=train_loader,
+        train_dataset=train_dataset,
+        test_loader=test_loader,
+        epochs=args.max_iter,
+        learning_rate=args.learning_rate,
+        weight_decay=args.weight_decay,
+        device=device,
+    )
+
+    sample_bits = binarize_grayscale(test_x[0], eval_threshold).astype(np.int64).tolist()
     sample_label = int(test_y[0])
+    effective_train_samples = int(len(train_dataset))
+    effective_train_counts = scale_class_counts(
+        train_counts,
+        len(threshold_values) * len(augment_strengths) * (args.augment_copies + 1),
+    )
 
     export_model(
         model=model,
         output_dir=args.output_dir,
         tile_width=args.tile_width,
-        sample_bits=sample_bits,
+        sample_bits=[int(value) for value in sample_bits],
         sample_label=sample_label,
-        accuracy=accuracy,
+        accuracy=float(accuracy),
         train_limit=args.train_limit,
         test_limit=args.test_limit,
         split_mode=args.split_mode,
-        train_class_counts=train_counts,
+        train_class_counts=effective_train_counts,
         test_class_counts=test_counts,
         augment_mode=args.augment_mode,
         augment_copies=args.augment_copies,
-        effective_train_samples=int(train_x.shape[0]),
+        augment_strengths=augment_strengths,
+        effective_train_samples=effective_train_samples,
+        threshold_values=threshold_values,
+        eval_threshold=eval_threshold,
+        learning_rate=args.learning_rate,
+        weight_decay=args.weight_decay,
+        epochs=args.max_iter,
     )
 
     print(
         json.dumps(
             {
-                "accuracy": accuracy,
-                "hidden_size": args.hidden_size,
-                "output_dir": str(args.output_dir),
-                "split_mode": args.split_mode,
-                "test_limit": args.test_limit,
-                "test_class_counts": test_counts,
-                "tile_width": args.tile_width,
-                "train_limit": args.train_limit,
-                "train_class_counts": train_counts,
-                "augment_mode": args.augment_mode,
+                "accuracy": float(accuracy),
                 "augment_copies": args.augment_copies,
-                "effective_train_samples": int(train_x.shape[0]),
+                "augment_levels": len(augment_strengths),
+                "augment_mode": args.augment_mode,
+                "augment_strengths": augment_strengths,
+                "effective_train_samples": effective_train_samples,
+                "epochs": args.max_iter,
+                "eval_threshold": eval_threshold,
+                "hidden_size": args.hidden_size,
+                "learning_rate": args.learning_rate,
+                "optimizer": "adamw",
+                "output_dir": str(args.output_dir),
+                "q8_8_aware_training": True,
+                "split_mode": args.split_mode,
+                "test_class_counts": test_counts,
+                "test_limit": args.test_limit,
+                "threshold_values": threshold_values,
+                "tile_width": args.tile_width,
+                "train_class_counts": effective_train_counts,
+                "train_limit": args.train_limit,
+                "training_backend": "pytorch",
+                "weight_decay": args.weight_decay,
             },
             sort_keys=True,
         )

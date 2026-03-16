@@ -2,7 +2,7 @@ set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_TOOL_VERSION "25.1"
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_TOOL_ENV "Qsys"
 set_global_assignment -library "mnist_jtag_bridge" -name SOPCINFO_FILE [file join $::quartus(qip_path) "../../mnist_jtag_bridge.sopcinfo"]
-set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name SLD_INFO "QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1772936500"
+set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name SLD_INFO "QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1773642214"
 set_global_assignment -library "mnist_jtag_bridge" -name MISC_FILE [file join $::quartus(qip_path) "../mnist_jtag_bridge.cmp"]
 set_global_assignment -library "mnist_jtag_bridge" -name SLD_FILE [file join $::quartus(qip_path) "mnist_jtag_bridge.debuginfo"]
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_TARGETED_DEVICE_FAMILY "Cyclone V"
@@ -15,7 +15,7 @@ set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_REPORT_HIERARCHY "On"
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_INTERNAL "Off"
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_VERSION "MS4w"
-set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTc3MjkzNjUwMA==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTc3MzY0MjIxNA==::QXV0byBHRU5FUkFUSU9OX0lE"
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::Q3ljbG9uZSBW::QXV0byBERVZJQ0VfRkFNSUxZ"
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::NUNTRU1BNUYzMUM2::QXV0byBERVZJQ0U="
 set_global_assignment -entity "mnist_jtag_bridge" -library "mnist_jtag_bridge" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::Ng==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
