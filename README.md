@@ -6,6 +6,8 @@ A minimal tensor processing unit (TPU), reinvented from Google's TPU V2 and V1.
 
 https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
 
+[tiny-tpu-demo.mp4](videos/tiny-tpu-demo.mp4)
+
 
 
 ## Table of Contents
@@ -38,7 +40,7 @@ https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
 
 - [`mnist_demo/`](mnist_demo/README.md): DE1-SoC MNIST demo with organized FPGA entry points in `fpga/`, JTAG host utilities in `host/`, checked-in and generated model data in `data/model/`, and generated outputs collected under `artifacts/`.
 - [`tiny-tpu-hardened/`](tiny-tpu-hardened/README.md): Hardened TPU variant with ASIC-ready RTL in `rtl/`, OpenLane inputs in `openlane/`, and focused regression benches in `sim/`.
-- [`xor_demo/`](xor_demo/README.md): Compact DE1-SoC XOR demo with Quartus assets in `fpga/`, reusable TPU RTL in `rtl/`, board-level simulation in `sim/`, and preserved Quartus outputs in `artifacts/`.
+- [`xor_demo/`](xor_demo/README.md): Compact DE1-SoC XOR demo with Intel Quartus assets in `fpga/`, reusable TPU RTL in `rtl/`, board-level simulation in `sim/`, and preserved Quartus outputs in `artifacts/`.
 
 ## Architecture
 
