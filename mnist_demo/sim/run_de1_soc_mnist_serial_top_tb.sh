@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 TPU_DIR="$PROJECT_DIR/rtl"
 MODELSIM_DIR="${MODELSIM_DIR:-/mnt/c/intelFPGA/18.1/modelsim_ase/win32aloem}"
-WORK_DIR="$SCRIPT_DIR/modelsim_de1_soc_mnist_serial_top"
+WORK_DIR="$PROJECT_DIR/artifacts/sim/modelsim_de1_soc_mnist_serial_top"
 
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"
@@ -38,7 +38,7 @@ cd "$WORK_DIR"
   "$(wslpath -w "$PROJECT_DIR/rtl/tpu_mnist.v")" \
   "$(wslpath -w "$PROJECT_DIR/rtl/mnist_classifier_core.v")" \
   "$(wslpath -w "$PROJECT_DIR/rtl/mnist_serial_classifier.v")" \
-  "$(wslpath -w "$PROJECT_DIR/de1_soc_mnist_serial_top.v")" \
+  "$(wslpath -w "$PROJECT_DIR/fpga/serial/de1_soc_mnist_serial_top.v")" \
   "$(wslpath -w "$SCRIPT_DIR/tb_de1_soc_mnist_serial_top.v")"
 "$MODELSIM_DIR/vsim.exe" \
   -c \

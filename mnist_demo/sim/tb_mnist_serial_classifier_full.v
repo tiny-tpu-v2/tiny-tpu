@@ -9,10 +9,10 @@ module tb_mnist_serial_classifier_full;
     localparam integer BAUD = 115200;
     localparam integer CLKS_PER_BIT = CLOCK_HZ / BAUD;
     localparam integer PAYLOAD_BYTES = 98;
-    localparam W1_INIT_FILE = "../../model/w1_tiled_q8_8.memh";
-    localparam B1_INIT_FILE = "../../model/b1_q8_8.memh";
-    localparam W2_INIT_FILE = "../../model/w2_tiled_q8_8.memh";
-    localparam B2_INIT_FILE = "../../model/b2_q8_8.memh";
+    localparam W1_INIT_FILE = "../../data/model/reference/w1_tiled_q8_8.memh";
+    localparam B1_INIT_FILE = "../../data/model/reference/b1_q8_8.memh";
+    localparam W2_INIT_FILE = "../../data/model/reference/w2_tiled_q8_8.memh";
+    localparam B2_INIT_FILE = "../../data/model/reference/b2_q8_8.memh";
 
     reg clk;
     reg rst;
@@ -93,10 +93,10 @@ module tb_mnist_serial_classifier_full;
         expected_label = 4'd0;
         expected_label_int = 0;
 
-        $readmemh("../../model/sample_image_0.memh", sample_bytes);
-        $readmemh("../../model/sample_expected_hidden_0_q8_8.memh", expected_hidden);
-        $readmemh("../../model/sample_expected_logits_0_q8_8.memh", expected_logits);
-        label_file = $fopen("../../model/sample_expected_prediction_0.txt", "r");
+        $readmemh("../../data/model/reference/sample_image_0.memh", sample_bytes);
+        $readmemh("../../data/model/reference/sample_expected_hidden_0_q8_8.memh", expected_hidden);
+        $readmemh("../../data/model/reference/sample_expected_logits_0_q8_8.memh", expected_logits);
+        label_file = $fopen("../../data/model/reference/sample_expected_prediction_0.txt", "r");
         if (label_file == 0) begin
             $display("FAIL: could not open expected prediction file");
             $finish(1);

@@ -16,15 +16,15 @@ import numpy as np
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from de1_soc_mnist_demo.brush_tools import stroke_cells
-from de1_soc_mnist_demo.train_mnist import run_quantized_inference
+from mnist_demo.brush_tools import stroke_cells
+from mnist_demo.train_mnist import run_quantized_inference
 
 
 IMAGE_SIDE = 28
 IMAGE_PIXELS = IMAGE_SIDE * IMAGE_SIDE
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-MODEL_DIR = PROJECT_DIR / "model"
-DEFAULT_OUTPUT_DIR = PROJECT_DIR / "synthetic_handdrawn_benchmark"
+MODEL_DIR = PROJECT_DIR / "data" / "model" / "reference"
+DEFAULT_OUTPUT_DIR = PROJECT_DIR / "artifacts" / "benchmarks" / "synthetic_handdrawn"
 
 
 DIGIT_TEMPLATES: dict[int, list[list[tuple[float, float]]]] = {

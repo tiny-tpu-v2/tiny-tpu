@@ -4,7 +4,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WORK_DIR="$SCRIPT_DIR/modelsim_mnist_jtag_parity"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+WORK_DIR="$PROJECT_DIR/artifacts/sim/modelsim_mnist_jtag_parity"
 
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"

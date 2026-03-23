@@ -11,6 +11,7 @@ https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
 ## Table of Contents
 
 - [Motivation](#motivation)
+- [Project Folders](#project-folders)
 - [Architecture](#architecture)
   - [Processing Element (PE)](#processing-element-pe)
   - [Systolic Array](#systolic-array)
@@ -32,6 +33,12 @@ https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
 - [Running commands from Makefile](#running-commands-from-makefile)
 - [Fixed point viewing in gtkwave](#fixed-point-viewing-in-gtkwave)
 - [What is a gtkw file?](#what-is-a-gtkw-file)
+
+## Project Folders
+
+- [`mnist_demo/`](mnist_demo/README.md): DE1-SoC MNIST demo with organized FPGA entry points in `fpga/`, JTAG host utilities in `host/`, checked-in and generated model data in `data/model/`, and generated outputs collected under `artifacts/`.
+- [`tiny-tpu-hardened/`](tiny-tpu-hardened/README.md): Hardened TPU variant with ASIC-ready RTL in `rtl/`, OpenLane inputs in `openlane/`, and focused regression benches in `sim/`.
+- [`xor_demo/`](xor_demo/README.md): Compact DE1-SoC XOR demo with Quartus assets in `fpga/`, reusable TPU RTL in `rtl/`, board-level simulation in `sim/`, and preserved Quartus outputs in `artifacts/`.
 
 ## Architecture
 

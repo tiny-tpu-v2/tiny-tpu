@@ -15,9 +15,8 @@ IMAGE_SIZE = 28
 PIXELS = IMAGE_SIZE * IMAGE_SIZE
 PACKED_BYTES = PIXELS // 8
 SCALE = 12
-REPO_ROOT = Path(__file__).resolve().parents[2]
-PROJECT_DIR = REPO_ROOT / "de1_soc_mnist_demo"
-OUTPUT_DIR = PROJECT_DIR / "bitmask_previews"
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = PROJECT_DIR / "artifacts" / "previews" / "bitmask"
 
 
 @dataclass(frozen=True)
@@ -174,10 +173,18 @@ def build_index(entries: list[tuple[str, str, int]]) -> str:
 
 def collect_sources() -> list[SourceFrame]:
     return [
-        SourceFrame("runtime_current_frame_bits", PROJECT_DIR / "jtag_host/runtime/current_frame.bits", "bits"),
-        SourceFrame("runtime_sample_frame_bits", PROJECT_DIR / "jtag_host/runtime/sample_image_0.bits", "bits"),
-        SourceFrame("model_sample_image_bin", PROJECT_DIR / "model/sample_image_0.bin", "bin"),
-        SourceFrame("generated_model_sample_image_bin", PROJECT_DIR / "generated_model/sample_image_0.bin", "bin"),
+        SourceFrame(
+            "runtime_current_frame_bits",
+            PROJECT_DIR / "artifacts" / "runtime" / "jtag_host" / "current_frame.bits",
+            "bits",
+        ),
+        SourceFrame(
+            "runtime_sample_frame_bits",
+            PROJECT_DIR / "artifacts" / "runtime" / "jtag_host" / "sample_image_0.bits",
+            "bits",
+        ),
+        SourceFrame("model_sample_image_bin", PROJECT_DIR / "data" / "model" / "reference" / "sample_image_0.bin", "bin"),
+        SourceFrame("generated_model_sample_image_bin", PROJECT_DIR / "data" / "model" / "generated" / "sample_image_0.bin", "bin"),
     ]
 
 

@@ -30,7 +30,7 @@ cd "$WORK_DIR"
     "$RTL_DIR/pe.v" \
     "$RTL_DIR/systolic.v" \
     "$RTL_DIR/tpu.v" \
-    "$PROJECT_DIR/de1_soc_tiny_tpu_xor_top.v" \
+    "$PROJECT_DIR/fpga/de1_soc_tiny_tpu_xor_top.v" \
     "$SCRIPT_DIR/de1_soc_tiny_tpu_xor_top_tb.v" >/dev/null
 
 "$MODELSIM_DIR/vsim.exe" -c work.de1_soc_tiny_tpu_xor_top_tb -do "run -all; quit -f" >"$LOG_FILE"

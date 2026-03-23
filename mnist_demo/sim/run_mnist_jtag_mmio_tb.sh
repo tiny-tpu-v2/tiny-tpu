@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 MODELSIM_DIR="${MODELSIM_DIR:-/mnt/c/intelFPGA/18.1/modelsim_ase/win32aloem}"
-WORK_DIR="$SCRIPT_DIR/modelsim_mnist_jtag_mmio"
+WORK_DIR="$PROJECT_DIR/artifacts/sim/modelsim_mnist_jtag_mmio"
 
 rm -rf "$WORK_DIR"
 mkdir -p "$WORK_DIR"

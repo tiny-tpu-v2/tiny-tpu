@@ -21,8 +21,8 @@ MNIST_TEST_SAMPLES = 10000
 DEFAULT_SCALE = 12
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
-MODEL_SUMMARY_PATH = PROJECT_DIR / "model" / "summary.json"
-OUTPUT_DIR_DEFAULT = PROJECT_DIR / "mnist_dataset_previews"
+MODEL_SUMMARY_PATH = PROJECT_DIR / "data" / "model" / "reference" / "summary.json"
+OUTPUT_DIR_DEFAULT = PROJECT_DIR / "artifacts" / "previews" / "dataset"
 
 
 def parse_args() -> argparse.Namespace:

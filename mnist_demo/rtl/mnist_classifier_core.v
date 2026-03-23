@@ -36,10 +36,10 @@ module mnist_classifier_core #(
     parameter integer TILE_WIDTH = 2,
     parameter integer UNIFIED_BUFFER_WIDTH = 128,
     parameter integer PRELOAD_MODEL = 0,
-    parameter W1_INIT_FILE = "model/w1_tiled_q8_8.memh",
-    parameter B1_INIT_FILE = "model/b1_q8_8.memh",
-    parameter W2_INIT_FILE = "model/w2_tiled_q8_8.memh",
-    parameter B2_INIT_FILE = "model/b2_q8_8.memh"
+    parameter W1_INIT_FILE = "data/model/reference/w1_tiled_q8_8.memh",
+    parameter B1_INIT_FILE = "data/model/reference/b1_q8_8.memh",
+    parameter W2_INIT_FILE = "data/model/reference/w2_tiled_q8_8.memh",
+    parameter B2_INIT_FILE = "data/model/reference/b2_q8_8.memh"
 ) (
     input wire clk,
     input wire rst,

@@ -29,10 +29,10 @@ module tb_de1_soc_mnist_serial_top;
 
     de1_soc_mnist_serial_top #(
         .DEBOUNCE_LIMIT(4),
-        .W1_INIT_FILE("../../model/w1_tiled_q8_8.memh"),
-        .B1_INIT_FILE("../../model/b1_q8_8.memh"),
-        .W2_INIT_FILE("../../model/w2_tiled_q8_8.memh"),
-        .B2_INIT_FILE("../../model/b2_q8_8.memh")
+        .W1_INIT_FILE("../../data/model/reference/w1_tiled_q8_8.memh"),
+        .B1_INIT_FILE("../../data/model/reference/b1_q8_8.memh"),
+        .W2_INIT_FILE("../../data/model/reference/w2_tiled_q8_8.memh"),
+        .B2_INIT_FILE("../../data/model/reference/b2_q8_8.memh")
     ) dut (
         .CLOCK_50(CLOCK_50),
         .KEY(KEY),
@@ -71,7 +71,7 @@ module tb_de1_soc_mnist_serial_top;
         UART_RX_IN = 1'b1;
         checksum = 8'h00;
 
-        $readmemh("../../model/sample_image_0.memh", sample_bytes);
+        $readmemh("../../data/model/reference/sample_image_0.memh", sample_bytes);
         for (i = 0; i < PAYLOAD_BYTES; i = i + 1) begin
             checksum = checksum ^ sample_bytes[i];
         end

@@ -20,10 +20,10 @@ from torch.utils.data import Dataset
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from de1_soc_mnist_demo.mnist_tools import flatten_weights_for_tiles
-from de1_soc_mnist_demo.mnist_tools import pack_binary_image
-from de1_soc_mnist_demo.mnist_tools import quantize_q8_8
-from de1_soc_mnist_demo.mnist_tools import to_u16_hex
+from mnist_demo.mnist_tools import flatten_weights_for_tiles
+from mnist_demo.mnist_tools import pack_binary_image
+from mnist_demo.mnist_tools import quantize_q8_8
+from mnist_demo.mnist_tools import to_u16_hex
 
 
 MNIST_TRAIN_SAMPLES = 60000
@@ -66,7 +66,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("generated_model"),
+        default=Path("data/model/generated"),
     )
     return parser.parse_args()
 

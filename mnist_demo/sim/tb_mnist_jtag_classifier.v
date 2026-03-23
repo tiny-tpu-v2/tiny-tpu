@@ -10,10 +10,10 @@ module tb_mnist_jtag_classifier;
     localparam integer CLOCK_HZ = 50000000;
     localparam integer MAX_WAIT_CYCLES = 2000000;
     localparam [31:0] IMAGE_BASE = 32'h00000100;
-    localparam W1_INIT_FILE = "../../model/w1_tiled_q8_8.memh";
-    localparam B1_INIT_FILE = "../../model/b1_q8_8.memh";
-    localparam W2_INIT_FILE = "../../model/w2_tiled_q8_8.memh";
-    localparam B2_INIT_FILE = "../../model/b2_q8_8.memh";
+    localparam W1_INIT_FILE = "../../data/model/reference/w1_tiled_q8_8.memh";
+    localparam B1_INIT_FILE = "../../data/model/reference/b1_q8_8.memh";
+    localparam W2_INIT_FILE = "../../data/model/reference/w2_tiled_q8_8.memh";
+    localparam B2_INIT_FILE = "../../data/model/reference/b2_q8_8.memh";
 
     reg clk;
     reg rst;
@@ -147,8 +147,8 @@ module tb_mnist_jtag_classifier;
         expected_label = 4'd0;
         expected_label_int = 0;
 
-        $readmemh("../../model/sample_image_0.memh", sample_bytes);
-        label_file = $fopen("../../model/sample_expected_prediction_0.txt", "r");
+        $readmemh("../../data/model/reference/sample_image_0.memh", sample_bytes);
+        label_file = $fopen("../../data/model/reference/sample_expected_prediction_0.txt", "r");
         if (label_file == 0) begin
             $display("FAIL: could not open expected prediction file");
             $finish(1);
