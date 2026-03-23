@@ -1,0 +1,52 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/sim/modelsim_mnist_frame_buffer
+vmnist_frame_buffer
+Z1 !s110 1772340613
+!i10b 1
+!s100 5TQ41bC0aZRjLPIfRVfCg1
+IEjO?18d_8?C@GSHW0_LA;2
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1772340608
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v
+L0 7
+Z3 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z4 !s108 1772340612.000000
+Z5 !s107 \\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_frame_buffer.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v|
+Z6 !s90 -work|work|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\rtl\mnist_frame_buffer.v|\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_frame_buffer.v|
+!i113 1
+Z7 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z8 tCvgOpt 0
+vtb_mnist_frame_buffer
+R1
+!i10b 1
+!s100 D5L0YRD<g]^7LAB0dTzE=3
+IOPMga]1Caf7VBW>^E;[G_0
+R2
+R0
+w1772340587
+8\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_frame_buffer.v
+F\\wsl.localhost\Ubuntu\home\surya\tiny-tpu\de1_soc_mnist_demo\sim\tb_mnist_frame_buffer.v
+L0 7
+R3
+r1
+!s85 0
+31
+R4
+R5
+R6
+!i113 1
+R7
+R8

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags=""
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element clk_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+   element jtagm
+   {
+      datum _sortIndex
+      {
+         value = "1";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="5CSEMA5F31C6" />
+ <parameter name="deviceFamily" value="Cyclone V" />
+ <parameter name="deviceSpeedGrade" value="6" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="false" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface name="clk" internal="clk_0.clk_in" type="clock" dir="end" />
+ <interface name="jtag_master" internal="jtagm.master" type="avalon" dir="start" />
+ <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
+ <module name="clk_0" kind="clock_source" version="25.1" enabled="1">
+  <parameter name="clockFrequency" value="50000000" />
+  <parameter name="clockFrequencyKnown" value="true" />
+  <parameter name="inputClockFrequency" value="0" />
+  <parameter name="resetSynchronousEdges" value="NONE" />
+ </module>
+ <module
+   name="jtagm"
+   kind="altera_jtag_avalon_master"
+   version="25.1"
+   enabled="1">
+  <parameter name="AUTO_DEVICE" value="5CSEMA5F31C6" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <parameter name="COMPONENT_CLOCK" value="0" />
+  <parameter name="FAST_VER" value="1" />
+  <parameter name="FIFO_DEPTHS" value="2" />
+  <parameter name="PLI_PORT" value="50000" />
+  <parameter name="USE_PLI" value="0" />
+ </module>
+ <connection kind="clock" version="25.1" start="clk_0.clk" end="jtagm.clk" />
+ <connection
+   kind="reset"
+   version="25.1"
+   start="clk_0.clk_reset"
+   end="jtagm.clk_reset" />
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

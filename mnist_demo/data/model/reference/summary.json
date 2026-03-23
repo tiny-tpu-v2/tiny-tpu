@@ -1,0 +1,56 @@
+{
+  "accuracy": 0.972,
+  "augment_copies": 0,
+  "augment_levels": 3,
+  "augment_mode": "extreme",
+  "augment_strengths": [
+    0.0,
+    0.5,
+    1.0
+  ],
+  "effective_train_samples": 600000,
+  "epochs": 20,
+  "eval_threshold": 0.19607843137254902,
+  "hidden_size": 64,
+  "input_size": 784,
+  "learning_rate": 0.0005,
+  "optimizer": "adamw",
+  "output_size": 10,
+  "q8_8_aware_training": true,
+  "split_mode": "balanced",
+  "test_class_counts": {
+    "0": 800,
+    "1": 800,
+    "2": 800,
+    "3": 800,
+    "4": 800,
+    "5": 800,
+    "6": 800,
+    "7": 800,
+    "8": 800,
+    "9": 800
+  },
+  "test_limit": 8000,
+  "threshold_values": [
+    0.0,
+    0.09803921568627451,
+    0.19607843137254902,
+    0.29411764705882354
+  ],
+  "tile_width": 2,
+  "train_class_counts": {
+    "0": 60000,
+    "1": 60000,
+    "2": 60000,
+    "3": 60000,
+    "4": 60000,
+    "5": 60000,
+    "6": 60000,
+    "7": 60000,
+    "8": 60000,
+    "9": 60000
+  },
+  "train_limit": 50000,
+  "training_backend": "pytorch",
+  "weight_decay": 0.01
+}

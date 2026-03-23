@@ -1,0 +1,105 @@
+Assembler report for de1_soc_tiny_tpu_xor
+Sat Feb 28 16:08:41 2026
+Quartus Prime Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Assembler Summary
+  3. Assembler Settings
+  4. Assembler Generated Files
+  5. Assembler Device Options: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/output_files/de1_soc_tiny_tpu_xor.sof
+  6. Assembler Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2025  Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Altera and sold by Altera or its authorized distributors.  Please
+refer to the Altera Software License Subscription Agreements 
+on the Quartus Prime software download page.
+
+
+
++---------------------------------------------------------------+
+; Assembler Summary                                             ;
++-----------------------+---------------------------------------+
+; Assembler Status      ; Successful - Sat Feb 28 16:08:41 2026 ;
+; Revision Name         ; de1_soc_tiny_tpu_xor                  ;
+; Top-level Entity Name ; de1_soc_tiny_tpu_xor_top              ;
+; Family                ; Cyclone V                             ;
+; Device                ; 5CSEMA5F31C6                          ;
++-----------------------+---------------------------------------+
+
+
++----------------------------------+
+; Assembler Settings               ;
++--------+---------+---------------+
+; Option ; Setting ; Default Value ;
++--------+---------+---------------+
+
+
++---------------------------------------------------------------------------------------------+
+; Assembler Generated Files                                                                   ;
++---------------------------------------------------------------------------------------------+
+; File Name                                                                                   ;
++---------------------------------------------------------------------------------------------+
+; C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/output_files/de1_soc_tiny_tpu_xor.sof ;
++---------------------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------+
+; Assembler Device Options: C:/fpga_builds/tiny-tpu-fpga-staging/de1_soc_xor_demo/output_files/de1_soc_tiny_tpu_xor.sof ;
++----------------+------------------------------------------------------------------------------------------------------+
+; Option         ; Setting                                                                                              ;
++----------------+------------------------------------------------------------------------------------------------------+
+; JTAG usercode  ; 0x0151A029                                                                                           ;
+; Checksum       ; 0x0151A029                                                                                           ;
++----------------+------------------------------------------------------------------------------------------------------+
+
+
++--------------------+
+; Assembler Messages ;
++--------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime Assembler
+    Info: Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+    Info: Copyright (C) 2025  Altera Corporation. All rights reserved.
+    Info: Your use of Altera Corporation's design tools, logic functions 
+    Info: and other software and tools, and any partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Altera Program License 
+    Info: Subscription Agreement, the Altera Quartus Prime License Agreement,
+    Info: the Altera IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Altera and sold by Altera or its authorized distributors.  Please
+    Info: refer to the Altera Software License Subscription Agreements 
+    Info: on the Quartus Prime software download page.
+    Info: Processing started: Sat Feb 28 16:08:33 2026
+Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off de1_soc_tiny_tpu_xor -c de1_soc_tiny_tpu_xor
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (115030): Assembler is generating device programming files
+Info: Quartus Prime Assembler was successful. 0 errors, 1 warning
+    Info: Peak virtual memory: 5291 megabytes
+    Info: Processing ended: Sat Feb 28 16:08:41 2026
+    Info: Elapsed time: 00:00:08
+    Info: Total CPU time (on all processors): 00:00:06
+
+

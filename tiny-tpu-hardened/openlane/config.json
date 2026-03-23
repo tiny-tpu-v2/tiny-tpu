@@ -1,0 +1,52 @@
+{
+    "DESIGN_NAME": "tpu",
+    "VERILOG_FILES": [
+        "dir::../rtl/fixedpoint_simple.v",
+        "dir::../rtl/control_unit.v",
+        "dir::../rtl/loss_child.v",
+        "dir::../rtl/loss_parent.v",
+        "dir::../rtl/leaky_relu_derivative_child.v",
+        "dir::../rtl/leaky_relu_derivative_parent.v",
+        "dir::../rtl/leaky_relu_child.v",
+        "dir::../rtl/leaky_relu_parent.v",
+        "dir::../rtl/bias_child.v",
+        "dir::../rtl/bias_parent.v",
+        "dir::../rtl/vpu.v",
+        "dir::../rtl/gradient_descent.v",
+        "dir::../rtl/unified_buffer.v",
+        "dir::../rtl/pe.v",
+        "dir::../rtl/systolic.v",
+        "dir::../rtl/tpu.v"
+    ],
+    "CLOCK_PORT": "clk",
+    "CLOCK_PERIOD": 50.0,
+
+    "FP_CORE_UTIL": 40,
+    "PL_TARGET_DENSITY": 0.50,
+
+    "FP_PDN_MULTILAYER": false,
+
+    "SYNTH_STRATEGY": "AREA 0",
+    "SYNTH_MAX_FANOUT": 6,
+    "SYNTH_READ_BLACKBOX_LIB": true,
+    "SYNTH_NO_FLAT": false,
+
+    "PL_RESIZER_DESIGN_OPTIMIZATIONS": true,
+    "PL_RESIZER_TIMING_OPTIMIZATIONS": true,
+
+    "GLB_RESIZER_TIMING_OPTIMIZATIONS": false,
+    "GLB_RESIZER_DESIGN_OPTIMIZATIONS": false,
+
+    "GRT_REPAIR_ANTENNAS": false,
+
+    "GRT_OVERFLOW_ITERS": 150,
+
+    "RUN_CVC": false,
+
+    "pdk::sky130*": {
+        "FP_CORE_UTIL": 10,
+        "scl::sky130_fd_sc_hd": {
+            "CLOCK_PERIOD": 50.0
+        }
+    }
+}

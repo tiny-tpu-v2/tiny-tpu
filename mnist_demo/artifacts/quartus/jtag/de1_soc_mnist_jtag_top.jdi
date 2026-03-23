@@ -1,0 +1,103 @@
+<sld_project_info>
+  <project>
+    <hash md5_digest_80b="a1e629ae3701fe03cf1a"/>
+  </project>
+  <file_info>
+    <file device="5CSEMA5F31C6" path="de1_soc_mnist_jtag_top.sof" usercode="0xFFFFFFFF"/>
+  </file_info>
+  <hub_info hub_ir_width="4" ir_width="3" node_addr_width="1" node_count="1"/>
+  <node_info>
+    <node hpath="mnist_jtag_bridge:bridge_inst|mnist_jtag_bridge_jtagm:jtagm|altera_avalon_st_jtag_interface:jtag_phy_embedded_in_jtag_master|altera_jtag_sld_node:node|sld_virtual_jtag_basic:sld_virtual_jtag_component|sld_virtual_jtag_impl:sld_virtual_jtag_impl_inst" instance_id="0" mfg_id="110" node_id="132" sld_node_info="0xC206E00" version="1">
+      <parameters>
+        <parameter name="sld_mfg_id" type="dec" value="110"/>
+        <parameter name="sld_type_id" type="dec" value="132"/>
+        <parameter name="sld_version" type="dec" value="1"/>
+        <parameter name="sld_instance_index" type="dec" value="0"/>
+        <parameter name="sld_auto_instance_index" type="string" value="YES"/>
+        <parameter name="sld_ir_width" type="dec" value="3"/>
+        <parameter name="SLD_NODE_INFO" type="dec" value="203451904"/>
+      </parameters>
+      <inputs>
+        <port name="usr_tdo" source="mnist_jtag_bridge:bridge_inst|mnist_jtag_bridge_jtagm:jtagm|altera_avalon_st_jtag_interface:jtag_phy_embedded_in_jtag_master|altera_jtag_sld_node:node|sld_virtual_jtag_basic:sld_virtual_jtag_component|tdo"/>
+        <port name="usr_ir_out[0]" source="mnist_jtag_bridge:bridge_inst|mnist_jtag_bridge_jtagm:jtagm|altera_avalon_st_jtag_interface:jtag_phy_embedded_in_jtag_master|altera_jtag_sld_node:node|sld_virtual_jtag_basic:sld_virtual_jtag_component|ir_out[0]"/>
+        <port name="usr_ir_out[1]" source="mnist_jtag_bridge:bridge_inst|mnist_jtag_bridge_jtagm:jtagm|altera_avalon_st_jtag_interface:jtag_phy_embedded_in_jtag_master|altera_jtag_sld_node:node|sld_virtual_jtag_basic:sld_virtual_jtag_component|ir_out[1]"/>
+        <port name="usr_ir_out[2]" source="mnist_jtag_bridge:bridge_inst|mnist_jtag_bridge_jtagm:jtagm|altera_avalon_st_jtag_interface:jtag_phy_embedded_in_jtag_master|altera_jtag_sld_node:node|sld_virtual_jtag_basic:sld_virtual_jtag_component|ir_out[2]"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_raw_tck" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_raw_tck"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_raw_tms" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_raw_tms"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_tdi" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_tdi"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_tlr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_tlr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_rti" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_rti"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sdrs" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sdrs"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_cdr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_cdr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sdr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sdr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e1dr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e1dr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_pdr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_pdr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e2dr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e2dr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_udr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_udr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sirs" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sirs"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_cir" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_cir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sir" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_sir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e1ir" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e1ir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_pir" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_pir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e2ir" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_e2ir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_uir" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_jtag_state_uir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_usr1" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_usr1"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_clr" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_clr"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ena" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ena"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_in_0_" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_in_0_"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_in_1_" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_in_1_"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_in_2_" source="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_in_2_"/>
+      </inputs>
+      <outputs>
+        <port name="usr_tck"/>
+        <port name="usr_tdi"/>
+        <port name="usr_ir_in[0]"/>
+        <port name="usr_ir_in[1]"/>
+        <port name="usr_ir_in[2]"/>
+        <port name="usr_virtual_state_cdr"/>
+        <port name="usr_virtual_state_sdr"/>
+        <port name="usr_virtual_state_e1dr"/>
+        <port name="usr_virtual_state_pdr"/>
+        <port name="usr_virtual_state_e2dr"/>
+        <port name="usr_virtual_state_udr"/>
+        <port name="usr_virtual_state_cir"/>
+        <port name="usr_virtual_state_uir"/>
+        <port name="usr_tms"/>
+        <port name="usr_jtag_state_tlr"/>
+        <port name="usr_jtag_state_rti"/>
+        <port name="usr_jtag_state_sdrs"/>
+        <port name="usr_jtag_state_cdr"/>
+        <port name="usr_jtag_state_sdr"/>
+        <port name="usr_jtag_state_e1dr"/>
+        <port name="usr_jtag_state_pdr"/>
+        <port name="usr_jtag_state_e2dr"/>
+        <port name="usr_jtag_state_udr"/>
+        <port name="usr_jtag_state_sirs"/>
+        <port name="usr_jtag_state_cir"/>
+        <port name="usr_jtag_state_sir"/>
+        <port name="usr_jtag_state_e1ir"/>
+        <port name="usr_jtag_state_pir"/>
+        <port name="usr_jtag_state_e2ir"/>
+        <port name="usr_jtag_state_uir"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_tdo"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_out_0_"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_out_1_"/>
+        <port name="jtag.bp.bridge_inst_jtagm_jtag_phy_embedded_in_jtag_master_node_sld_virtual_jtag_component_sld_virtual_jtag_impl_inst_ir_out_2_"/>
+      </outputs>
+    </node>
+  </node_info>
+  <sld_infos>
+    <sld_info hpath="mnist_jtag_bridge:bridge_inst" name="bridge_inst">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME mnist_jtag_bridge HAS_SOPCINFO 1 GENERATION_ID 1773642214"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+    <sld_info hpath="sld_hub:auto_hub|alt_sld_fab:\instrumentation_fabric_with_node_gen:instrumentation_fabric" library="alt_sld_fab" name="instrumentation_fabric">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME alt_sld_fab HAS_SOPCINFO 1"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+  </sld_infos>
+</sld_project_info>

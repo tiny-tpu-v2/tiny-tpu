@@ -1,0 +1,9 @@
+# vsim -c -do "run -all; quit -f" work.tb_uart_frame_receiver 
+# Start time: 23:39:16 on Feb 28,2026
+# Loading work.tb_uart_frame_receiver
+# Loading work.uart_frame_receiver
+# Loading work.uart_rx
+# run -all
+# PASS: uart_frame_receiver accepted good frame and rejected bad frame
+# End time: 23:39:16 on Feb 28,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

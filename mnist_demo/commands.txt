@@ -1,0 +1,21 @@
+# DE1-SoC + Arduino MNIST JTAG quick commands (run from ~/tiny-tpu)
+
+# 1) Full automated setup + continuous inference loop
+# Handles: Arduino attach to WSL, serial permission fix, FPGA program, JTAG health, one-shot predict, then live loop.
+bash mnist_demo/fpga/quickstart_jtag_demo.sh
+
+# 1b) Faster per-frame loop (disable MMIO writeback verification)
+bash mnist_demo/fpga/quickstart_jtag_demo.sh --no-verify-writeback
+
+# 2) Setup/smoke test only (no continuous loop)
+bash mnist_demo/fpga/quickstart_jtag_demo.sh --no-loop
+
+# 3) If both boards were unplugged/replugged, run this again
+# It retries setup steps and re-establishes the full pipeline.
+bash mnist_demo/fpga/quickstart_jtag_demo.sh --setup-retries 15 --retry-delay-s 2
+
+# 4) If you rebuilt hardware and need a fresh bitstream first
+bash mnist_demo/fpga/quickstart_jtag_demo.sh --build
+
+# 5) Optional: run loop without one-shot sanity check
+bash mnist_demo/fpga/quickstart_jtag_demo.sh --skip-oneshot

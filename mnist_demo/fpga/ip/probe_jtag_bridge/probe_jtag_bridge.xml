@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2026.03.07.19:49:13"
+ outputDirectory="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Cyclone V"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="5CSEMA5F31C6"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="6"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_JTAG_MASTER_ADDRESS_MAP"
+     type="AddressMap"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_JTAG_MASTER_ADDRESS_WIDTH"
+     type="AddressWidthType"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="clk" kind="clock" start="0">
+   <property name="clockRate" value="50000000" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="clk_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="jtag_master" kind="avalon" start="1">
+   <property name="adaptsTo" value="" />
+   <property name="addressGroup" value="0" />
+   <property name="addressUnits" value="SYMBOLS" />
+   <property name="alwaysBurstMaxBurst" value="false" />
+   <property name="associatedClock" value="clk" />
+   <property name="associatedReset" value="reset" />
+   <property name="bitsPerSymbol" value="8" />
+   <property name="burstOnBurstBoundariesOnly" value="false" />
+   <property name="burstcountUnits" value="WORDS" />
+   <property name="constantBurstBehavior" value="false" />
+   <property name="dBSBigEndian" value="false" />
+   <property name="doStreamReads" value="false" />
+   <property name="doStreamWrites" value="false" />
+   <property name="holdTime" value="0" />
+   <property name="interleaveBursts" value="false" />
+   <property name="isAsynchronous" value="false" />
+   <property name="isBigEndian" value="false" />
+   <property name="isReadable" value="false" />
+   <property name="isWriteable" value="false" />
+   <property name="linewrapBursts" value="false" />
+   <property name="maxAddressWidth" value="32" />
+   <property name="maximumPendingReadTransactions" value="0" />
+   <property name="maximumPendingWriteTransactions" value="0" />
+   <property name="readLatency" value="0" />
+   <property name="readWaitTime" value="1" />
+   <property name="registerIncomingSignals" value="false" />
+   <property name="registerOutgoingSignals" value="false" />
+   <property name="setupTime" value="0" />
+   <property name="timingUnits" value="Cycles" />
+   <property name="writeWaitTime" value="0" />
+   <port
+       name="jtag_master_address"
+       direction="output"
+       role="address"
+       width="32" />
+   <port
+       name="jtag_master_readdata"
+       direction="input"
+       role="readdata"
+       width="32" />
+   <port name="jtag_master_read" direction="output" role="read" width="1" />
+   <port name="jtag_master_write" direction="output" role="write" width="1" />
+   <port
+       name="jtag_master_writedata"
+       direction="output"
+       role="writedata"
+       width="32" />
+   <port
+       name="jtag_master_waitrequest"
+       direction="input"
+       role="waitrequest"
+       width="1" />
+   <port
+       name="jtag_master_readdatavalid"
+       direction="input"
+       role="readdatavalid"
+       width="1" />
+   <port
+       name="jtag_master_byteenable"
+       direction="output"
+       role="byteenable"
+       width="4" />
+  </interface>
+  <interface name="reset" kind="reset" start="0">
+   <property name="associatedClock" value="" />
+   <property name="synchronousEdges" value="NONE" />
+   <port name="reset_reset_n" direction="input" role="reset_n" width="1" />
+  </interface>
+ </perimeter>
+ <entity
+   path=""
+   parameterizationKey="probe_jtag_bridge:1.0:AUTO_CLK_CLOCK_DOMAIN=-1,AUTO_CLK_CLOCK_RATE=-1,AUTO_CLK_RESET_DOMAIN=-1,AUTO_DEVICE=5CSEMA5F31C6,AUTO_DEVICE_FAMILY=Cyclone V,AUTO_DEVICE_SPEEDGRADE=6,AUTO_GENERATION_ID=1772930950,AUTO_JTAG_MASTER_ADDRESS_MAP=,AUTO_JTAG_MASTER_ADDRESS_WIDTH=AddressWidth = -1,AUTO_UNIQUE_ID=(clock_source:25.1:clockFrequency=50000000,clockFrequencyKnown=true,inputClockFrequency=0,resetSynchronousEdges=NONE)(altera_jtag_avalon_master:25.1:AUTO_DEVICE=5CSEMA5F31C6,AUTO_DEVICE_FAMILY=Cyclone V,AUTO_DEVICE_SPEEDGRADE=6,COMPONENT_CLOCK=0,FAST_VER=1,FIFO_DEPTHS=2,PLI_PORT=50000,USE_PLI=0(altera_clock_bridge:25.1:DERIVED_CLOCK_RATE=0,EXPLICIT_CLOCK_RATE=0,NUM_CLOCK_OUTPUTS=1)(altera_reset_bridge:25.1:ACTIVE_LOW_RESET=0,AUTO_CLK_CLOCK_RATE=-1,NUM_RESET_OUTPUTS=1,SYNCHRONOUS_EDGES=none,USE_RESET_REQUEST=0)(altera_jtag_dc_streaming:25.1:COMPONENT_CLOCK=0,DOWNSTREAM_FIFO_SIZE=64,EXPORT_JTAG=0,FABRIC=2.0,MGMT_CHANNEL_WIDTH=-1,PLI_PORT=50000,PURPOSE=1,UPSTREAM_FIFO_SIZE=0,USE_DOWNSTREAM_READY=0,USE_PLI=0)(timing_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=0,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=0,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=NO,inUsePackets=false,inUseReady=false,inUseValid=true,outReadyLatency=0,outUseReady=true,outUseValid=true)(altera_avalon_sc_fifo:25.1:BITS_PER_SYMBOL=8,CHANNEL_WIDTH=0,EMPTY_LATENCY=3,ENABLE_EXPLICIT_MAXCHANNEL=false,ERROR_WIDTH=0,EXPLICIT_MAXCHANNEL=0,FIFO_DEPTH=64,SYMBOLS_PER_BEAT=1,USE_ALMOST_EMPTY_IF=0,USE_ALMOST_FULL_IF=0,USE_FILL_LEVEL=0,USE_MEMORY_BLOCKS=1,USE_PACKETS=0,USE_STORE_FORWARD=0)(altera_avalon_st_bytes_to_packets:25.1:CHANNEL_WIDTH=8,CHANNEL_WIDTH_DERIVED=8,ENCODING=0)(altera_avalon_st_packets_to_bytes:25.1:CHANNEL_WIDTH=8,CHANNEL_WIDTH_DERIVED=8,ENCODING=0)(altera_avalon_packets_to_master:25.1:EXPORT_MASTER_SIGNALS=0,FAST_VER=1,FIFO_DEPTHS=2,FIFO_WIDTHU=1)(channel_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=8,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=255,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=AUTO,inUsePackets=true,inUseReady=true,outChannelWidth=0,outMaxChannel=0)(channel_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=0,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=0,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=AUTO,inUsePackets=true,inUseReady=true,outChannelWidth=8,outMaxChannel=255)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:))(clock:25.1:)(reset:25.1:)"
+   instancePathKey="probe_jtag_bridge"
+   kind="probe_jtag_bridge"
+   version="1.0"
+   name="probe_jtag_bridge">
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_GENERATION_ID" value="1772930950" />
+  <parameter name="AUTO_DEVICE" value="5CSEMA5F31C6" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="AUTO_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_JTAG_MASTER_ADDRESS_WIDTH" value="AddressWidth = -1" />
+  <parameter name="AUTO_JTAG_MASTER_ADDRESS_MAP" value="" />
+  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/probe_jtag_bridge.v"
+       type="VERILOG" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm.v"
+       type="VERILOG" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_jtag_interface.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_dc_streaming.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_sld_node.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_streaming.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_clock_crosser.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_std_synchronizer_nocut.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_pipeline_base.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_idle_remover.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_idle_inserter.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_pipeline_stage.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_jtag_interface.sdc"
+       type="SDC"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_timing_adt.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_sc_fifo.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_bytes_to_packets.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_packets_to_bytes.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_packets_to_master.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_b2p_adapter.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_p2b_adapter.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_controller.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_synchronizer.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_controller.sdc"
+       type="SDC"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge.qsys" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_jtag_avalon_master/altera_jtag_avalon_master_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_jtag_phy/altera_avalon_st_jtag_interface_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_timing_adapter/avalon-st_timing_adapter_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_sc_fifo/altera_avalon_sc_fifo_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_sc_fifo/altera_avalon_sc_fifo.v" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_st_bytes_to_packets/altera_avalon_st_bytes_to_packets_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_st_packets_to_bytes/altera_avalon_st_packets_to_bytes_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_packets_to_master/altera_avalon_packets_to_master_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_channel_adapter/avalon-st_channel_adapter_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_channel_adapter/avalon-st_channel_adapter_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/merlin/altera_reset_controller/altera_reset_controller_hw.tcl" />
+  </childSourceFiles>
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 0 starting:probe_jtag_bridge "probe_jtag_bridge"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>2</b> modules, <b>2</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="probe_jtag_bridge"><![CDATA["<b>probe_jtag_bridge</b>" reuses <b>altera_jtag_avalon_master</b> "<b>submodules/probe_jtag_bridge_jtagm</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 0 starting:altera_jtag_avalon_master "submodules/probe_jtag_bridge_jtagm"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>10</b> modules, <b>24</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug" culprit="reset_adaptation_transform"><![CDATA[After transform: <b>11</b> modules, <b>26</b> connections]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_jtag_dc_streaming</b> "<b>submodules/altera_avalon_st_jtag_interface</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>timing_adapter</b> "<b>submodules/probe_jtag_bridge_jtagm_timing_adt</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_sc_fifo</b> "<b>submodules/altera_avalon_sc_fifo</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_st_bytes_to_packets</b> "<b>submodules/altera_avalon_st_bytes_to_packets</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_st_packets_to_bytes</b> "<b>submodules/altera_avalon_st_packets_to_bytes</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_packets_to_master</b> "<b>submodules/altera_avalon_packets_to_master</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>channel_adapter</b> "<b>submodules/probe_jtag_bridge_jtagm_b2p_adapter</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>channel_adapter</b> "<b>submodules/probe_jtag_bridge_jtagm_p2b_adapter</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_reset_controller</b> "<b>submodules/altera_reset_controller</b>"]]></message>
+   <message level="Info" culprit="jtagm"><![CDATA["<b>probe_jtag_bridge</b>" instantiated <b>altera_jtag_avalon_master</b> "<b>jtagm</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 8 starting:altera_jtag_dc_streaming "submodules/altera_avalon_st_jtag_interface"</message>
+   <message level="Info" culprit="jtag_phy_embedded_in_jtag_master"><![CDATA["<b>jtagm</b>" instantiated <b>altera_jtag_dc_streaming</b> "<b>jtag_phy_embedded_in_jtag_master</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 7 starting:timing_adapter "submodules/probe_jtag_bridge_jtagm_timing_adt"</message>
+   <message level="Info" culprit="timing_adt"><![CDATA["<b>jtagm</b>" instantiated <b>timing_adapter</b> "<b>timing_adt</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 6 starting:altera_avalon_sc_fifo "submodules/altera_avalon_sc_fifo"</message>
+   <message level="Info" culprit="fifo"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_sc_fifo</b> "<b>fifo</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 5 starting:altera_avalon_st_bytes_to_packets "submodules/altera_avalon_st_bytes_to_packets"</message>
+   <message level="Info" culprit="b2p"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_st_bytes_to_packets</b> "<b>b2p</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 4 starting:altera_avalon_st_packets_to_bytes "submodules/altera_avalon_st_packets_to_bytes"</message>
+   <message level="Info" culprit="p2b"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_st_packets_to_bytes</b> "<b>p2b</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 3 starting:altera_avalon_packets_to_master "submodules/altera_avalon_packets_to_master"</message>
+   <message level="Info" culprit="transacto"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_packets_to_master</b> "<b>transacto</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 2 starting:channel_adapter "submodules/probe_jtag_bridge_jtagm_b2p_adapter"</message>
+   <message level="Info" culprit="b2p_adapter"><![CDATA["<b>jtagm</b>" instantiated <b>channel_adapter</b> "<b>b2p_adapter</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 1 starting:channel_adapter "submodules/probe_jtag_bridge_jtagm_p2b_adapter"</message>
+   <message level="Info" culprit="p2b_adapter"><![CDATA["<b>jtagm</b>" instantiated <b>channel_adapter</b> "<b>p2b_adapter</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 0 starting:altera_reset_controller "submodules/altera_reset_controller"</message>
+   <message level="Info" culprit="rst_controller"><![CDATA["<b>jtagm</b>" instantiated <b>altera_reset_controller</b> "<b>rst_controller</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_jtag_avalon_master:25.1:AUTO_DEVICE=5CSEMA5F31C6,AUTO_DEVICE_FAMILY=Cyclone V,AUTO_DEVICE_SPEEDGRADE=6,COMPONENT_CLOCK=0,FAST_VER=1,FIFO_DEPTHS=2,PLI_PORT=50000,USE_PLI=0(altera_clock_bridge:25.1:DERIVED_CLOCK_RATE=0,EXPLICIT_CLOCK_RATE=0,NUM_CLOCK_OUTPUTS=1)(altera_reset_bridge:25.1:ACTIVE_LOW_RESET=0,AUTO_CLK_CLOCK_RATE=-1,NUM_RESET_OUTPUTS=1,SYNCHRONOUS_EDGES=none,USE_RESET_REQUEST=0)(altera_jtag_dc_streaming:25.1:COMPONENT_CLOCK=0,DOWNSTREAM_FIFO_SIZE=64,EXPORT_JTAG=0,FABRIC=2.0,MGMT_CHANNEL_WIDTH=-1,PLI_PORT=50000,PURPOSE=1,UPSTREAM_FIFO_SIZE=0,USE_DOWNSTREAM_READY=0,USE_PLI=0)(timing_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=0,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=0,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=NO,inUsePackets=false,inUseReady=false,inUseValid=true,outReadyLatency=0,outUseReady=true,outUseValid=true)(altera_avalon_sc_fifo:25.1:BITS_PER_SYMBOL=8,CHANNEL_WIDTH=0,EMPTY_LATENCY=3,ENABLE_EXPLICIT_MAXCHANNEL=false,ERROR_WIDTH=0,EXPLICIT_MAXCHANNEL=0,FIFO_DEPTH=64,SYMBOLS_PER_BEAT=1,USE_ALMOST_EMPTY_IF=0,USE_ALMOST_FULL_IF=0,USE_FILL_LEVEL=0,USE_MEMORY_BLOCKS=1,USE_PACKETS=0,USE_STORE_FORWARD=0)(altera_avalon_st_bytes_to_packets:25.1:CHANNEL_WIDTH=8,CHANNEL_WIDTH_DERIVED=8,ENCODING=0)(altera_avalon_st_packets_to_bytes:25.1:CHANNEL_WIDTH=8,CHANNEL_WIDTH_DERIVED=8,ENCODING=0)(altera_avalon_packets_to_master:25.1:EXPORT_MASTER_SIGNALS=0,FAST_VER=1,FIFO_DEPTHS=2,FIFO_WIDTHU=1)(channel_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=8,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=255,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=AUTO,inUsePackets=true,inUseReady=true,outChannelWidth=0,outMaxChannel=0)(channel_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=0,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=0,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=AUTO,inUsePackets=true,inUseReady=true,outChannelWidth=8,outMaxChannel=255)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(clock:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(reset:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)(avalon_streaming:25.1:)"
+   instancePathKey="probe_jtag_bridge:.:jtagm"
+   kind="altera_jtag_avalon_master"
+   version="25.1"
+   name="probe_jtag_bridge_jtagm">
+  <parameter name="FAST_VER" value="1" />
+  <parameter name="AUTO_DEVICE" value="5CSEMA5F31C6" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="USE_PLI" value="0" />
+  <parameter name="PLI_PORT" value="50000" />
+  <parameter name="COMPONENT_CLOCK" value="0" />
+  <parameter name="FIFO_DEPTHS" value="2" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm.v"
+       type="VERILOG" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_jtag_interface.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_dc_streaming.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_sld_node.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_streaming.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_clock_crosser.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_std_synchronizer_nocut.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_pipeline_base.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_idle_remover.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_idle_inserter.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_pipeline_stage.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_jtag_interface.sdc"
+       type="SDC"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_timing_adt.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_sc_fifo.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_bytes_to_packets.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_packets_to_bytes.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_packets_to_master.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_b2p_adapter.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_p2b_adapter.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_controller.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_synchronizer.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_controller.sdc"
+       type="SDC"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_jtag_avalon_master/altera_jtag_avalon_master_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_jtag_phy/altera_avalon_st_jtag_interface_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_timing_adapter/avalon-st_timing_adapter_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_sc_fifo/altera_avalon_sc_fifo_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_sc_fifo/altera_avalon_sc_fifo.v" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_st_bytes_to_packets/altera_avalon_st_bytes_to_packets_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_st_packets_to_bytes/altera_avalon_st_packets_to_bytes_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_packets_to_master/altera_avalon_packets_to_master_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_channel_adapter/avalon-st_channel_adapter_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_channel_adapter/avalon-st_channel_adapter_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/merlin/altera_reset_controller/altera_reset_controller_hw.tcl" />
+  </childSourceFiles>
+  <instantiator instantiator="probe_jtag_bridge" as="jtagm" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 0 starting:altera_jtag_avalon_master "submodules/probe_jtag_bridge_jtagm"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>10</b> modules, <b>24</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug" culprit="reset_adaptation_transform"><![CDATA[After transform: <b>11</b> modules, <b>26</b> connections]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_jtag_dc_streaming</b> "<b>submodules/altera_avalon_st_jtag_interface</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>timing_adapter</b> "<b>submodules/probe_jtag_bridge_jtagm_timing_adt</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_sc_fifo</b> "<b>submodules/altera_avalon_sc_fifo</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_st_bytes_to_packets</b> "<b>submodules/altera_avalon_st_bytes_to_packets</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_st_packets_to_bytes</b> "<b>submodules/altera_avalon_st_packets_to_bytes</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_avalon_packets_to_master</b> "<b>submodules/altera_avalon_packets_to_master</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>channel_adapter</b> "<b>submodules/probe_jtag_bridge_jtagm_b2p_adapter</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>channel_adapter</b> "<b>submodules/probe_jtag_bridge_jtagm_p2b_adapter</b>"]]></message>
+   <message level="Debug" culprit="jtagm"><![CDATA["<b>jtagm</b>" reuses <b>altera_reset_controller</b> "<b>submodules/altera_reset_controller</b>"]]></message>
+   <message level="Info" culprit="jtagm"><![CDATA["<b>probe_jtag_bridge</b>" instantiated <b>altera_jtag_avalon_master</b> "<b>jtagm</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 8 starting:altera_jtag_dc_streaming "submodules/altera_avalon_st_jtag_interface"</message>
+   <message level="Info" culprit="jtag_phy_embedded_in_jtag_master"><![CDATA["<b>jtagm</b>" instantiated <b>altera_jtag_dc_streaming</b> "<b>jtag_phy_embedded_in_jtag_master</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 7 starting:timing_adapter "submodules/probe_jtag_bridge_jtagm_timing_adt"</message>
+   <message level="Info" culprit="timing_adt"><![CDATA["<b>jtagm</b>" instantiated <b>timing_adapter</b> "<b>timing_adt</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 6 starting:altera_avalon_sc_fifo "submodules/altera_avalon_sc_fifo"</message>
+   <message level="Info" culprit="fifo"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_sc_fifo</b> "<b>fifo</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 5 starting:altera_avalon_st_bytes_to_packets "submodules/altera_avalon_st_bytes_to_packets"</message>
+   <message level="Info" culprit="b2p"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_st_bytes_to_packets</b> "<b>b2p</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 4 starting:altera_avalon_st_packets_to_bytes "submodules/altera_avalon_st_packets_to_bytes"</message>
+   <message level="Info" culprit="p2b"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_st_packets_to_bytes</b> "<b>p2b</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 3 starting:altera_avalon_packets_to_master "submodules/altera_avalon_packets_to_master"</message>
+   <message level="Info" culprit="transacto"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_packets_to_master</b> "<b>transacto</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 2 starting:channel_adapter "submodules/probe_jtag_bridge_jtagm_b2p_adapter"</message>
+   <message level="Info" culprit="b2p_adapter"><![CDATA["<b>jtagm</b>" instantiated <b>channel_adapter</b> "<b>b2p_adapter</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 1 starting:channel_adapter "submodules/probe_jtag_bridge_jtagm_p2b_adapter"</message>
+   <message level="Info" culprit="p2b_adapter"><![CDATA["<b>jtagm</b>" instantiated <b>channel_adapter</b> "<b>p2b_adapter</b>"]]></message>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 0 starting:altera_reset_controller "submodules/altera_reset_controller"</message>
+   <message level="Info" culprit="rst_controller"><![CDATA["<b>jtagm</b>" instantiated <b>altera_reset_controller</b> "<b>rst_controller</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_jtag_dc_streaming:25.1:COMPONENT_CLOCK=0,DOWNSTREAM_FIFO_SIZE=64,EXPORT_JTAG=0,FABRIC=2.0,MGMT_CHANNEL_WIDTH=-1,PLI_PORT=50000,PURPOSE=1,UPSTREAM_FIFO_SIZE=0,USE_DOWNSTREAM_READY=0,USE_PLI=0"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:jtag_phy_embedded_in_jtag_master"
+   kind="altera_jtag_dc_streaming"
+   version="25.1"
+   name="altera_avalon_st_jtag_interface">
+  <parameter name="UPSTREAM_FIFO_SIZE" value="0" />
+  <parameter name="USE_DOWNSTREAM_READY" value="0" />
+  <parameter name="FABRIC" value="2.0" />
+  <parameter name="DOWNSTREAM_FIFO_SIZE" value="64" />
+  <parameter name="MGMT_CHANNEL_WIDTH" value="-1" />
+  <parameter name="PURPOSE" value="1" />
+  <parameter name="USE_PLI" value="0" />
+  <parameter name="PLI_PORT" value="50000" />
+  <parameter name="COMPONENT_CLOCK" value="0" />
+  <parameter name="EXPORT_JTAG" value="0" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_jtag_interface.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_dc_streaming.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_sld_node.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_jtag_streaming.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_clock_crosser.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_std_synchronizer_nocut.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_pipeline_base.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_idle_remover.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_idle_inserter.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_pipeline_stage.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_jtag_interface.sdc"
+       type="SDC"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_jtag_phy/altera_avalon_st_jtag_interface_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator
+     instantiator="probe_jtag_bridge_jtagm"
+     as="jtag_phy_embedded_in_jtag_master" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 8 starting:altera_jtag_dc_streaming "submodules/altera_avalon_st_jtag_interface"</message>
+   <message level="Info" culprit="jtag_phy_embedded_in_jtag_master"><![CDATA["<b>jtagm</b>" instantiated <b>altera_jtag_dc_streaming</b> "<b>jtag_phy_embedded_in_jtag_master</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="timing_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=0,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=0,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=NO,inUsePackets=false,inUseReady=false,inUseValid=true,outReadyLatency=0,outUseReady=true,outUseValid=true"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:timing_adt"
+   kind="timing_adapter"
+   version="25.1"
+   name="probe_jtag_bridge_jtagm_timing_adt">
+  <parameter name="inErrorWidth" value="0" />
+  <parameter name="inUseValid" value="true" />
+  <parameter name="inUseReady" value="false" />
+  <parameter name="inBitsPerSymbol" value="8" />
+  <parameter name="outReadyLatency" value="0" />
+  <parameter name="inChannelWidth" value="0" />
+  <parameter name="inSymbolsPerBeat" value="1" />
+  <parameter name="inUseEmptyPort" value="NO" />
+  <parameter name="inMaxChannel" value="0" />
+  <parameter name="outUseReady" value="true" />
+  <parameter name="outUseValid" value="true" />
+  <parameter name="inReadyLatency" value="0" />
+  <parameter name="inUseEmpty" value="false" />
+  <parameter name="inErrorDescriptor" value="" />
+  <parameter name="inUsePackets" value="false" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_timing_adt.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_timing_adapter/avalon-st_timing_adapter_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="timing_adt" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 7 starting:timing_adapter "submodules/probe_jtag_bridge_jtagm_timing_adt"</message>
+   <message level="Info" culprit="timing_adt"><![CDATA["<b>jtagm</b>" instantiated <b>timing_adapter</b> "<b>timing_adt</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_avalon_sc_fifo:25.1:BITS_PER_SYMBOL=8,CHANNEL_WIDTH=0,EMPTY_LATENCY=3,ENABLE_EXPLICIT_MAXCHANNEL=false,ERROR_WIDTH=0,EXPLICIT_MAXCHANNEL=0,FIFO_DEPTH=64,SYMBOLS_PER_BEAT=1,USE_ALMOST_EMPTY_IF=0,USE_ALMOST_FULL_IF=0,USE_FILL_LEVEL=0,USE_MEMORY_BLOCKS=1,USE_PACKETS=0,USE_STORE_FORWARD=0"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:fifo"
+   kind="altera_avalon_sc_fifo"
+   version="25.1"
+   name="altera_avalon_sc_fifo">
+  <parameter name="EXPLICIT_MAXCHANNEL" value="0" />
+  <parameter name="ENABLE_EXPLICIT_MAXCHANNEL" value="false" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_sc_fifo.v"
+       type="VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_sc_fifo/altera_avalon_sc_fifo_hw.tcl" />
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_sc_fifo/altera_avalon_sc_fifo.v" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="fifo" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 6 starting:altera_avalon_sc_fifo "submodules/altera_avalon_sc_fifo"</message>
+   <message level="Info" culprit="fifo"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_sc_fifo</b> "<b>fifo</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_avalon_st_bytes_to_packets:25.1:CHANNEL_WIDTH=8,CHANNEL_WIDTH_DERIVED=8,ENCODING=0"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:b2p"
+   kind="altera_avalon_st_bytes_to_packets"
+   version="25.1"
+   name="altera_avalon_st_bytes_to_packets">
+  <parameter name="CHANNEL_WIDTH_DERIVED" value="8" />
+  <parameter name="ENCODING" value="0" />
+  <parameter name="CHANNEL_WIDTH" value="8" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_bytes_to_packets.v"
+       type="VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_st_bytes_to_packets/altera_avalon_st_bytes_to_packets_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="b2p" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 5 starting:altera_avalon_st_bytes_to_packets "submodules/altera_avalon_st_bytes_to_packets"</message>
+   <message level="Info" culprit="b2p"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_st_bytes_to_packets</b> "<b>b2p</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_avalon_st_packets_to_bytes:25.1:CHANNEL_WIDTH=8,CHANNEL_WIDTH_DERIVED=8,ENCODING=0"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:p2b"
+   kind="altera_avalon_st_packets_to_bytes"
+   version="25.1"
+   name="altera_avalon_st_packets_to_bytes">
+  <parameter name="CHANNEL_WIDTH_DERIVED" value="8" />
+  <parameter name="ENCODING" value="0" />
+  <parameter name="CHANNEL_WIDTH" value="8" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_st_packets_to_bytes.v"
+       type="VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_st_packets_to_bytes/altera_avalon_st_packets_to_bytes_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="p2b" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 4 starting:altera_avalon_st_packets_to_bytes "submodules/altera_avalon_st_packets_to_bytes"</message>
+   <message level="Info" culprit="p2b"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_st_packets_to_bytes</b> "<b>p2b</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_avalon_packets_to_master:25.1:EXPORT_MASTER_SIGNALS=0,FAST_VER=1,FIFO_DEPTHS=2,FIFO_WIDTHU=1"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:transacto"
+   kind="altera_avalon_packets_to_master"
+   version="25.1"
+   name="altera_avalon_packets_to_master">
+  <parameter name="EXPORT_MASTER_SIGNALS" value="0" />
+  <parameter name="FAST_VER" value="1" />
+  <parameter name="FIFO_WIDTHU" value="1" />
+  <parameter name="FIFO_DEPTHS" value="2" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_avalon_packets_to_master.v"
+       type="VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/sopc_builder_ip/altera_avalon_packets_to_master/altera_avalon_packets_to_master_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="transacto" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 3 starting:altera_avalon_packets_to_master "submodules/altera_avalon_packets_to_master"</message>
+   <message level="Info" culprit="transacto"><![CDATA["<b>jtagm</b>" instantiated <b>altera_avalon_packets_to_master</b> "<b>transacto</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="channel_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=8,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=255,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=AUTO,inUsePackets=true,inUseReady=true,outChannelWidth=0,outMaxChannel=0"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:b2p_adapter"
+   kind="channel_adapter"
+   version="25.1"
+   name="probe_jtag_bridge_jtagm_b2p_adapter">
+  <parameter name="inErrorWidth" value="0" />
+  <parameter name="inUseReady" value="true" />
+  <parameter name="inBitsPerSymbol" value="8" />
+  <parameter name="inChannelWidth" value="8" />
+  <parameter name="inSymbolsPerBeat" value="1" />
+  <parameter name="outChannelWidth" value="0" />
+  <parameter name="inUseEmptyPort" value="AUTO" />
+  <parameter name="inMaxChannel" value="255" />
+  <parameter name="inReadyLatency" value="0" />
+  <parameter name="outMaxChannel" value="0" />
+  <parameter name="inUseEmpty" value="false" />
+  <parameter name="inErrorDescriptor" value="" />
+  <parameter name="inUsePackets" value="true" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_b2p_adapter.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_channel_adapter/avalon-st_channel_adapter_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="b2p_adapter" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 2 starting:channel_adapter "submodules/probe_jtag_bridge_jtagm_b2p_adapter"</message>
+   <message level="Info" culprit="b2p_adapter"><![CDATA["<b>jtagm</b>" instantiated <b>channel_adapter</b> "<b>b2p_adapter</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="channel_adapter:25.1:inBitsPerSymbol=8,inChannelWidth=0,inErrorDescriptor=,inErrorWidth=0,inMaxChannel=0,inReadyLatency=0,inSymbolsPerBeat=1,inUseEmpty=false,inUseEmptyPort=AUTO,inUsePackets=true,inUseReady=true,outChannelWidth=8,outMaxChannel=255"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:p2b_adapter"
+   kind="channel_adapter"
+   version="25.1"
+   name="probe_jtag_bridge_jtagm_p2b_adapter">
+  <parameter name="inErrorWidth" value="0" />
+  <parameter name="inUseReady" value="true" />
+  <parameter name="inBitsPerSymbol" value="8" />
+  <parameter name="inChannelWidth" value="0" />
+  <parameter name="inSymbolsPerBeat" value="1" />
+  <parameter name="outChannelWidth" value="8" />
+  <parameter name="inUseEmptyPort" value="AUTO" />
+  <parameter name="inMaxChannel" value="0" />
+  <parameter name="inReadyLatency" value="0" />
+  <parameter name="outMaxChannel" value="255" />
+  <parameter name="inUseEmpty" value="false" />
+  <parameter name="inErrorDescriptor" value="" />
+  <parameter name="inUsePackets" value="true" />
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/probe_jtag_bridge_jtagm_p2b_adapter.sv"
+       type="SYSTEM_VERILOG"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/avalon_st/altera_avalon_st_channel_adapter/avalon-st_channel_adapter_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="p2b_adapter" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 1 starting:channel_adapter "submodules/probe_jtag_bridge_jtagm_p2b_adapter"</message>
+   <message level="Info" culprit="p2b_adapter"><![CDATA["<b>jtagm</b>" instantiated <b>channel_adapter</b> "<b>p2b_adapter</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_reset_controller:25.1:ADAPT_RESET_REQUEST=0,MIN_RST_ASSERTION_TIME=3,NUM_RESET_INPUTS=1,OUTPUT_RESET_SYNC_EDGES=deassert,RESET_REQUEST_PRESENT=0,RESET_REQ_EARLY_DSRT_TIME=1,RESET_REQ_WAIT_TIME=1,SYNC_DEPTH=2,USE_RESET_REQUEST_IN0=0,USE_RESET_REQUEST_IN1=0,USE_RESET_REQUEST_IN10=0,USE_RESET_REQUEST_IN11=0,USE_RESET_REQUEST_IN12=0,USE_RESET_REQUEST_IN13=0,USE_RESET_REQUEST_IN14=0,USE_RESET_REQUEST_IN15=0,USE_RESET_REQUEST_IN2=0,USE_RESET_REQUEST_IN3=0,USE_RESET_REQUEST_IN4=0,USE_RESET_REQUEST_IN5=0,USE_RESET_REQUEST_IN6=0,USE_RESET_REQUEST_IN7=0,USE_RESET_REQUEST_IN8=0,USE_RESET_REQUEST_IN9=0,USE_RESET_REQUEST_INPUT=0"
+   instancePathKey="probe_jtag_bridge:.:jtagm:.:rst_controller"
+   kind="altera_reset_controller"
+   version="25.1"
+   name="altera_reset_controller">
+  <generatedFiles>
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_controller.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_synchronizer.v"
+       type="VERILOG"
+       attributes="" />
+   <file
+       path="//wsl.localhost/Ubuntu/home/surya/tiny-tpu/de1_soc_mnist_demo/jtag_ip/probe_jtag_bridge/synthesis/submodules/altera_reset_controller.sdc"
+       type="SDC"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/altera_lite/25.1std/ip/altera/merlin/altera_reset_controller/altera_reset_controller_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="probe_jtag_bridge_jtagm" as="rst_controller" />
+  <messages>
+   <message level="Debug" culprit="probe_jtag_bridge">queue size: 0 starting:altera_reset_controller "submodules/altera_reset_controller"</message>
+   <message level="Info" culprit="rst_controller"><![CDATA["<b>jtagm</b>" instantiated <b>altera_reset_controller</b> "<b>rst_controller</b>"]]></message>
+  </messages>
+ </entity>
+</deploy>

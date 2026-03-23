@@ -1,0 +1,8 @@
+# vsim -c -do "run -all; quit -f" work.tb_mnist_jtag_mmio 
+# Start time: 20:20:02 on Mar 07,2026
+# Loading work.tb_mnist_jtag_mmio
+# Loading work.mnist_jtag_mmio
+# run -all
+# PASS: mnist_jtag_mmio register and image map behavior is correct
+# End time: 20:20:03 on Mar 07,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

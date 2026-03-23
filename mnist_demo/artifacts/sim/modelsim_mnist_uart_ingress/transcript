@@ -1,0 +1,11 @@
+# vsim -c -do "run -all; quit -f" work.tb_mnist_uart_ingress 
+# Start time: 23:51:09 on Feb 28,2026
+# Loading work.tb_mnist_uart_ingress
+# Loading work.mnist_uart_ingress
+# Loading work.uart_frame_receiver
+# Loading work.uart_rx
+# Loading work.mnist_frame_buffer
+# run -all
+# PASS: mnist_uart_ingress loaded a valid serial frame
+# End time: 23:51:10 on Feb 28,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

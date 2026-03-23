@@ -1,0 +1,8 @@
+# vsim -c -do "run -all; quit -f" work.tb_mnist_frame_buffer 
+# Start time: 23:50:14 on Feb 28,2026
+# Loading work.tb_mnist_frame_buffer
+# Loading work.mnist_frame_buffer
+# run -all
+# PASS: mnist_frame_buffer latched and expanded pixels
+# End time: 23:50:15 on Feb 28,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
