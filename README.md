@@ -3,11 +3,9 @@
 A minimal tensor processing unit (TPU), reinvented from Google's TPU V2 and V1.
 
 
-
 https://github.com/user-attachments/assets/b5d6aefe-4250-4c6d-866e-65d519e4de74
 
-[tiny-tpu-demo.mp4](videos/tiny-tpu-demo.mp4)
-
+https://github.com/user-attachments/assets/2a501151-bca8-4458-8015-81520375781c
 
 
 ## Table of Contents
