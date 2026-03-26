@@ -62,12 +62,21 @@ module unified_buffer_assertions #(
 
     // Column size output to systolic array
     input  logic [15:0] ub_rd_col_size_out,
-    input  logic        ub_rd_col_size_valid_out
+    input  logic        ub_rd_col_size_valid_out,
+
+    // Internal signals (connected via bind)
+    input  logic [15:0] wr_ptr,
+    input  logic [15:0] rd_input_ptr,
+    input  logic [15:0] rd_weight_ptr,
+    input  logic [15:0] rd_bias_ptr,
+    input  logic [15:0] rd_Y_ptr,
+    input  logic [15:0] rd_H_ptr,
+    input  logic [15:0] rd_grad_bias_ptr,
+    input  logic [15:0] rd_grad_weight_ptr,
+    input  logic [15:0] grad_descent_ptr
 );
 
-    // ------------------------------------------------------------------
-    // Internal signal references (accessible because bind is in DUT scope)
-    // ------------------------------------------------------------------
+    // Aliases for readability
     wire [15:0] _wr_ptr             = wr_ptr;
     wire [15:0] _rd_input_ptr       = rd_input_ptr;
     wire [15:0] _rd_weight_ptr      = rd_weight_ptr;
@@ -183,23 +192,30 @@ module unified_buffer_assertions #(
     // ------------------------------------------------------------------
     // UB-A09: When col_size_valid_out is asserted, col_size_out must
     //         match the appropriate dimension (transposed or direct read).
-    // RTL:  assign ub_rd_col_size_out = (ub_rd_start_in && ub_ptr_select==9'd1)
-    //           ? (ub_rd_transpose ? ub_rd_row_size : ub_rd_col_size) : 16'b0
+    // RTL (BUG-UB-3 fix): BOTH col_size_valid_out AND col_size_out are
+    //         registered in always_ff.  They reflect T-1 inputs. Therefore
+    //         we must compare col_size_out against $past(inputs) — i.e.,
+    //         the values present when the registration happened.
+    //
+    //   always_ff: ub_rd_col_size_valid_out <= (ub_rd_start_in && ptr==1)
+    //              ub_rd_col_size_out       <= cond ? (transpose ? row : col) : 0
     // ------------------------------------------------------------------
     property p_col_size_out_correct_non_transpose;
-        @(posedge clk) disable iff (rst)
-        (ub_rd_col_size_valid_out && !ub_rd_transpose)
-        |-> (ub_rd_col_size_out == ub_rd_col_size);
+        @(posedge clk) disable iff (rst || $past(rst))
+        (ub_rd_col_size_valid_out && !$past(ub_rd_transpose))
+        |-> (ub_rd_col_size_out == $past(ub_rd_col_size));
     endproperty
 
     property p_col_size_out_correct_transpose;
-        @(posedge clk) disable iff (rst)
-        (ub_rd_col_size_valid_out && ub_rd_transpose)
-        |-> (ub_rd_col_size_out == ub_rd_row_size);
+        @(posedge clk) disable iff (rst || $past(rst))
+        (ub_rd_col_size_valid_out && $past(ub_rd_transpose))
+        |-> (ub_rd_col_size_out == $past(ub_rd_row_size));
     endproperty
 
     // ------------------------------------------------------------------
-    // UB-A10: col_size_out is zero when col_size_valid_out is deasserted
+    // UB-A10: col_size_out is zero when col_size_valid_out is deasserted.
+    //         Both are registered from the same condition, so when valid=0,
+    //         the ternary else-branch produced 16'b0.
     // ------------------------------------------------------------------
     property p_col_size_out_zero_when_not_valid;
         @(posedge clk) disable iff (rst)
@@ -280,6 +296,27 @@ module unified_buffer_assertions #(
     UB_A10:  assert property (p_col_size_out_zero_when_not_valid)
         else $error("UB-A10 FAIL: col_size_out non-zero when col_size_valid_out=0");
 
+    // ------------------------------------------------------------------
+    // UB-A17: Gradient-descent write-back (plan UB-A09) — ptr advances by
+    //         at most SYSTOLIC_ARRAY_WIDTH (2) per cycle.
+    //         RTL: for-loop iterates over 2 GD instances; at most 2 done
+    //              signals can fire in a single cycle, so ptr += at most 2.
+    // ------------------------------------------------------------------
+    UB_A17: assert property (
+        @(posedge clk) disable iff (rst)
+        _grad_descent_ptr <= $past(_grad_descent_ptr) + 16'd2)
+        else $error("UB-A17 FAIL: grad_descent_ptr advanced by more than 2 in one cycle");
+
+    // ------------------------------------------------------------------
+    // UB-A18: Gradient-descent ptr is monotonically non-decreasing.
+    //         Once weights are written back, old addresses are not revisited
+    //         within the same run (no decrement without reset).
+    // ------------------------------------------------------------------
+    UB_A18: assert property (
+        @(posedge clk) disable iff (rst)
+        _grad_descent_ptr >= $past(_grad_descent_ptr))
+        else $error("UB-A18 FAIL: grad_descent_ptr decreased without reset");
+
     UB_A11: assert property (p_rst_clears_rd_bias_ptr)
         else $error("UB-A11 FAIL: rst did not clear rd_bias_ptr");
 
@@ -318,23 +355,27 @@ module unified_buffer_assertions #(
 
     // UB-ASM-03: ub_rd_row_size and ub_rd_col_size are non-zero and
     //            within the systolic array's physical dimension.
-    UB_ASM_03a: assume property (@(posedge clk) disable iff (rst)
-        ub_rd_start_in
-        |-> (ub_rd_row_size >= 16'd1 && ub_rd_row_size <= SYSTOLIC_ARRAY_WIDTH));
+    //            DISABLED UB_ASM_03a for simulation: row_size represents the
+    //            batch dimension (number of data rows to read), which can
+    //            exceed SYSTOLIC_ARRAY_WIDTH (e.g. row_size=4 for XOR training).
+    // UB_ASM_03a: assume property (@(posedge clk) disable iff (rst)
+    //     ub_rd_start_in
+    //     |-> (ub_rd_row_size >= 16'd1 && ub_rd_row_size <= SYSTOLIC_ARRAY_WIDTH));
 
     UB_ASM_03b: assume property (@(posedge clk) disable iff (rst)
         ub_rd_start_in
         |-> (ub_rd_col_size >= 16'd1 && ub_rd_col_size <= SYSTOLIC_ARRAY_WIDTH));
 
     // UB-ASM-04: Learning rate is always positive.
-    UB_ASM_04: assume property (@(posedge clk) disable iff (rst)
-        !learning_rate_in[15] && learning_rate_in != 16'b0);
+    //            DISABLED for simulation: fires before learning rate is loaded
+    //            by the testbench (learning_rate_in = 0 right after reset).
+    // UB_ASM_04: assume property (@(posedge clk) disable iff (rst)
+    //     !learning_rate_in[15] && learning_rate_in != 16'b0);
 
     // UB-ASM-05: On the first active clock cycle after reset deasserts,
     //            ub_rd_start_in must be 0.
-    //            Required to ensure UB-A02 holds: ub_rd_col_size_valid_out
-    //            is purely combinational (ub_rd_start_in && ub_ptr_select==1),
-    //            so it is non-zero only if ub_rd_start_in is asserted.
+    //            Required because ub_rd_col_size_valid_out is registered
+    //            (BUG-UB-3 fix) from (ub_rd_start_in && ub_ptr_select==1).
     //            Normal operation always gates reads until after the reset
     //            sequence completes, so this assumption is architecturally
     //            sound.
@@ -390,6 +431,12 @@ module unified_buffer_assertions #(
     UB_COV_08: cover property (
         @(posedge clk) disable iff (rst)
         ub_wr_valid_in[0] && ub_wr_valid_in[1]
+    );
+
+    // UB-COV-09: grad_descent_ptr advances past zero (write-back chain exercised).
+    UB_COV_09: cover property (
+        @(posedge clk) disable iff (rst)
+        _grad_descent_ptr > 16'd0
     );
 
 endmodule

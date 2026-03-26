@@ -44,22 +44,16 @@ module loss_child_assertions (
     endproperty
 
     // ------------------------------------------------------------------
-    // LC-A4: gradient_out is ALWAYS the registered version of
-    //        the combinational result (2/N)*(H - Y).
-    // IMPORTANT: this fires even when valid_in=0 — the output is computed
-    //            from whatever H_in and Y_in are on that cycle.
-    //            Consumers must check valid_out before using gradient_out.
-    // This assertion requires the internal wire diff_stage1 and final_gradient.
-    // In a bind context, reference them as:
-    //   dut.diff_stage1, dut.final_gradient
-    // or declare them as local vars in the bind module.
-    //
-    // Here we assert the observable property: valid_out accurately tracks
-    // whether the gradient should be trusted.
+    // LC-A4: gradient_out cleared to 0 when valid_in=0.
+    //        Corrected plan (v1.1): the RTL DOES gate gradient_out on
+    //        valid_in — the else-branch sets gradient_out <= '0.
+    //        This is a Data Path (DP) assertion, not a VP assertion.
+    //        The previous property (p_valid_out_low_when_in_low) only
+    //        checked valid_out; this replaces it with the data check.
     // ------------------------------------------------------------------
-    property p_valid_out_low_when_in_low;
+    property p_data_zero_when_invalid;
         @(posedge clk) disable iff (rst)
-        !valid_in |=> !valid_out;
+        !valid_in |=> (gradient_out == 16'b0);
     endproperty
 
     // ------------------------------------------------------------------
@@ -69,7 +63,8 @@ module loss_child_assertions (
     // ------------------------------------------------------------------
     property p_positive_gradient_when_H_gt_Y;
         @(posedge clk) disable iff (rst)
-        (valid_in && $signed(H_in) > $signed(Y_in))
+        (valid_in && $signed(H_in) > $signed(Y_in)
+         && inv_batch_size_times_two_in != 16'b0)     // 2/N=0 scales any diff to zero
         |=> !gradient_out[15];
     endproperty
 
@@ -78,7 +73,8 @@ module loss_child_assertions (
     // ------------------------------------------------------------------
     property p_negative_gradient_when_H_lt_Y;
         @(posedge clk) disable iff (rst)
-        (valid_in && $signed(H_in) < $signed(Y_in))
+        (valid_in && $signed(H_in) < $signed(Y_in)
+         && inv_batch_size_times_two_in != 16'b0)     // 2/N=0 would give zero gradient
         |=> gradient_out[15];
     endproperty
 
@@ -98,10 +94,30 @@ module loss_child_assertions (
     LC_A1: assert property (p_rst_clears_gradient)            else $error("LC-A1 FAIL: rst did not clear gradient_out");
     LC_A2: assert property (p_rst_clears_valid)               else $error("LC-A2 FAIL: rst did not clear valid_out");
     LC_A3: assert property (p_valid_out_mirrors_valid_in)     else $error("LC-A3 FAIL: valid_out != registered(valid_in)");
-    LC_A4: assert property (p_valid_out_low_when_in_low)      else $error("LC-A4 FAIL: valid_out != 0 when valid_in=0");
+    LC_A4: assert property (p_data_zero_when_invalid)        else $error("LC-A4 FAIL: gradient_out != 0 when valid_in=0");
     LC_A5: assert property (p_positive_gradient_when_H_gt_Y)  else $error("LC-A5 FAIL: gradient not positive when H > Y");
     LC_A6: assert property (p_negative_gradient_when_H_lt_Y)  else $error("LC-A6 FAIL: gradient not negative when H < Y");
     LC_A7: assert property (p_zero_gradient_when_H_eq_Y)      else $error("LC-A7 FAIL: gradient not zero when H == Y");
+
+    // ------------------------------------------------------------------
+    // LC-A8: Overflow flag is cleared on reset.
+    // RTL: if (rst) loss_overflow_out <= '0;
+    // ------------------------------------------------------------------
+    property p_rst_clears_overflow;
+        @(posedge clk) rst |=> !loss_overflow_out;
+    endproperty
+
+    // ------------------------------------------------------------------
+    // LC-A9: Overflow flag is sticky — once set, stays set until rst.
+    // RTL: loss_overflow_out <= loss_overflow_out | sub_overflow | mul_overflow;
+    // ------------------------------------------------------------------
+    property p_overflow_is_sticky;
+        @(posedge clk) disable iff (rst)
+        loss_overflow_out |=> loss_overflow_out;
+    endproperty
+
+    LC_A8: assert property (p_rst_clears_overflow)  else $error("LC-A8 FAIL: rst did not clear loss_overflow_out");
+    LC_A9: assert property (p_overflow_is_sticky)    else $error("LC-A9 FAIL: loss_overflow_out dropped without rst");
 
     // ------------------------------------------------------------------
     // Cover properties

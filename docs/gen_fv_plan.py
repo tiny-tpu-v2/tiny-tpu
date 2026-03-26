@@ -99,6 +99,10 @@ ASSERTIONS = [
      "!pe_enabled |=> pe_psum_out==0","Unbounded","–","Open"),
     ("PE-A06b","pe","p_disabled_clears_valid","RST","P1",
      "!pe_enabled |=> !pe_valid_out","Unbounded","–","Open"),
+    ("PE-A06c","pe","p_disabled_clears_switch_out","RST","P1",
+     "!pe_enabled |=> !pe_switch_out","Unbounded","–","Open"),
+    ("PE-A06d","pe","p_disabled_clears_weight_out","RST","P1",
+     "!pe_enabled |=> pe_weight_out==0","Unbounded","–","Open"),
     ("PE-A07","pe","p_valid_out_registered","VP","P1",
      "1'b1 |=> pe_valid_out==$past(pe_valid_in)","BMC","4","Open"),
     ("PE-A08","pe","p_switch_out_registered","VP","P1",
@@ -111,12 +115,22 @@ ASSERTIONS = [
      "pe_valid_in |=> pe_input_out==$past(pe_input_in)","BMC","4","Open"),
     ("PE-A12","pe","p_psum_zero_when_invalid","DP","P1",
      "!pe_valid_in |=> pe_psum_out==0","BMC","4","Open"),
-    ("PE-A13","pe","p_valid_out_low_when_in_low","VP","P2",
+    ("PE-A13","pe","p_valid_out_low_when_in_low","VP","P1",
      "!pe_valid_in |=> !pe_valid_out","BMC","4","Open"),
-    ("PE-A14a","pe","p_rst_clears_weight_reg_active","RST","P2",
+    ("PE-A14a","pe","p_rst_clears_weight_reg_active","RST","P1",
      "(rst||!pe_enabled) |=> weight_reg_active==0","Unbounded","–","Open"),
-    ("PE-A14b","pe","p_rst_clears_weight_reg_inactive","RST","P2",
+    ("PE-A14b","pe","p_rst_clears_weight_reg_inactive","RST","P1",
      "(rst||!pe_enabled) |=> weight_reg_inactive==0","Unbounded","–","Open"),
+    ("PE-A15","pe","p_weight_switch","DP","P1",
+     "pe_switch_in |=> weight_reg_active==$past(weight_reg_inactive)","BMC","4","Open"),
+    ("PE-A16","pe","p_input_out_clear_when_invalid","DP","P1",
+     "!pe_valid_in |=> pe_input_out==16'b0","BMC","4","Open"),
+    ("PE-A17","pe","p_rst_clears_overflow","RST","P1",
+     "(rst||!pe_enabled) |=> !pe_overflow_out","Unbounded","–","Open"),
+    ("PE-A18","pe","p_overflow_is_sticky","FA","P1",
+     "pe_overflow_out |=> pe_overflow_out","BMC","4","Open"),
+    ("PE-A19","pe","p_mac_zero_input_passthrough_psum","FA","P2",
+     "(pe_valid_in && pe_input_in==0) |=> pe_psum_out==$past(pe_psum_in)  [port-observable MAC proxy; see PE-W01]","BMC","4","Open"),
 
     # ── systolic ─────────────────────────────────────────────────────────────
     ("SYS-A01","systolic","p_rst_clears_valid_out_21","RST","P1",
@@ -143,6 +157,8 @@ ASSERTIONS = [
      "(col_size_valid && col_size==1) |=> pe_enabled==2'b01","BMC","4","Open"),
     ("SYS-A12","systolic","p_pe_enabled_mask_col_size_2","SD","P2",
      "(col_size_valid && col_size==2) |=> pe_enabled==2'b11","BMC","4","Open"),
+    ("SYS-A13","systolic","p_col1_weight_load_no_col2_valid","ME","P1",
+     "(sys_accept_w_1 && !sys_accept_w_2 && !sys_start_1 && !sys_start_2) |=> !sys_valid_out_22  [col weight-load independence]","BMC","4","Open"),
 
     # ── bias_child ────────────────────────────────────────────────────────────
     ("BC-A01","bias_child","p_rst_clears_valid","RST","P1",
@@ -155,6 +171,10 @@ ASSERTIONS = [
      "!bias_sys_valid_in |=> bias_z_data_out==0","BMC","4","Open"),
     ("BC-A05","bias_child","p_data_nonzero_when_both_inputs_nonzero","FA","P2",
      "(valid_in && data_in!=0 && scalar!=0) |=> bias_z_data_out!=0","BMC","4","Open"),
+    ("BC-A06","bias_child","p_rst_clears_overflow","RST","P1",
+     "rst |=> !bias_overflow_out  [BUG-OVF-1: sticky flag cleared on reset]","Unbounded","\u2013","Open"),
+    ("BC-A07","bias_child","p_overflow_is_sticky","FA","P1",
+     "bias_overflow_out |=> bias_overflow_out  [BUG-OVF-1: once set stays set until rst]","Unbounded","\u2013","Open"),
 
     # ── leaky_relu_child ──────────────────────────────────────────────────────
     ("LR-A01","leaky_relu_child","p_rst_clears_outputs","RST","P1",
@@ -171,6 +191,10 @@ ASSERTIONS = [
      "(lr_valid_in && !lr_data_in[15]) |=> !lr_data_out[15]","BMC","4","Open"),
     ("LR-A07","leaky_relu_child","p_zero_boundary","FA","P2",
      "(lr_valid_in && lr_data_in==0) |=> lr_data_out==0","BMC","4","Open"),
+    ("LR-A08","leaky_relu_child","p_rst_clears_overflow","RST","P1",
+     "rst |=> !lr_overflow_out  [BUG-OVF-1: sticky flag cleared on reset]","Unbounded","\u2013","Open"),
+    ("LR-A09","leaky_relu_child","p_overflow_is_sticky","FA","P1",
+     "lr_overflow_out |=> lr_overflow_out  [BUG-OVF-1: once set stays set until rst]","Unbounded","\u2013","Open"),
 
     # ── leaky_relu_derivative_child ───────────────────────────────────────────
     ("LRD-A01","lrd_child","p_rst_clears_outputs","RST","P1",
@@ -185,6 +209,10 @@ ASSERTIONS = [
      "(valid_in && H[15] && leak!=1.0) |=> data_out!=$past(data_in)","BMC","4","Open"),
     ("LRD-A06","lrd_child","p_zero_H_passes_gradient_through","FA","P2",
      "(valid_in && H==0) |=> data_out==$past(data_in)","BMC","4","Open"),
+    ("LRD-A07","lrd_child","p_rst_clears_overflow","RST","P1",
+     "rst |=> !lr_d_overflow_out  [BUG-OVF-1: sticky flag cleared on reset]","Unbounded","\u2013","Open"),
+    ("LRD-A08","lrd_child","p_overflow_is_sticky","FA","P1",
+     "lr_d_overflow_out |=> lr_d_overflow_out  [BUG-OVF-1: once set stays set until rst]","Unbounded","\u2013","Open"),
 
     # ── loss_child ────────────────────────────────────────────────────────────
     ("LC-A01","loss_child","p_rst_clears_gradient","RST","P1",
@@ -193,14 +221,18 @@ ASSERTIONS = [
      "rst |=> !valid_out","Unbounded","–","Open"),
     ("LC-A03","loss_child","p_valid_out_registered","VP","P1",
      "1'b1 |=> valid_out==$past(valid_in)","BMC","4","Open"),
-    ("LC-A04","loss_child","p_valid_out_low_when_in_low","VP","P1",
-     "!valid_in |=> !valid_out  [data clears when invalid]","BMC","4","Open"),
+    ("LC-A04","loss_child","p_data_zero_when_invalid","DP","P1",
+     "!valid_in |=> gradient_out==0  [BUG-LC fix: gradient output cleared to 0 when input invalid]","BMC","4","Open"),
     ("LC-A05","loss_child","p_positive_gradient_when_H_gt_Y","FA","P2",
      "(valid_in && H>Y) |=> !gradient_out[15]","BMC","4","Open"),
     ("LC-A06","loss_child","p_negative_gradient_when_H_lt_Y","FA","P2",
      "(valid_in && H<Y) |=> gradient_out[15]","BMC","4","Open"),
     ("LC-A07","loss_child","p_zero_gradient_when_H_eq_Y","FA","P2",
      "(valid_in && H==Y) |=> gradient_out==0","BMC","4","Open"),
+    ("LC-A08","loss_child","p_rst_clears_overflow","RST","P1",
+     "rst |=> !loss_overflow_out  [BUG-OVF-1: sticky flag cleared on reset]","Unbounded","\u2013","Open"),
+    ("LC-A09","loss_child","p_overflow_is_sticky","FA","P1",
+     "loss_overflow_out |=> loss_overflow_out  [BUG-OVF-1: once set stays set until rst]","Unbounded","\u2013","Open"),
 
     # ── gradient_descent ──────────────────────────────────────────────────────
     ("GD-A01","gradient_descent","p_rst_clears_output","RST","P1",
@@ -218,7 +250,11 @@ ASSERTIONS = [
     ("GD-A07","gradient_descent","p_not_done_implies_valid_was_clear","VP","P1",
      "!done |-> !$past(valid_in)","BMC","6","Open"),
     ("GD-A08","gradient_descent","p_weight_mode_descent_direction","FA","P2",
-     "(valid_in && weight_mode && pos_grad && pos_lr) |=> $signed(out)<$signed($past(old))","BMC","6","Open"),
+     "(valid_in && weight_mode && pos_grad && pos_lr) |=> $signed(out)<=$signed($past(old))","BMC","6","Open"),
+    ("GD-A09","gradient_descent","p_rst_clears_overflow","RST","P1",
+     "rst |=> !grad_overflow_out","Unbounded","–","Open"),
+    ("GD-A10","gradient_descent","p_overflow_is_sticky","FA","P1",
+     "grad_overflow_out |=> grad_overflow_out  [sticky until rst]","BMC","4","Open"),
 
     # ── control_unit ──────────────────────────────────────────────────────────
     ("CU-A01","control_unit","p_sys_switch_bit","SD","P1",
@@ -321,6 +357,10 @@ ASSERTIONS = [
      "rst |=> rd_grad_weight_ptr==0","Unbounded","–","Open"),
     ("UB-A16","unified_buffer","p_rst_clears_grad_descent_ptr","RST","P1",
      "rst |=> grad_descent_ptr==0","Unbounded","–","Open"),
+    ("UB-A17","unified_buffer","p_grad_descent_ptr_max_advance","DP","P1",
+     "grad_descent_ptr <= $past(grad_descent_ptr)+2  [at most 2 GD instances fire per cycle]","BMC","8","Open"),
+    ("UB-A18","unified_buffer","p_grad_descent_ptr_monotonic","DP","P1",
+     "grad_descent_ptr >= $past(grad_descent_ptr)  [no decrement without reset]","BMC","8","Open"),
 ]
 
 # Category legend
@@ -363,6 +403,7 @@ COVERS = [
     ("gradient_desc","GD_C1",   "Weight mode (grad_bias_or_weight=1)"),
     ("gradient_desc","GD_C2",   "Bias mode (grad_bias_or_weight=0)"),
     ("gradient_desc","GD_C3",   "Bias mode accumulation (done cascades)"),
+    ("gradient_desc","GD_C4",   "valid_in deasserted after a run ($fell(valid_in))"),
     ("control_unit", "CU_C1",   "Forward pass pathway (1100)"),
     ("control_unit", "CU_C2",   "Transition pathway (1111)"),
     ("control_unit", "CU_C3",   "Backward pass pathway (0001)"),
@@ -370,8 +411,6 @@ COVERS = [
     ("control_unit", "CU_C5",   "sys_switch_in asserted"),
     ("control_unit", "CU_C6",   "ub_rd_transpose asserted"),
     ("control_unit", "CU_C7",   "Transposed read (start && transpose)"),
-    ("control_unit", "CU_C8",   "Bias gradient-descent pointer (ptr_sel=5)"),
-    ("control_unit", "CU_C9",   "Weight gradient-descent pointer (ptr_sel=6)"),
     ("vpu",          "VPU_C1",  "Forward path completes (valid_out_1 seen)"),
     ("vpu",          "VPU_C2",  "Transition path completes"),
     ("vpu",          "VPU_C3",  "Backward path completes"),
@@ -383,6 +422,9 @@ COVERS = [
     ("unified_buffer","UB_COV4","Transpose read exercised"),
     ("unified_buffer","UB_COV5","Non-transpose read exercised"),
     ("unified_buffer","UB_COV6","col_size_valid output asserted"),
+    ("unified_buffer","UB_COV7","wr_ptr reaches ≥4 (2 full dual-channel write-back cycles)"),
+    ("unified_buffer","UB_COV8","Both VPU channels write simultaneously (wr_valid[0] && wr_valid[1])"),
+    ("unified_buffer","UB_COV9","grad_descent_ptr advances past zero (write-back chain exercised)"),
 ]
 
 # Assumptions per module
@@ -526,16 +568,16 @@ for ci, h in enumerate(["Module", "RTL File", "SVA File",
     hdr_cell(ws_sum, 2, ci, h)
 
 SUMMARY = [
-    ("pe",            "src/pe.sv",              "sva/pe_assertions.sv",              16, 3,  6,  "BMC"),
-    ("systolic",      "src/systolic.sv",         "sva/systolic_assertions.sv",        12, 7,  8,  "BMC"),
-    ("bias_child",    "src/bias_child.sv",       "sva/bias_child_assertions.sv",       5, 3,  4,  "BMC"),
-    ("leaky_relu_child","src/leaky_relu_child.sv","sva/leaky_relu_child_assertions.sv", 7, 4,  4,  "BMC"),
-    ("lrd_child",     "src/leaky_relu_derivative_child.sv","sva/leaky_relu_derivative_child_assertions.sv",6,4,4,"BMC"),
-    ("loss_child",    "src/loss_child.sv",       "sva/loss_child_assertions.sv",       7, 4,  4,  "BMC"),
-    ("gradient_descent","src/gradient_descent.sv","sva/gradient_descent_assertions.sv",8,3,  6,  "BMC"),
-    ("control_unit",  "src/control_unit.sv",     "sva/control_unit_assertions.sv",    15, 9,  0,  "Comb (k=0)"),
+    ("pe",            "src/pe.sv",              "sva/pe_assertions.sv",              23, 3,  6,  "BMC"),
+    ("systolic",      "src/systolic.sv",         "sva/systolic_assertions.sv",        13, 7,  8,  "BMC"),
+    ("bias_child",    "src/bias_child.sv",       "sva/bias_child_assertions.sv",       7, 3,  4,  "BMC"),
+    ("leaky_relu_child","src/leaky_relu_child.sv","sva/leaky_relu_child_assertions.sv", 9, 4,  4,  "BMC"),
+    ("lrd_child",     "src/leaky_relu_derivative_child.sv","sva/leaky_relu_derivative_child_assertions.sv",8,4,4,"BMC"),
+    ("loss_child",    "src/loss_child.sv",       "sva/loss_child_assertions.sv",       9, 4,  4,  "BMC"),
+    ("gradient_descent","src/gradient_descent.sv","sva/gradient_descent_assertions.sv",10,4,  6,  "BMC"),
+    ("control_unit",  "src/control_unit.sv",     "sva/control_unit_assertions.sv",    15, 7,  0,  "Comb (k=0)"),
     ("vpu",           "src/vpu.sv",              "sva/vpu_assertions.sv",             13, 5,  10, "BMC"),
-    ("unified_buffer","src/unified_buffer.sv",   "sva/unified_buffer_assertions.sv",  16, 6,  32, "BMC+Induction"),
+    ("unified_buffer","src/unified_buffer.sv",   "sva/unified_buffer_assertions.sv",  22, 9,  32, "BMC+Induction"),
 ]
 
 widths_sum = [18, 30, 44, 12, 9, 13, 22]

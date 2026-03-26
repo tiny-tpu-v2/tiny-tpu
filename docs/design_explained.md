@@ -1,468 +1,531 @@
-# tiny-tpu — Full Design Explanation (Beginner-Friendly)
+# tiny-tpu � Full Design Explanation
 
-> **Goal of this document**: Explain every part of the tiny-tpu hardware design from the ground up, assuming you know nothing about hardware or chip design. We go from the smallest building block up to the full chip.
+> **Goal of this document:** Explain every part of the tiny-tpu hardware design starting from zero. No chip-design background is assumed. We build up from the smallest piece all the way to the complete system.
 
 ---
 
 ## Table of Contents
 
 1. [What Problem Are We Solving?](#1-what-problem-are-we-solving)
-2. [How Numbers Are Stored — Fixed-Point Arithmetic](#2-how-numbers-are-stored--fixed-point-arithmetic)
-3. [Processing Element (PE) — The Atom of the Chip](#3-processing-element-pe--the-atom-of-the-chip)
-4. [Systolic Array — A Grid of PEs Working Together](#4-systolic-array--a-grid-of-pes-working-together)
-5. [Unified Buffer (UB) — The Chip's Memory](#5-unified-buffer-ub--the-chips-memory)
-6. [Vector Processing Unit (VPU) — Post-Processing Pipeline](#6-vector-processing-unit-vpu--post-processing-pipeline)
-   - 6a. [Bias Module](#6a-bias-module)
-   - 6b. [Leaky ReLU Module](#6b-leaky-relu-module)
-   - 6c. [Loss Module (MSE Gradient)](#6c-loss-module-mse-gradient)
-   - 6d. [Leaky ReLU Derivative Module](#6d-leaky-relu-derivative-module)
-7. [Gradient Descent Module — How the Chip Learns](#7-gradient-descent-module--how-the-chip-learns)
-8. [Control Unit — The Instruction Decoder](#8-control-unit--the-instruction-decoder)
-9. [TPU — How Everything Connects](#9-tpu--how-everything-connects)
+2. [How Numbers Are Stored � Fixed-Point Arithmetic](#2-how-numbers-are-stored--fixed-point-arithmetic)
+3. [Processing Element (PE) � The Smallest Building Block](#3-processing-element-pe--the-smallest-building-block)
+4. [Systolic Array � A Grid of PEs Working Together](#4-systolic-array--a-grid-of-pes-working-together)
+5. [Unified Buffer (UB) � The Chip's Memory](#5-unified-buffer-ub--the-chips-memory)
+6. [Vector Processing Unit (VPU) � The Post-Processing Pipeline](#6-vector-processing-unit-vpu--the-post-processing-pipeline)
+   - [6a. Bias Module](#6a-bias-module)
+   - [6b. Leaky ReLU Module](#6b-leaky-relu-module)
+   - [6c. Loss Module (MSE Gradient)](#6c-loss-module-mse-gradient)
+   - [6d. Leaky ReLU Derivative Module](#6d-leaky-relu-derivative-module)
+7. [Gradient Descent Module � How the Chip Learns](#7-gradient-descent-module--how-the-chip-learns)
+8. [Control Unit � The Instruction Decoder](#8-control-unit--the-instruction-decoder)
+9. [TPU � How Everything Connects](#9-tpu--how-everything-connects)
 10. [The Three Operating Modes](#10-the-three-operating-modes)
-11. [Data Flow Summary — From Input to Output](#11-data-flow-summary--from-input-to-output)
+11. [A Complete Training Step � From Input to Output](#11-a-complete-training-step--from-input-to-output)
 12. [File Map](#12-file-map)
 
 ---
 
 ## 1. What Problem Are We Solving?
 
-A **Tensor Processing Unit (TPU)** is a chip designed to run **neural networks** very fast. A neural network is a mathematical function that learns from data. The core mathematical operation it performs over and over is:
+A **Tensor Processing Unit (TPU)** is a chip built specifically to run **neural networks** fast. A neural network learns by repeatedly doing one core calculation:
 
 $$\text{output} = \text{activation}(W \cdot x + b)$$
 
 Where:
-- $x$ = input data (a vector or matrix)
-- $W$ = weight matrix (learned numbers)
+- $x$ = input data
+- $W$ = weight matrix (numbers the network is learning)
 - $b$ = bias vector (learned offsets)
-- $\text{activation}$ = a non-linear function (here: Leaky ReLU)
+- $\text{activation}$ = a non-linear function applied at the end (here: Leaky ReLU)
 
-A regular CPU does these one at a time. A TPU does **many multiplications and additions simultaneously** using special hardware. This chip is a minimal, 2×2 version of that idea — tiny enough to understand completely, but real enough to run an actual forward and backward pass through a neural network layer.
-
----
-
-## 2. How Numbers Are Stored — Fixed-Point Arithmetic
-
-**File**: `src/fixedpoint.sv`
-
-Real numbers like `3.14` or `-0.5` are tricky for hardware. This chip uses **fixed-point** format: a 16-bit number where the top 8 bits represent the integer part and the bottom 8 bits represent the fractional part.
-
-```
-bit 15 ... bit 8 | bit 7 ... bit 0
-  integer part   |  fractional part
-```
-
-Think of it like this: the number `256` in raw bits actually means `1.0` because bit 8 is the "ones place". This is the same idea as a decimal point, but fixed in hardware.
-
-The `fixedpoint.sv` file provides reusable math modules that the whole chip uses:
-- `fxp_add` — adds two fixed-point numbers  
-- `fxp_addsub` — adds or subtracts (controlled by a 1-bit signal)  
-- `fxp_mul` — multiplies two fixed-point numbers  
-
-Every computation on this chip goes through one of these three operations.
+A regular CPU does these multiplications one at a time. A TPU does **many simultaneously** in dedicated hardware. This chip is a minimal 2�2 version � small enough to understand fully, but real enough to run an actual neural network forward and backward pass.
 
 ---
 
-## 3. Processing Element (PE) — The Atom of the Chip
+## 2. How Numbers Are Stored � Fixed-Point Arithmetic
 
-**File**: `src/pe.sv`
+**File:** `src/fixedpoint.sv`
 
-The **Processing Element** is the smallest working unit. Think of it as a single worker in a factory. Every clock cycle (a tick of the hardware clock), it does one **multiply-accumulate (MAC)** operation:
+Real numbers like `3.14` or `-0.5` are awkward for digital hardware. This chip uses **Q8.8 fixed-point format**: every value is a 16-bit integer where the true value is that integer divided by 256.
 
-$$\text{output sum} = (\text{input} \times \text{weight}) + \text{incoming partial sum}$$
+```
+Bit layout of every 16-bit value:
++-------------------------------------+
+�  bits [15:8]     �  bits [7:0]      �
+�  integer part    �  fractional part �
+�  (signed, 8 bit) �  (1/256 units)   �
++-------------------------------------+
 
-### Ports (Connections)
+Real value = raw_integer / 256
+```
 
-The PE has connections coming from four directions — like a cell in a spreadsheet grid:
+**Examples:**
 
-| Direction | Signal | What it carries |
-|-----------|--------|-----------------|
-| West (left) | `pe_input_in` | The data value flowing across the row |
-| North (top) | `pe_psum_in` | A partial sum flowing down from above |
-| North (top) | `pe_weight_in` | A weight being loaded into the PE |
-| East (right) | `pe_input_out` | Passes the input along to the next PE |
-| South (bottom) | `pe_psum_out` | Sends the computed partial sum downward |
+| Raw value (decimal) | Hex    | Real value | Why |
+|---------------------|--------|------------|-----|
+| 256                 | 0x0100 | 1.0        | 256 / 256 = 1.0 |
+| 384                 | 0x0180 | 1.5        | 384 / 256 = 1.5 |
+| 128                 | 0x0080 | 0.5        | 128 / 256 = 0.5 |
+| -256 (signed)       | 0xFF00 | -1.0       | -256 / 256 = -1.0 |
+| 0                   | 0x0000 | 0.0        | zero |
 
-### Weight Registers — The Double-Buffer Trick
+**Sign rule:** Bit 15 = `0` ? positive or zero. Bit 15 = `1` ? negative (two's complement).
 
-Each PE stores its weight in **two registers**:
-- `weight_reg_active` — the weight currently being used for multiplication
-- `weight_reg_inactive` — a "shadow" register loading the next weight in the background
+**Why not floating point?** Floating-point (like Python's `float`) needs complex exponent hardware. Fixed-point is plain integer arithmetic with a known scale factor (256), so the chip stays small and fast.
 
-This is like a chef preparing the next dish while the current one is still cooking. When the `pe_switch_in` signal fires, the inactive register instantly becomes the active one — zero interruption to computation.
+The `fixedpoint.sv` file provides three arithmetic modules used throughout the design:
 
-### Valid Signal
+| Module | Operation | Used by |
+|--------|-----------|---------|
+| `fxp_add` | `a + b` | bias_child |
+| `fxp_addsub` | `a + b` or `a - b` (flag-controlled) | loss_child, gradient_descent |
+| `fxp_mul` | `a � b` | pe, leaky_relu_child, leaky_relu_derivative_child, gradient_descent |
 
-The `pe_valid_in` signal tells the PE: "this clock cycle carries real data." If it is 0, the PE outputs zeros and produces nothing. This is how the chip handles data that arrives at different times across the array.
+All three are **purely combinational** � they produce results instantly in the same clock cycle, with no internal registers.
 
 ---
 
-## 4. Systolic Array — A Grid of PEs Working Together
+## 3. Processing Element (PE) � The Smallest Building Block
 
-**File**: `src/systolic.sv`
+**File:** `src/pe.sv`
 
-The **systolic array** is a 2×2 grid of PEs. The name comes from the heart — data pulses through it rhythmically like blood.
+The **Processing Element (PE)** is the tiniest computing unit on the chip. Each clock cycle it performs one **multiply-accumulate (MAC)**:
 
-### Layout
+$$\text{psum\_out} = (\text{input} \times \text{weight}) + \text{psum\_in}$$
+
+Think of it as one worker on an assembly line: take the number coming from the left, multiply it by your stored weight, add the partial result coming from above, and pass the new total downward.
+
+### The Four Sides of a PE
 
 ```
-         Col 1          Col 2
-         weight_in_11   weight_in_12
-              ↓               ↓
-Row 1:  [  PE(1,1)  ] → [  PE(1,2)  ]
-              ↓               ↓
-Row 2:  [  PE(2,1)  ] → [  PE(2,2)  ]
-              ↓               ↓
-         output_21      output_22
+             NORTH
+       pe_weight_in  pe_psum_in
+             �             �
+             ?             ?
+WEST ------[  PE  ]------? EAST
+pe_input_in  �   pe_input_out
+             ?
+            SOUTH
+       pe_psum_out  pe_weight_out
 ```
 
-- **Data flows LEFT → RIGHT** across each row (input values)
-- **Partial sums flow TOP → BOTTOM** down each column
-- **Weights are loaded from the TOP** and stay fixed during computation
+| Side | Signal | Direction | Carries |
+|------|--------|-----------|---------|
+| West (left)  | `pe_input_in`    | in  | Input data flowing across the row |
+| West         | `pe_valid_in`    | in  | 1 = this cycle carries real data |
+| West         | `pe_switch_in`   | in  | Pulse to swap shadow ? active weight |
+| West         | `pe_enabled`     | in  | 0 = disable and zero-out this PE |
+| North (top)  | `pe_psum_in`     | in  | Partial sum arriving from above |
+| North        | `pe_weight_in`   | in  | New weight value being loaded |
+| North        | `pe_accept_w_in` | in  | 1 = load the arriving weight |
+| East (right) | `pe_input_out`   | out | `pe_input_in` forwarded right (1-cycle delay) |
+| East         | `pe_valid_out`   | out | `pe_valid_in` forwarded right (1-cycle delay) |
+| East         | `pe_switch_out`  | out | `pe_switch_in` forwarded right (1-cycle delay) |
+| South (bottom)| `pe_psum_out`   | out | `(input � weight) + psum_in` � the MAC result |
+| South         | `pe_weight_out`  | out | Loaded weight passed down to the next row |
+| �            | `pe_overflow_out`| out | Sticky flag: stays 1 once any overflow ever occurs |
 
-### What Computation Does This Implement?
+### Double-Buffered Weights
 
-This hardware computes **matrix multiplication**: $Y = X \cdot W$
+Each PE has **two weight registers**:
+- `weight_reg_active` � used **right now** for multiplication
+- `weight_reg_inactive` � the shadow, being pre-loaded with the **next** weight in the background
 
-For a 2×2 matrix multiply, you need 4 dot products. The systolic array computes all of them in parallel over a few clock cycles, rather than one at a time.
+This is like a DJ: the next track is already cued up (shadow) while the current one plays (active). When `pe_switch_in` fires, the shadow becomes active instantly � computation never pauses.
 
-### Input Preprocessing (done in software before sending to chip)
+### What Happens Each Clock Cycle
 
-Before data enters the array, two transformations are applied:
-1. **Input matrix is rotated 90°** so rows align with the array's row-by-row flow
-2. **Values are staggered** — Row 2's input is delayed by one clock cycle relative to Row 1, so each value meets the correct weight at the right time
+1. `pe_valid_out` and `pe_switch_out` are always sampled and forwarded (1-cycle delay)
+2. If `pe_switch_in = 1` ? copy `weight_reg_inactive` into `weight_reg_active`
+3. If `pe_accept_w_in = 1` ? load `pe_weight_in` into `weight_reg_inactive`, pass weight downward
+4. If `pe_valid_in = 1` ? compute MAC, latch result to `pe_psum_out`, forward input right, update sticky overflow flag
+5. If `pe_valid_in = 0` ? output zeros (prevents stale data from propagating)
+6. If `rst = 1` or `pe_enabled = 0` ? clear all registers to zero
 
-### Weight Loading
+---
 
-Weights are loaded column-by-column through the `sys_accept_w` signals. Each column has its own load signal (`sys_accept_w_1`, `sys_accept_w_2`) so both columns can be loaded independently. The `sys_switch_in` signal, once fired, propagates diagonally through the array (top-left to bottom-right) telling each PE to swap its shadow register into active use.
+## 4. Systolic Array � A Grid of PEs Working Together
+
+**File:** `src/systolic.sv`
+
+The **systolic array** arranges four PEs in a 2�2 grid. Data pulses through it rhythmically � like a heartbeat ("systole") � with each PE performing its MAC and passing results along.
+
+### The Grid Layout
+
+```
+        Weight col-1           Weight col-2
+      (sys_weight_in_11)     (sys_weight_in_12)
+              ?                     ?
+row1: [PE(1,1)] --input_out--? [PE(1,2)]
+              � psum_out?             � psum_out?
+row2: [PE(2,1)] --input_out--? [PE(2,2)]
+              ?                     ?
+       sys_data_out_21        sys_data_out_22
+       (column-1 result)      (column-2 result)
+```
+
+- Input data enters from the **left** and ripples right
+- Weights are loaded from the **top** and stay fixed during computation
+- Partial sums flow **downward** through each column, accumulating
+- Final dot-product results exit from the **bottom**
+
+### What Computation This Performs
+
+This computes the matrix product $Y = X \cdot W$ for 2�2 matrices. Both output columns are computed in parallel over two clock cycles.
+
+**Software preprocessing (done before data reaches the chip):**
+1. The input matrix $X$ is rotated 90� so that its rows align with the array's left-to-right data flow
+2. Row-2's data is sent **1 cycle later** than Row-1's, so each value meets the correct weight at the right time inside the array
+
+### Loading and Switching Weights
+
+- `sys_accept_w_1 / sys_accept_w_2` � each HIGH pulse loads one weight row into the shadow registers of column 1 or column 2
+- `sys_switch_in` � fires once after loading to atomically swap all shadow weights to active; the signal propagates diagonally (PE(1,1) ? PE(2,1) and PE(1,2) ? PE(2,2)) to maintain timing
 
 ### Column Enable
 
-The `ub_rd_col_size` input tells the array how many columns are actually being used. This disables unused PE columns, saving power and preventing garbage from propagating.
+`ub_rd_col_size` tells the array how many columns are active. If only 1 column is needed, PE(1,2) and PE(2,2) are disabled (`pe_enabled=0`), which zeroes their outputs and prevents garbage from reaching the VPU.
 
 ---
 
-## 5. Unified Buffer (UB) — The Chip's Memory
+## 5. Unified Buffer (UB) � The Chip's Memory
 
-**File**: `src/unified_buffer.sv`
+**File:** `src/unified_buffer.sv`
 
-The **Unified Buffer** is the chip's on-chip RAM. It is a single array of 128 sixteen-bit words. Everything the chip needs to remember lives here:
+The **Unified Buffer** is a flat array of 128 sixteen-bit words (expandable via a parameter). It is the single shared memory that every module reads from or writes to. Everything lives here: inputs, weights, biases, activations, labels, and gradients.
 
-| Data Type | Used For |
-|-----------|----------|
-| Input matrices ($X$) | Fed to the left side of the systolic array |
-| Weight matrices ($W$) | Fed to the top of the systolic array |
-| Bias vectors ($b$) | Fed to the VPU bias module |
-| Post-activation values ($H$) | Stored during forward pass, needed for backprop |
-| Target labels ($Y$) | Used by the loss module to compute gradient |
-| Inverse batch size ($2/N$) | Used by the loss module |
+### What It Stores
 
-### How Reading Works
+| Data | Purpose |
+|------|---------|
+| Input matrix $X$ | Fed to the left edge of the systolic array |
+| Weight matrix $W$ | Fed to the top of the systolic array |
+| Bias vector $b$ | Fed to the VPU bias stage |
+| Post-activation $H$ | Saved during forward pass; re-read during backpropagation |
+| Target labels $Y$ | Fed to the VPU loss stage |
+| $2/N$ inverse batch size | Fed to the VPU loss stage for the MSE gradient scale |
+| Updated weights/biases | Written back after gradient descent runs |
 
-Reading from the UB is not instantaneous — it streams data out over multiple clock cycles. You give it:
-- A **start address** (where in memory to begin)
-- A **row count** and **column count** (how much to read)
-- A **pointer select** (`ub_ptr_sel`) telling it which output port to drive (inputs, weights, biases, Y, or H)
-- A **transpose flag** — if set, the UB reads the matrix transposed without rearranging memory
+### Reading from the UB
 
-The UB has separate output wires for each destination:
-- `ub_rd_input_data_out` → left side of the systolic array
-- `ub_rd_weight_data_out` → top of the systolic array
-- `ub_rd_bias_data_out` → bias modules in the VPU
-- `ub_rd_Y_data_out` → loss modules in the VPU
-- `ub_rd_H_data_out` → leaky ReLU derivative modules in the VPU
+Reading **streams data** out over multiple clock cycles. To start a read, assert `ub_rd_start_in = 1` with:
+- `ub_rd_addr_in` � starting address
+- `ub_rd_row_size` � how many rows to stream
+- `ub_rd_col_size` � how many columns per row
+- `ub_ptr_select` � **which output destination** to target (see table below)
+- `ub_rd_transpose` � if 1, stream the matrix transposed
 
-### How Writing Works
+| `ub_ptr_select` | Destination | Data sent |
+|-----------------|-------------|-----------|
+| 0 | Systolic left side | Input data (`sys_data_in`, `sys_start`) |
+| 1 | Systolic top | Weight data (`sys_weight_in`, `sys_accept_w`) |
+| 2 | VPU bias stage | Bias scalars (`bias_scalar_in`) |
+| 3 | VPU loss stage | Target labels (`Y_in`) |
+| 4 | VPU LRD stage | Stored activations (`H_in`) |
+| 5 | Gradient descent (bias mode) | Old bias values (`value_old_in`) |
+| 6 | Gradient descent (weight mode) | Old weight values (`value_old_in`) |
 
-The UB has two write paths:
-1. **Host writes** (`ub_wr_host_data_in`) — the external testbench loads initial weights, biases, and inputs before computation starts
-2. **VPU writes** (`ub_wr_data_in`) — after the VPU processes data, results are automatically written back to the UB (used for storing updated weights and activations)
+The input read channel (ptr_select=0) **skews** its two output columns by 1 cycle automatically, creating the diagonal timing the systolic array requires.
 
-The write pointer (`wr_ptr`) tracks where to write next and auto-increments.
+### Writing to the UB
 
-### Gradient Descent Lives Here
+Two write paths share the same auto-incrementing write pointer `wr_ptr`:
+1. **Host writes** � the testbench pre-loads data via `ub_wr_host_data_in` before computation
+2. **VPU writes** � after computation, `vpu_data_out` flows back to `ub_wr_data_in` and is written to the next address
 
-Unusually, the UB also contains `gradient_descent` module instances. When new gradients arrive from the VPU, the gradient descent modules immediately apply the weight update formula before writing back to memory:
+### Gradient Descent Lives Inside the UB
 
-$$W_{\text{new}} = W_{\text{old}} - \alpha \cdot \nabla W$$
-
-where $\alpha$ is the learning rate. This keeps the weight update on-chip without needing to ship data back to a CPU.
+The UB instantiates **two `gradient_descent` modules** (generated by a `generate` loop, one per column). When the VPU writes gradients and a gradient-descent read channel is active (`ptr_select=5` or `6`), the modules immediately compute $W_{\text{new}} = W_{\text{old}} - \alpha \cdot \nabla W$ and write the result back to memory � all without CPU involvement.
 
 ---
 
-## 6. Vector Processing Unit (VPU) — Post-Processing Pipeline
+## 6. Vector Processing Unit (VPU) � The Post-Processing Pipeline
 
-**File**: `src/vpu.sv`
+**File:** `src/vpu.sv`
 
-After the systolic array produces raw dot-product results, those numbers still need to be transformed before they are useful output. The **VPU** is a pipeline of four modules that do those transformations, wired together in sequence.
+The systolic array produces raw dot-product numbers. The VPU applies a configurable chain of transformations to those numbers before writing results back to the UB.
+
+### The Four Stages
 
 ```
-Systolic Array output
-        ↓
-  [  Bias Module  ]         ← adds b to each value
-        ↓
-  [ Leaky ReLU    ]         ← applies activation function
-        ↓
-  [  Loss Module  ]         ← computes MSE gradient (backprop)
-        ↓
-  [ ReLU Derivative ]       ← backpropagates through activation
-        ↓
+Systolic Array result
+        ?
+  +-------------+   adds bias:       Z = dot_product + b
+  �  Bias       �
+  +-------------+
+         ?
+  +-------------+   activation:      H = Z   (if Z=0)
+  �  Leaky ReLU �                  H = a�Z  (if Z<0)
+  +-------------+
+         ?
+  +-------------+   MSE gradient:    grad = (2/N)�(H - Y)
+  �  Loss       �
+  +-------------+
+         ?
+  +-------------+   backprop step:   d = grad�1  (if H=0)
+  �  LReLU Deriv�                  d = grad�a  (if H<0)
+  +-------------+
+         ?
   Unified Buffer (write back)
 ```
 
-A **4-bit control signal** (`vpu_data_pathway`) acts like a set of switches that turn each stage on or off:
+### The Pathway Control
 
-| Bit | Module |
-|-----|--------|
+A 4-bit signal `vpu_data_pathway` enables/disables each stage independently:
+
+| Bit | Stage |
+|-----|-------|
 | bit 3 | Bias |
 | bit 2 | Leaky ReLU |
 | bit 1 | Loss |
 | bit 0 | Leaky ReLU Derivative |
 
-So `1100` = bias + ReLU only (forward pass), `1111` = all four (transition), `0001` = ReLU derivative only (backward pass).
+| `vpu_data_pathway` | Active stages | When used |
+|--------------------|---------------|-----------|
+| `4'b1100` | Bias + Leaky ReLU | Forward pass � hidden layers |
+| `4'b1111` | All four | Transition pass � output layer |
+| `4'b0001` | LReLU Derivative only | Backward pass � hidden layers |
 
-Each module is built as a **parent-child pair**. The parent is just a container that instantiates two identical **child** modules side-by-side (one for each column of the 2×2 array). All real logic lives in the child.
+### Parent-Child Structure
+
+Every stage is a **parent + two children**:
+- The **child** module has all arithmetic logic (for one column)
+- The **parent** wraps two identical child instances side-by-side (one per column)
+
+This gives every stage two-column parallel processing without duplicating the logic description.
 
 ---
 
 ### 6a. Bias Module
 
-**Files**: `src/bias_parent.sv`, `src/bias_child.sv`
+**Files:** `src/bias_parent.sv`, `src/bias_child.sv`
 
-This is the simplest module. It takes the dot-product result from the systolic array and adds a bias value to it:
+The simplest stage. Adds bias $b$ to the systolic result: $Z = \text{dot\_product} + b$
 
-$$Z = \text{dot\_product} + b$$
-
-The bias value $b$ is fetched from the Unified Buffer and arrives on a separate wire. The addition uses `fxp_add`. The result $Z$ is called the **pre-activation value** — the number before the activation function is applied.
+The bias value arrives from the UB. Uses `fxp_add`. The output $Z$ is the **pre-activation value**. 1-cycle registered latency.
 
 ---
 
 ### 6b. Leaky ReLU Module
 
-**Files**: `src/leaky_relu_parent.sv`, `src/leaky_relu_child.sv`
+**Files:** `src/leaky_relu_parent.sv`, `src/leaky_relu_child.sv`
 
-**ReLU** (Rectified Linear Unit) is the most common activation function in neural networks:
-
-$$H = \max(0, Z)$$
-
-**Leaky ReLU** is a small improvement — instead of cutting all negative values to exactly zero, it keeps a tiny fraction of them:
+Applies the Leaky ReLU activation:
 
 $$H = \begin{cases} Z & \text{if } Z \geq 0 \\ \alpha \cdot Z & \text{if } Z < 0 \end{cases}$$
 
-where $\alpha$ is the **leak factor** (a small number like 0.01).
+$\alpha$ is the **leak factor** (e.g., 0.01). In hardware: check bit 15 (sign bit) of the input. If 0 ? pass through unchanged. If 1 ? multiply by $\alpha$ using `fxp_mul`.
 
-In hardware this is a simple conditional:
-- If the input bit 15 (the sign bit) is 0, the number is positive → pass it through unchanged
-- If the sign bit is 1, the number is negative → multiply by the leak factor using `fxp_mul`
-
-The result $H$ is the **post-activation value**, which is written back to the Unified Buffer for later use in backpropagation.
+The `fxp_mul` runs combinationally every cycle. The `always_ff` just selects which result to register. Output $H$ is the **post-activation value (activation)**, written back to the UB for use during backpropagation.
 
 ---
 
 ### 6c. Loss Module (MSE Gradient)
 
-**Files**: `src/loss_parent.sv`, `src/loss_child.sv`
+**Files:** `src/loss_parent.sv`, `src/loss_child.sv`
 
-> Note: Despite being named "loss", this module does not compute the loss value itself. It computes the **gradient of the MSE loss** with respect to the output — which is what you need for backpropagation.
+> This module does **not** compute the loss value. It computes the **gradient of MSE loss** needed for backpropagation.
 
-The **Mean Squared Error (MSE)** loss is:
-
-$$L = \frac{1}{N} \sum (H - Y)^2$$
-
-Its gradient (derivative with respect to $H$) is:
+MSE loss: $L = \frac{1}{N}\sum(H - Y)^2$. Its gradient w.r.t. $H$:
 
 $$\frac{\partial L}{\partial H} = \frac{2}{N}(H - Y)$$
 
-The module computes this in two pipeline stages:
-1. `fxp_addsub` computes $(H - Y)$  
-2. `fxp_mul` multiplies by $\frac{2}{N}$ (precomputed and passed in as `inv_batch_size_times_two_in`)
+Two combinational stages:
+1. `fxp_addsub` (`sub=1`): computes $H - Y$
+2. `fxp_mul`: multiplies by $\frac{2}{N}$ (passed in as `inv_batch_size_times_two_in`)
 
-This gradient is passed to the next stage (Leaky ReLU Derivative).
+Both run simultaneously. The result latches on the clock edge when `valid_in=1`. When `valid_in=0`, `gradient_out` is driven to zero. `valid_out` is assigned **unconditionally** so it always accurately mirrors `valid_in`.
 
 ---
 
 ### 6d. Leaky ReLU Derivative Module
 
-**Files**: `src/leaky_relu_derivative_parent.sv`, `src/leaky_relu_derivative_child.sv`
+**Files:** `src/leaky_relu_derivative_parent.sv`, `src/leaky_relu_derivative_child.sv`
 
-During backpropagation, gradients must be propagated **backwards through the activation function**. The derivative of Leaky ReLU is:
+During backpropagation, the gradient passes **back through** the activation function. The derivative of Leaky ReLU:
 
 $$\frac{\partial H}{\partial Z} = \begin{cases} 1 & \text{if } H \geq 0 \\ \alpha & \text{if } H < 0 \end{cases}$$
 
-The module applies this using the chain rule — it multiplies the incoming gradient by either 1 (pass-through) or $\alpha$ (the leak factor), depending on the **sign of the original H value** (which was saved in the UB during the forward pass).
-
-This is why the UB stores $H$ — it is needed here during backprop.
+The module multiplies the incoming gradient by 1 or $\alpha$, depending on the sign of the **original forward-pass $H$** (from the UB or the VPU's internal cache). This ensures the backward path mirrors the forward path exactly. Like the loss module, `valid_out` is assigned unconditionally.
 
 ---
 
-## 7. Gradient Descent Module — How the Chip Learns
+## 7. Gradient Descent Module � How the Chip Learns
 
-**File**: `src/gradient_descent.sv`  
-**Location**: Instantiated inside `unified_buffer.sv`
+**File:** `src/gradient_descent.sv`  
+**Location:** Instantiated inside `unified_buffer.sv` (two instances, one per column)
 
-Once the backpropagation pipeline has produced gradients, the chip needs to **update the weights**. This is the learning step. The formula is:
+This module applies the gradient descent update rule:
 
 $$W_{\text{new}} = W_{\text{old}} - \alpha \cdot \nabla W$$
 
-Where:
-- $W_{\text{old}}$ is the current weight (read from the UB)
-- $\nabla W$ is the gradient (coming from the VPU)
-- $\alpha$ is the **learning rate** (controls how big each update step is)
-- $W_{\text{new}}$ is written back to the UB
+In hardware (two combinational operations running simultaneously):
+1. `fxp_mul`: computes $\alpha \times \nabla W$
+2. `fxp_addsub` (`sub=1`): computes $W_{\text{old}} - (\alpha \cdot \nabla W)$
 
-In hardware this uses:
-- `fxp_mul` to compute $\alpha \cdot \nabla W$
-- `fxp_addsub` to compute $W_{\text{old}} - (\alpha \cdot \nabla W)$
+`grad_descent_done_out` fires 1 cycle after `grad_descent_valid_in`, signalling the UB to write the result.
 
-There are two instances of this module (one per column), running in parallel.
+### Weight Mode vs Bias Mode
 
-A `grad_bias_or_weight` signal selects whether we are updating a **bias** or a **weight**. For biases, the module accumulates updates across a batch before writing back. For weights, each gradient directly updates from the stored old value.
+`grad_bias_or_weight` selects the behaviour:
 
----
+**Weight mode (`= 1`):** Each gradient directly updates from the old value read from the UB. One-shot per weight.
 
-## 8. Control Unit — The Instruction Decoder
+**Bias mode (`= 0`):** The bias accumulates updates across all batch samples. Once the first result is ready (`done=1`), it feeds back as input for the next gradient, forming an accumulation loop � no repeated UB reads needed.
 
-**File**: `src/control_unit.sv`
-
-The **Control Unit** is the simplest module in the chip. It takes a single wide **instruction word** (88 bits) and slices it into named control signals that go to every other module.
-
-Think of the instruction as a very long light switch panel — each group of bits turns a specific part of the chip on or off, or tells it a number.
-
-### Instruction Fields
-
-| Bits | Width | Signal | What it does |
-|------|-------|--------|--------------|
-| [0] | 1 bit | `sys_switch_in` | Tells all PEs to swap their shadow weight into active use |
-| [1] | 1 bit | `ub_rd_start_in` | Starts a read transaction from the UB |
-| [2] | 1 bit | `ub_rd_transpose` | Read the matrix transposed |
-| [3] | 1 bit | `ub_wr_host_valid_in_1` | Host is writing data on channel 1 |
-| [4] | 1 bit | `ub_wr_host_valid_in_2` | Host is writing data on channel 2 |
-| [6:5] | 2 bits | `ub_rd_col_size` | How many columns to read (0–3) |
-| [14:7] | 8 bits | `ub_rd_row_size` | How many rows to read (0–255) |
-| [16:15] | 2 bits | `ub_rd_addr_in` | Where in UB to start reading |
-| [19:17] | 3 bits | `ub_ptr_sel` | Which UB output port to target |
-| [35:20] | 16 bits | `ub_wr_host_data_in_1` | Data value the host is writing (ch 1) |
-| [51:36] | 16 bits | `ub_wr_host_data_in_2` | Data value the host is writing (ch 2) |
-| [55:52] | 4 bits | `vpu_data_pathway` | Which VPU modules to enable |
-| [71:56] | 16 bits | `inv_batch_size_times_two_in` | Precomputed $2/N$ for loss gradient |
-| [87:72] | 16 bits | `vpu_leak_factor_in` | Leak factor $\alpha$ for Leaky ReLU |
-
-There is no logic in the control unit — it is purely combinational wire routing. The testbench assembles each instruction and loads it into an instruction buffer; the control unit decodes it every clock cycle.
+After the update, `value_updated_out` **holds its value** (no else-branch clears it). This is intentional: it must stay stable until the UB writes it to memory.
 
 ---
 
-## 9. TPU — How Everything Connects
+## 8. Control Unit � The Instruction Decoder
 
-**File**: `src/tpu.sv`
+**File:** `src/control_unit.sv`
 
-The `tpu` module is the **top-level** module — it instantiates and wires together every other module.
+The Control Unit takes a **130-bit instruction word** and slices it into named control signals. It is entirely combinational � just 14 `assign` statements, zero logic.
+
+Think of it as a labeled cable splitter: one wide wire in, many labeled wires out.
+
+### Instruction Bit Map
+
+| Bits | Width | Signal | What it controls |
+|------|-------|--------|-----------------|
+| [0]      | 1  | `sys_switch_in`              | Swap PE shadow weights ? active |
+| [1]      | 1  | `ub_rd_start_in`             | Trigger a UB read operation |
+| [2]      | 1  | `ub_rd_transpose`            | Read the matrix transposed |
+| [3]      | 1  | `ub_wr_host_valid_in_1`      | Host is writing on port 1 |
+| [4]      | 1  | `ub_wr_host_valid_in_2`      | Host is writing on port 2 |
+| [20:5]   | 16 | `ub_rd_col_size`             | Number of columns to stream |
+| [36:21]  | 16 | `ub_rd_row_size`             | Number of rows to stream |
+| [52:37]  | 16 | `ub_rd_addr_in`              | UB start address |
+| [61:53]  | 9  | `ub_ptr_select`              | Which data type to read (0�6) |
+| [77:62]  | 16 | `ub_wr_host_data_in_1`       | Data for host write port 1 |
+| [93:78]  | 16 | `ub_wr_host_data_in_2`       | Data for host write port 2 |
+| [97:94]  | 4  | `vpu_data_pathway`           | Which VPU stages are active |
+| [113:98] | 16 | `inv_batch_size_times_two_in`| $2/N$ for MSE gradient |
+| [129:114]| 16 | `vpu_leak_factor_in`         | Leaky ReLU leak factor $\alpha$ |
+
+**Total: 5�1 + 5�16 + 9 + 4 = 130 bits**
+
+The testbench builds each instruction by bit-shifting and OR-ing field values together, loads it into a register, and the control unit decodes it combinationally every cycle.
+
+---
+
+## 9. TPU � How Everything Connects
+
+**File:** `src/tpu.sv`
+
+The `tpu` module is the **top-level integration point**. It contains no computation � only wires and module instantiations. Think of it as the circuit board.
 
 ```
-                    ┌─────────────────────────────────────────────┐
-   External Host ──►│             Unified Buffer (UB)              │
-  (writes weights,  │  memory[0..127]                             │
-   biases, inputs)  │  gradient_descent[0], gradient_descent[1]   │
-                    └──────┬────────────┬───────────────────────┬─┘
-                           │            │                       │
-                  inputs   │   weights  │    biases / H / Y     │
-                           ▼            ▼                       │
-                    ┌──────────────────────┐                    │
-                    │   Systolic Array     │                    │
-                    │  PE(1,1) PE(1,2)     │                    │
-                    │  PE(2,1) PE(2,2)     │                    │
-                    └──────────┬───────────┘                    │
-                               │ dot-product results             │
-                               ▼                                 ▼
-                    ┌──────────────────────────────────────────────┐
-                    │           Vector Processing Unit (VPU)       │
-                    │  Bias → Leaky ReLU → Loss → ReLU-Derivative  │
-                    └──────────────────────┬───────────────────────┘
-                                           │ processed results
-                                           ▼
-                              (written back to Unified Buffer)
+              +--------------------------------------+
+Host/TB ----? �          Unified Buffer (UB)          �
+(loads data)  �  memory[0:127]                        �
+              �  gradient_descent[0..1]               �
+              +---------------------------------------+
+                      �              �          �
+            inputs ?--+   weights ?--+  bias/H/Y?+
+                      �              �
+                      ?              ?
+            +--------------------------+
+            �      Systolic Array       �
+            �  PE(1,1)     PE(1,2)      �
+            �  PE(2,1)     PE(2,2)      �
+            +--------------------------+
+                          �  dot-product results
+                          ?
+            +--------------------------+
+            �  Vector Processing Unit  �
+            �  Bias?LReLU?Loss?LRD     �
+            +--------------------------+
+                          �  processed results
+                          ?
+              (written back to Unified Buffer)
 ```
 
-The data loop is:
-1. **Load** → host writes parameters into UB
-2. **Read** → UB streams data to systolic array and VPU
-3. **Compute** → systolic array multiplies; VPU post-processes
-4. **Write back** → VPU output goes back to UB
-5. **Update** → gradient descent modules update weights in UB in-place
+The data forms a **closed loop**: UB ? Systolic ? VPU ? UB.
 
-Everything is synchronized to a single `clk` signal. A `rst` signal resets all registers to zero.
+**There are no output ports at the top level.** Results stay in the UB. The host reads them by inspecting UB memory (in simulation via waveform dumps or signal hierarchy).
 
 ---
 
 ## 10. The Three Operating Modes
 
-The VPU `vpu_data_pathway` signal selects one of three modes:
+### Mode 1 � Forward Pass (`vpu_data_pathway = 4'b1100`)
 
-### Mode 1 — Forward Pass (`1100`)
-**Path**: Systolic Array → Bias → Leaky ReLU → UB
+**Active stages:** Bias + Leaky ReLU
 
-This computes:
 $$H = \text{LeakyReLU}(W \cdot x + b)$$
 
-The post-activation value $H$ is stored in the UB for later use.
+Systolic computes the dot products; bias is added; Leaky ReLU is applied. Result $H$ is written back to the UB (needed later for backpropagation).
 
-### Mode 2 — Transition / Output Layer (`1111`)
-**Path**: Systolic Array → Bias → Leaky ReLU → Loss → ReLU Derivative → UB
+### Mode 2 � Transition Pass (`vpu_data_pathway = 4'b1111`)
 
-This computes the output layer forward pass **and immediately** computes the first backprop gradient in one pipeline. Used at the boundary between forward and backward passes.
+**Active stages:** All four
 
-### Mode 3 — Backward Pass (`0001`)
-**Path**: Systolic Array → ReLU Derivative → UB
+Used at the output layer. Does the forward pass and the first backprop step in one pipeline sweep:
+1. $Z = W \cdot x + b$
+2. $H = \text{LeakyReLU}(Z)$
+3. $\text{grad} = \frac{2}{N}(H - Y)$
+4. $\delta = \text{grad} \cdot \frac{\partial H}{\partial Z}$
 
-Backpropagation for hidden layers. The systolic array here computes $W^T \cdot \delta$ (the transposed weight matrix times the incoming gradient), and the ReLU derivative module applies the chain rule.
+The VPU internally **caches** $H$ between the LReLU output and the Loss/LRD stages (since both need it), so no extra UB read is required.
+
+### Mode 3 � Backward Pass (`vpu_data_pathway = 4'b0001`)
+
+**Active stage:** Leaky ReLU Derivative only
+
+For hidden layers. The systolic array is loaded with the **transposed weight matrix** $W^T$, which is how gradients propagate backward through a dense layer. The LRD stage applies the chain rule using stored $H$ from the UB. Gradient descent updates weights simultaneously inside the UB.
 
 ---
 
-## 11. Data Flow Summary — From Input to Output
+## 11. A Complete Training Step � From Input to Output
 
-Here is a complete picture of one forward + backward pass:
+### Step 1 � Load all data into UB
 
-**Step 1 — Load parameters**  
-The host sends weights, biases, inputs, and target labels into the UB two values per clock cycle via `ub_wr_host_data_in`.
+The testbench writes weights $W$, biases $b$, inputs $x$, target labels $Y$, and $2/N$ into UB memory via `ub_wr_host_data_in`. Two words per clock cycle (one per column).
 
-**Step 2 — Load weights into PEs**  
-The UB streams weights to the top of the systolic array. PEs load them into their inactive (shadow) registers.
+### Step 2 � Load weights into PE shadow registers
 
-**Step 3 — Switch weights**  
-The `sys_switch_in` signal fires. All PEs swap their shadow registers to active. The chip is now ready to compute.
+Assert `ub_rd_start_in=1`, `ub_ptr_select=1` (weights). The UB streams weight data to the top of the systolic array. PEs store received weights into `weight_reg_inactive`.
 
-**Step 4 — Stream inputs**  
-The UB streams the (staggered, rotated) input matrix to the left side of the systolic array. Each PE multiplies and accumulates. After a few cycles, the bottom row outputs the complete dot-product results.
+### Step 3 � Activate weights
 
-**Step 5 — VPU forward pass**  
-The systolic output flows into the VPU. Bias is added, then Leaky ReLU is applied. The result $H$ is written back to the UB.
+Assert `sys_switch_in=1` for one cycle. All PEs copy `weight_reg_inactive` ? `weight_reg_active`. The chip is now ready to compute.
 
-**Step 6 — Compute loss gradient**  
-The output layer runs in transition mode. The loss module receives $H$ and the true labels $Y$, computes $\frac{2}{N}(H-Y)$, and passes that gradient to the ReLU derivative.
+### Step 4 � Forward pass (hidden layer)
 
-**Step 7 — Backpropagate**  
-For each hidden layer (backward), the systolic array is re-used with transposed weights. Gradients flow through the ReLU derivative module and are written back to the UB.
+Assert reads for inputs (`ptr_select=0`) and biases (`ptr_select=2`). Set `vpu_data_pathway=4'b1100`. The UB streams the staggered input rows into the systolic array. MAC results flow to the VPU; bias is added; Leaky ReLU fires; $H$ is written back to UB.
 
-**Step 8 — Update weights**  
-The gradient descent modules inside the UB receive the gradients and immediately compute $W_{\text{new}} = W_{\text{old}} - \alpha \cdot \nabla W$, overwriting the old values in memory.
+### Step 5 � Transition pass (output layer)
 
-**Step 9 — Repeat**  
-The next training iteration restarts from Step 2 with the new weights.
+Set `vpu_data_pathway=4'b1111`. Assert reads for second-layer inputs, biases, and Y labels. The full pipeline runs: forward then immediately backprop. The gradient $\delta$ is written to UB. Gradient descent updates weights.
+
+### Step 6 � Backward pass (hidden layer)
+
+Set `vpu_data_pathway=4'b0001`. Load the **transposed** hidden-layer weights. Stream the $\delta$ values as "inputs" to the systolic array. Systolic computes $W^T \cdot \delta$; LRD applies the chain rule using stored $H$. Gradient descent updates hidden layer weights and biases.
+
+### Step 7 � Repeat
+
+The next training iteration begins from Step 4 (weights already loaded) or Step 2 (if freshly updated weights need reloading).
 
 ---
 
 ## 12. File Map
 
-| File | What it is |
-|------|-----------|
-| `src/pe.sv` | Single multiply-accumulate unit |
-| `src/systolic.sv` | 2×2 grid of PEs for matrix multiply |
-| `src/unified_buffer.sv` | On-chip RAM + gradient descent |
-| `src/gradient_descent.sv` | Weight update: $W = W - \alpha\nabla W$ |
-| `src/vpu.sv` | Pipeline of post-processing stages |
-| `src/bias_parent.sv` / `bias_child.sv` | Adds bias vector to dot products |
-| `src/leaky_relu_parent.sv` / `leaky_relu_child.sv` | Leaky ReLU activation |
-| `src/leaky_relu_derivative_parent.sv` / `leaky_relu_derivative_child.sv` | Backprop through Leaky ReLU |
-| `src/loss_parent.sv` / `loss_child.sv` | MSE gradient: $\frac{2}{N}(H-Y)$ |
-| `src/control_unit.sv` | Decodes 88-bit instruction word into control signals |
-| `src/tpu.sv` | Top-level: wires every module together |
-| `src/fixedpoint.sv` | Library of fixed-point math operations |
+| File | Role |
+|------|------|
+| `src/fixedpoint.sv` | Q8.8 arithmetic library (`fxp_add`, `fxp_addsub`, `fxp_mul`, `fxp_zoom`) |
+| `src/pe.sv` | Single MAC unit � the fundamental compute cell |
+| `src/systolic.sv` | 2�2 grid of PEs performing matrix multiply |
+| `src/bias_child.sv` | Adds one bias scalar to one column |
+| `src/bias_parent.sv` | Wraps two `bias_child` instances (both columns) |
+| `src/leaky_relu_child.sv` | Leaky ReLU activation for one column |
+| `src/leaky_relu_parent.sv` | Wraps two `leaky_relu_child` instances |
+| `src/leaky_relu_derivative_child.sv` | Backprop chain-rule through LReLU, one column |
+| `src/leaky_relu_derivative_parent.sv` | Wraps two derivative child instances |
+| `src/loss_child.sv` | MSE gradient $(2/N)(H-Y)$ for one column |
+| `src/loss_parent.sv` | Wraps two `loss_child` instances |
+| `src/gradient_descent.sv` | Weight update: $W_{\text{new}} = W_{\text{old}} - \alpha \nabla W$ |
+| `src/control_unit.sv` | Decodes 130-bit instruction into named control signals |
+| `src/vpu.sv` | Configurable pipeline: Bias ? LReLU ? Loss ? LRD |
+| `src/unified_buffer.sv` | 128-word on-chip RAM + gradient descent integration |
+| `src/tpu.sv` | Top-level: instantiates and wires all modules together |

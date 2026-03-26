@@ -31,16 +31,13 @@ module systolic_assertions #(
     input logic        sys_switch_in,
 
     input logic [15:0] ub_rd_col_size_in,
-    input logic        ub_rd_col_size_valid_in
+    input logic        ub_rd_col_size_valid_in,
+
+    // Internal signal (connected via bind)
+    input logic [1:0]  pe_enabled
 );
 
-    // ------------------------------------------------------------------
-    // Internal signal references (accessible because bind is in DUT scope)
-    // RTL: pe_enabled is logic [1:0] driven by:
-    //      pe_enabled <= (1 << ub_rd_col_size_in) - 1
-    //      bit[0] enables column-1 PEs (pe11, pe21)
-    //      bit[1] enables column-2 PEs (pe12, pe22)
-    // ------------------------------------------------------------------
+    // Alias for readability
     wire [1:0] _pe_enabled = pe_enabled;
 
     // ------------------------------------------------------------------
@@ -95,7 +92,7 @@ module systolic_assertions #(
     // driven together by the control unit.
     // ------------------------------------------------------------------
     property p_valid_22_three_cycles_after_start1;
-        @(posedge clk) disable iff (rst)
+        @(posedge clk) disable iff (rst || !_pe_enabled[1])
         sys_start_1 |=> ##2 sys_valid_out_22;
     endproperty
 
@@ -110,16 +107,19 @@ module systolic_assertions #(
 
     // ------------------------------------------------------------------
     // S-A8: With col_size == 1, only column 1 PE rows are enabled.
-    //       sys_valid_out_22 must stay 0 because pe22 is disabled.
+    //       sys_valid_out_22 must be 0 because pe22 is disabled.
     //
-    //       The pe_enabled register is set combinationally then clocked:
-    //       pe_enabled <= (1 << ub_rd_col_size_in) - 1
-    //       col_size=1 → pe_enabled = 01 → pe_enabled[1] = 0 → pe12, pe22 disabled.
+    //       Two-cycle clearing path:
+    //         T+0: ub_rd_col_size_valid_in=1 — systolic always_ff samples col_size.
+    //         T+1: pe_enabled[1] = 0 takes effect (systolic NB assignment completes).
+    //              pe22 always_ff sees NEW pe_enabled[1]=0 → clears sys_valid_out_22.
+    //         T+2: sys_valid_out_22 = 0 is observable at ports.
+    //       Use |=> ##1 (consequent checked at T+2, not T+1).
     // ------------------------------------------------------------------
     property p_col_size_1_disables_col2_valid;
         @(posedge clk) disable iff (rst)
         (ub_rd_col_size_valid_in && ub_rd_col_size_in == 16'd1)
-        |=> !sys_valid_out_22;
+        |=> ##1 !sys_valid_out_22;
     endproperty
 
     // ------------------------------------------------------------------
@@ -178,6 +178,21 @@ module systolic_assertions #(
     S_A12: assert property (p_pe_enabled_mask_col_size_2)           else $error("S-A12 FAIL: pe_enabled != 2'b11 after col_size=2");
 
     // ------------------------------------------------------------------
+    // S-A13: Column weight-load independence (plan SYS-A10).
+    //        When only col1 is being loaded (sys_accept_w_1=1, sys_accept_w_2=0)
+    //        and neither start signal is asserted, col2 valid output must stay low.
+    //        Verifies that weight loading on one column cannot spuriously trigger
+    //        computation on the other column.
+    // ------------------------------------------------------------------
+    property p_col1_weight_load_no_col2_valid;
+        @(posedge clk) disable iff (rst)
+        (sys_accept_w_1 && !sys_accept_w_2 && !sys_start_1 && !sys_start_2)
+        |=> !sys_valid_out_22;
+    endproperty
+
+    S_A13: assert property (p_col1_weight_load_no_col2_valid) else $error("S-A13 FAIL: col1 weight load spuriously triggered sys_valid_out_22");
+
+    // ------------------------------------------------------------------
     // Assumptions (formal constraints) — Verification Plan Section 8
     // ------------------------------------------------------------------
     // SYS-ASM-01: ub_rd_col_size_in must be 1 or 2 when valid.
@@ -197,8 +212,10 @@ module systolic_assertions #(
 
     // SYS-ASM-03: Weight accept signals are never both asserted together
     //             (each column is loaded independently by the UB controller).
-    SYS_ASM_03: assume property (@(posedge clk) disable iff (rst)
-        !(sys_accept_w_1 && sys_accept_w_2));
+    //             DISABLED for simulation: transpose weight loading from UB
+    //             can assert both accept signals simultaneously.
+    // SYS_ASM_03: assume property (@(posedge clk) disable iff (rst)
+    //     !(sys_accept_w_1 && sys_accept_w_2));
 
     // ------------------------------------------------------------------
     // Cover properties

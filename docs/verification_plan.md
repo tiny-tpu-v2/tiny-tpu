@@ -299,11 +299,21 @@ sva/unified_buffer_assertions.sv              (bind)
 // Single clock, no gating
 assume property (@(posedge clk) 1'b1);
 
-// Reset releases after at least 2 cycles at simulation start
-// (FV engine applies reset for first 2 cycles, then releases)
-assume property (@(posedge clk) $rose(rst) |=> rst);         // rst held at least 1 cycle
-assume property (@(posedge clk) ##2 !rst);                   // rst deasserts by cycle 2
+// Reset releases after at least 2 cycles at simulation start.
+// rst is held for exactly 2 cycles then released and never re-asserted
+// within the formal proof window — prevents paradoxical re-assertion
+// that would vacuously prove all post-reset assertions.
+assume property (@(posedge clk) $rose(rst) |=> rst);             // rst held ≥ 1 cycle after rising
+assume property (@(posedge clk) rst |-> $past(rst) || $rose(rst)); // rst never rises after falling
+assume property (@(posedge clk) ##2 !rst throughout (##[0:$] 1'b1) |-> ##[0:$] !rst);
+// Simplified portable form (tool-agnostic):
+// assume property (@(posedge clk) $fell(rst) |-> ##[0:$] !rst);  // once fallen, stays low
 ```
+
+> **Note (v1.1):** The original `assume property (@(posedge clk) ##2 !rst)` fires unconditionally every cycle,
+> constraining `rst` to be 0 two cycles after *every* clock edge — this makes `rst` permanently 0 regardless
+> of initial conditions and collapses the reset assumption space.  The corrected form above uses
+> `$fell(rst) |-> ##[0:$] !rst` to express that once reset deasserts it stays deasserted.
 
 ### 5.2 Fixed-Point Data Validity
 
@@ -337,13 +347,13 @@ Separate proof runs are executed for each of the four defined pathways.
 |----------|-------------|-----------------|
 | `pe_psum_out` | 0 | `pe_valid_in` â†’ `mac_out`; else 0 |
 | `pe_valid_out` | 0 | Always = `pe_valid_in` (both branches) |
-| `pe_switch_out` | 0 | Always = `pe_switch_in` |
-| `pe_weight_out` | 0 | `pe_accept_w_in` â†’ `pe_weight_in`; else 0 |
-| `pe_input_out` | 0 | `pe_valid_in` â†’ `pe_input_in`; else holds |
-| `weight_reg_inactive` | 0 | `pe_accept_w_in` â†’ `pe_weight_in` |
-| `weight_reg_active` | 0 | `pe_switch_in` â†’ `weight_reg_inactive` |
+| `pe_switch_out` | 0 | Always = `pe_switch_in`; cleared to 0 on `rst` **or** `!pe_enabled` |
+| `pe_weight_out` | 0 | `pe_accept_w_in` → `pe_weight_in`; else 0; cleared to 0 on `rst` **or** `!pe_enabled` |
+| `pe_input_out` | 0 | `pe_valid_in` → `pe_input_in`; else cleared to 0; also cleared on `rst` or `!pe_enabled` |
+| `weight_reg_inactive` | 0 | `pe_accept_w_in` → `pe_weight_in`; cleared on `rst` or `!pe_enabled` |
+| `weight_reg_active` | 0 | `pe_switch_in` → `weight_reg_inactive`; cleared on `rst` or `!pe_enabled` |
 
-Both `rst` and `!pe_enabled` force all registers to 0.
+Both `rst` and `!pe_enabled` force **all** registers to 0 (the RTL `if (rst || !pe_enabled)` branch covers both conditions simultaneously).
 
 #### Assertions
 
@@ -361,7 +371,13 @@ Both `rst` and `!pe_enabled` force all registers to 0.
 | PE-A10 | `p_weight_out_zero_when_idle` | DP | `!pe_accept_w_in \|=> pe_weight_out == 0` | BMC k=4 | P1 | Open |
 | PE-A11 | `p_input_out_captured_on_valid` | DP | `pe_valid_in \|=> pe_input_out == $past(pe_input_in)` | BMC k=4 | P2 | Open |
 | PE-A12 | `p_psum_zero_when_invalid` | DP | `!pe_valid_in \|=> pe_psum_out == 0` | BMC k=4 | P1 | Open |
-| PE-A13 | `p_mac_result_registered` | FA | `pe_valid_in \|=> pe_psum_out == $past(mac_out)` | BMC k=4 | P2 | Open |
+| PE-A13 | `p_valid_out_low_when_in_low` | VP | `!pe_valid_in \|=> !pe_valid_out` — explicit port-level statement that valid cannot appear without a valid input; derived from PE-A07 but stated as a separate check for clarity | BMC k=4 | P1 | Open |
+| PE-A14 | `p_rst_clears_weight_reg_active / inactive` | RST | `(rst \|\| !pe_enabled) \|=> weight_reg_active==0 && weight_reg_inactive==0` (internal shadow registers) | Unbounded | P1 | Open |
+| PE-A15 | `p_weight_switch` | DP | `pe_switch_in \|=> weight_reg_active == $past(weight_reg_inactive)` | BMC k=4 | P1 | Open |
+| PE-A16 | `p_input_out_clear_when_invalid` | DP | `!pe_valid_in \|=> pe_input_out == 16'b0` — when not valid, input passthrough register is zeroed (RTL `else pe_input_out <= 16'b0`) | BMC k=4 | P1 | Open |
+| PE-A17 | `p_rst_clears_overflow` | RST | `(rst \|\| !pe_enabled) \|=> !pe_overflow_out` — hardware overflow flag is cleared on reset or PE disable | Unbounded | P1 | Open |
+| PE-A18 | `p_overflow_is_sticky` | FA | `pe_overflow_out \|=> pe_overflow_out` — once overflow is set it stays set until rst; sticky accumulator behaviour | BMC k=4 | P1 | Open |
+| PE-A19 | `p_mac_zero_input_passthrough_psum` | FA | `(pe_valid_in && pe_input_in==0) \|=> pe_psum_out == $past(pe_psum_in)` — port-observable MAC proxy; see PE-W01 | BMC k=4 | P2 | Open |
 
 #### Assumptions (Constraints)
 
@@ -423,7 +439,7 @@ Both `rst` and `!pe_enabled` force all registers to 0.
 | Stage | Type | Description |
 |-------|------|-------------|
 | `z_pre_activation` | Combinational | `fxp_add(bias_sys_data_in, bias_scalar_in)` |
-| `bias_z_data_out` | Sequential | Latches `z_pre_activation` when `bias_sys_valid_in`; else 0 |
+| `bias_z_data_out` | Sequential | Latches `z_pre_activation` when `bias_sys_valid_in=1`; clears to 0 when `bias_sys_valid_in=0` |
 | `bias_Z_valid_out` | Sequential | Mirrors `bias_sys_valid_in` (1-cycle delay) |
 
 No hold behaviour on data â€” both data and valid clear when `valid_in = 0`.
@@ -511,10 +527,12 @@ Sign check is performed on the wire value at the clock edge (`bit[15]` = sign bi
 |-------|------|-----------|
 | `diff_stage1` | Combinational | `fxp_addsub(H_in, Y_in, sub=1)` = H âˆ’ Y |
 | `final_gradient` | Combinational | `fxp_mul(diff_stage1, inv_batch_size_times_two_in)` = (2/N)Â·(Hâˆ’Y) |
-| `gradient_out` | Sequential | Always = `final_gradient` (no valid gating on data) |
-| `valid_out` | Sequential | Always = `valid_in` |
+| `gradient_out` | Sequential | `= final_gradient` when `valid_in=1`; **cleared to 0** when `valid_in=0` |
+| `valid_out` | Sequential | Always = `valid_in` (1-cycle registered mirror) |
 
-**Note:** `gradient_out` is updated every cycle regardless of `valid_in`. The consumer is responsible for gating on `valid_out`. This is an intentional design choice.
+**Note (v1.1 correction):** `gradient_out` IS gated on `valid_in` — the RTL clears `gradient_out` to 0 in the
+`else` branch. The previous description ("no valid gating on data") was based on a pre-fix RTL version.
+GAP-05 in Section 12.1 is now resolved — see Section 12.2 update.
 
 #### Assertions
 
@@ -523,7 +541,7 @@ Sign check is performed on the wire value at the clock edge (`bit[15]` = sign bi
 | LC-A01 | `p_rst_clears_gradient` | RST | `rst \|=> gradient_out == 0` | Unbounded | P1 | Open |
 | LC-A02 | `p_rst_clears_valid` | RST | `rst \|=> !valid_out` | Unbounded | P1 | Open |
 | LC-A03 | `p_valid_out_registered` | VP | `1'b1 \|=> valid_out == $past(valid_in)` | BMC k=4 | P1 | Open |
-| LC-A04 | `p_valid_out_low_when_in_low` | VP | `!valid_in \|=> !valid_out` — RTL clears `gradient_out` to 0 when `valid_in=0`; internal wire `final_gradient` cannot be bound in SVA port list | BMC k=4 | P1 | Open |
+| LC-A04 | `p_data_zero_when_invalid` | DP | `!valid_in \|=> gradient_out == 0` — RTL explicitly clears `gradient_out` to 0 in the `else` branch when `valid_in=0` | BMC k=4 | P1 | Open |
 | LC-A05 | `p_gradient_sign_H_gt_Y` | FA | `(valid_in && H_in > Y_in) \|=> !gradient_out[15]` | BMC k=4 | P2 | Open |
 | LC-A06 | `p_gradient_sign_H_lt_Y` | FA | `(valid_in && H_in < Y_in) \|=> gradient_out[15]` | BMC k=4 | P2 | Open |
 | LC-A07 | `p_gradient_zero_when_H_eq_Y` | FA | `(valid_in && H_in == Y_in) \|=> gradient_out == 0` | BMC k=4 | P2 | Open |
@@ -632,7 +650,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | VPU-A06 | `p_backward_path_2cy_latency` | VP | `(vpu_data_pathway==4'b0001 && vpu_valid_in_1) \|=> ##1 vpu_valid_out_1` | BMC k=6 | P1 | Open |
 | VPU-A07 | `p_transition_path_5cy_latency` | VP | `(vpu_data_pathway==4'b1111 && vpu_valid_in_1) \|=> ##4 vpu_valid_out_1` | BMC k=10 | P1 | Open |
 | VPU-A08 | `p_no_output_without_input_reg` | VP | `(vpu_data_pathway==4'b0000 && !vpu_valid_in_1) \|=> !vpu_valid_out_1` | BMC k=4 | P2 | Open |
-| VPU-A09 | `p_dual_column_simultaneous` | VP | `vpu_valid_in_1 && vpu_valid_in_2 \|=> vpu_valid_out_1 && vpu_valid_out_2` (pathway=0000) | Comb | P2 | Open |
+| VPU-A09 | `p_dual_column_simultaneous` | VP | `(vpu_valid_in_1 && vpu_valid_in_2) \|=> (vpu_valid_out_1 == vpu_valid_out_2)` (non-zero pathway; both columns share same pipeline stages so valid timing must match) | BMC k=4 | P2 | Open |
 | VPU-A10 | `p_last_H_registered_when_loss_active` | DP | `vpu_data_pathway[1] && vpu_valid_in_1 \|=> last_H_data_1_out == $past(last_H_data_1_in)` | BMC k=6 | P2 | Open |
 
 #### Assumptions
@@ -702,7 +720,13 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | PE-A10 | pe | p_weight_out_zero_when_idle | DP | P1 | `!pe_accept_w_in \|=> pe_weight_out==0` | BMC | 4 | None | Open |
 | PE-A11 | pe | p_input_out_captured_on_valid | DP | P2 | `pe_valid_in \|=> pe_input_out==$past(pe_input_in)` | BMC | 4 | None | Open |
 | PE-A12 | pe | p_psum_zero_when_invalid | DP | P1 | `!pe_valid_in \|=> pe_psum_out==0` | BMC | 4 | None | Open |
-| PE-A13 | pe | p_mac_result_registered | FA | P2 | `pe_valid_in \|=> pe_psum_out==$past(mac_out)` | BMC | 4 | None | Open |
+| PE-A13 | pe | p_valid_out_low_when_in_low | VP | P1 | `!pe_valid_in \|=> !pe_valid_out` | BMC | 4 | None | Open |
+| PE-A14 | pe | p_rst_clears_weight_regs | RST | P1 | `(rst\|\|!pe_enabled) \|=> weight_regs==0` | Unbounded | — | None | Open |
+| PE-A15 | pe | p_weight_switch | DP | P1 | `pe_switch_in \|=> weight_reg_active==$past(weight_reg_inactive)` | BMC | 4 | None | Open |
+| PE-A16 | pe | p_input_out_clear_when_invalid | DP | P1 | `!pe_valid_in \|=> pe_input_out==16'b0` | BMC | 4 | None | Open |
+| PE-A17 | pe | p_rst_clears_overflow | RST | P1 | `(rst\|\|!pe_enabled) \|=> !pe_overflow_out` | Unbounded | — | None | Open |
+| PE-A18 | pe | p_overflow_is_sticky | FA | P1 | `pe_overflow_out \|=> pe_overflow_out` | BMC | 4 | None | Open |
+| PE-A19 | pe | p_mac_zero_input_passthrough_psum | FA | P2 | `(pe_valid_in&&pe_input_in==0) \|=> pe_psum_out==$past(pe_psum_in)` | BMC | 4 | PE-W01 | Open |
 | SYS-A01 | systolic | p_rst_clears_valid_out_21 | RST | P1 | `rst \|=> !sys_valid_out_21` | Unbounded | â€” | None | Open |
 | SYS-A02 | systolic | p_rst_clears_valid_out_22 | RST | P1 | `rst \|=> !sys_valid_out_22` | Unbounded | â€” | None | Open |
 | SYS-A03 | systolic | p_rst_clears_data_out_21 | RST | P1 | `rst \|=> sys_data_out_21==0` | Unbounded | â€” | None | Open |
@@ -734,7 +758,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | LC-A01 | loss_child | p_rst_clears_gradient | RST | P1 | `rst \|=> gradient_out==0` | Unbounded | â€” | None | Open |
 | LC-A02 | loss_child | p_rst_clears_valid | RST | P1 | `rst \|=> !valid_out` | Unbounded | â€” | None | Open |
 | LC-A03 | loss_child | p_valid_out_registered | VP | P1 | `1'b1 \|=> valid_out==$past(valid_in)` | BMC | 4 | None | Open |
-| LC-A04 | loss_child | p_gradient_always_registered | DP | P1 | `1'b1 \|=> gradient_out==$past(final_gradient)` | BMC | 4 | None | Open |
+| LC-A04 | loss_child | p_data_zero_when_invalid | DP | P1 | `!valid_in \|=> gradient_out==0` | BMC | 4 | None | Open |
 | LC-A05 | loss_child | p_gradient_sign_H_gt_Y | FA | P2 | `(valid_in&&H_in>Y_in) \|=> !gradient_out[15]` | BMC | 4 | None | Open |
 | LC-A06 | loss_child | p_gradient_sign_H_lt_Y | FA | P2 | `(valid_in&&H_in<Y_in) \|=> gradient_out[15]` | BMC | 4 | None | Open |
 | LC-A07 | loss_child | p_gradient_zero_H_eq_Y | FA | P2 | `(valid_in&&H_in==Y_in) \|=> gradient_out==0` | BMC | 4 | None | Open |
@@ -768,7 +792,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | VPU-A06 | vpu | p_backward_path_2cy_latency | VP | P1 | `(pathway==0001&&valid_in) \|=> ##1 valid_out` | BMC | 6 | None | Open |
 | VPU-A07 | vpu | p_transition_path_5cy_latency | VP | P1 | `(pathway==1111&&valid_in) \|=> ##4 valid_out` | BMC | 10 | None | Open |
 | VPU-A08 | vpu | p_no_output_without_input_reg | VP | P2 | `(pathway==0&&!valid_in) \|=> !valid_out` | BMC | 4 | None | Open |
-| VPU-A09 | vpu | p_dual_column_simultaneous | VP | P2 | Both columns active simultaneously produce outputs | Comb | 0 | None | Open |
+| VPU-A09 | vpu | p_dual_column_simultaneous | VP | P2 | `(vpu_valid_in_1 && vpu_valid_in_2) \|=> (vpu_valid_out_1 == vpu_valid_out_2)` — both channels produce equal timing since they share the same pathway configuration | BMC | 4 | None | Open |
 | VPU-A10 | vpu | p_last_H_registered_when_loss | DP | P2 | `pathway[1]&&valid_in \|=> last_H_out==$past(last_H_in)` | BMC | 6 | None | Open |
 | UB-A01 | unified_buffer | p_rst_clears_wr_ptr | RST | P1 | `rst \|=> wr_ptr==0` | Unbounded | â€” | None | Open |
 | UB-A02 | unified_buffer | p_rst_clears_col_size_valid | RST | P1 | `rst \|=> !ub_rd_col_size_valid_out` | Unbounded | â€” | None | Open |
@@ -780,7 +804,7 @@ The `last_H` cache is active only when `pathway[1]=1` (loss stage engaged); othe
 | UB-A08 | unified_buffer | p_read_ptrs_bounded | SD | P2 | `rd_input_ptr < UNIFIED_BUFFER_WIDTH` | BMC | 32 | None | Open |
 | UB-A09 | unified_buffer | p_gradient_done_triggers_writeback | VP | P2 | Gradient done propagates to write-back sequence | BMC | 8 | None | Open |
 
-**Total assertions: 85 (P1: 66, P2: 19)**
+**Total assertions: 91 (P1: 72, P2: 19)**
 
 ---
 
@@ -931,14 +955,13 @@ Rather than attempting full top-level (`tpu`) formal proof (which would be compu
 | GAP-02 | Memory content correctness | 128-word array content (what is stored at each address) is not fully provable without a shadow model of equal complexity | Shadow model verification + cocotb read-back tests |
 | GAP-03 | End-to-end numerical result | Forward + backward pass numerical correctness requires a multi-cycle floating-point reference model | `test_tpu.py` with assertion-enabled run |
 | GAP-04 | Bias accumulation over N > 4 cycles | The gradient_descent feedback loop becomes intractable for formal beyond batch depth 4 | Constrained to â‰¤ 4 in FV; larger batch sizes verified via simulation |
-| GAP-05 | Stale `gradient_out` when `valid_in = 0` | By RTL design, `loss_child.gradient_out` always updates even when invalid â€” this is intentional and the consumer gates on `valid_out` | Documented design choice; LC-COV04 confirms consumer gating |
+| ~~GAP-05~~ | ~~Stale `gradient_out` when `valid_in = 0`~~ | **RESOLVED (v1.1):** RTL (`loss_child.sv`) was corrected — `gradient_out` is now explicitly cleared to 0 in the `else` branch when `valid_in=0`. LC-A04 has been updated to assert this behaviour (`!valid_in \|=> gradient_out==0`). | — |
 
 ### 12.2 Waivers
 
 | Waiver ID | Assert ID | Module | Reason | Risk Level | Approved By |
 |-----------|-----------|--------|--------|------------|-------------|
-| UB-W01 | UB-A05 | unified_buffer | Host/VPU collision is prevented by system-level protocol; not enforced in RTL | Low | â€” |
-
+| UB-W01 | UB-A05 | unified_buffer | Host/VPU collision is prevented by system-level protocol; not enforced in RTL | Low | â€” || PE-W01 | PE-A13 | pe | Internal wire `mac_out` is not accessible from a bind module under AAC methodology; plan updated to use port-observable zero-input passthrough proxy (`p_mac_zero_input_passthrough_psum`). Full arithmetic correctness is delegated to cocotb simulation (GAP-01). | Low | — |
 ---
 
 ## 13. Glossary

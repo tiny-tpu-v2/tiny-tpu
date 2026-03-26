@@ -98,6 +98,26 @@ module leaky_relu_child_assertions (
     LR_A7: assert property (p_zero_input_zero_output)        else $error("LR-A7 FAIL: zero input did not produce zero output");
 
     // ------------------------------------------------------------------
+    // LR-A8: Overflow flag is cleared on reset.
+    // RTL: if (rst) lr_overflow_out <= 1'b0;
+    // ------------------------------------------------------------------
+    property p_rst_clears_overflow;
+        @(posedge clk) rst |=> !lr_overflow_out;
+    endproperty
+
+    // ------------------------------------------------------------------
+    // LR-A9: Overflow flag is sticky — once set, stays set until rst.
+    // RTL: lr_overflow_out <= lr_overflow_out | mul_overflow;
+    // ------------------------------------------------------------------
+    property p_overflow_is_sticky;
+        @(posedge clk) disable iff (rst)
+        lr_overflow_out |=> lr_overflow_out;
+    endproperty
+
+    LR_A8: assert property (p_rst_clears_overflow)  else $error("LR-A8 FAIL: rst did not clear lr_overflow_out");
+    LR_A9: assert property (p_overflow_is_sticky)    else $error("LR-A9 FAIL: lr_overflow_out dropped without rst");
+
+    // ------------------------------------------------------------------
     // Cover properties
     // ------------------------------------------------------------------
     LR_C1: cover property (@(posedge clk) disable iff (rst) lr_valid_in && !lr_data_in[15] && lr_data_in != 0); // positive path

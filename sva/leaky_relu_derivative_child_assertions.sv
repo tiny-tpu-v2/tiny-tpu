@@ -92,6 +92,26 @@ module leaky_relu_derivative_child_assertions (
     LRD_A6: assert property (p_zero_H_passes_gradient_through)   else $error("LRD-A6 FAIL: zero H did not pass gradient through");
 
     // ------------------------------------------------------------------
+    // LRD-A7: Overflow flag is cleared on reset.
+    // RTL: if (rst) lr_d_overflow_out <= 1'b0;
+    // ------------------------------------------------------------------
+    property p_rst_clears_overflow;
+        @(posedge clk) rst |=> !lr_d_overflow_out;
+    endproperty
+
+    // ------------------------------------------------------------------
+    // LRD-A8: Overflow flag is sticky — once set, stays set until rst.
+    // RTL: lr_d_overflow_out <= lr_d_overflow_out | mul_overflow;
+    // ------------------------------------------------------------------
+    property p_overflow_is_sticky;
+        @(posedge clk) disable iff (rst)
+        lr_d_overflow_out |=> lr_d_overflow_out;
+    endproperty
+
+    LRD_A7: assert property (p_rst_clears_overflow)  else $error("LRD-A7 FAIL: rst did not clear lr_d_overflow_out");
+    LRD_A8: assert property (p_overflow_is_sticky)    else $error("LRD-A8 FAIL: lr_d_overflow_out dropped without rst");
+
+    // ------------------------------------------------------------------
     // Cover properties
     // ------------------------------------------------------------------
     LRD_C1: cover property (@(posedge clk) disable iff (rst) lr_d_valid_in && !lr_d_H_data_in[15] && lr_d_H_data_in != 0); // H > 0: passthrough

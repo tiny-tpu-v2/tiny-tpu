@@ -46,7 +46,7 @@ module gradient_descent_assertions (
     endproperty
 
     // ------------------------------------------------------------------
-    // GD-A4: REMOVED — invalid after BUG-GD-1 fix.
+    // GD-A4: REPLACED — original assertion was invalid after BUG-GD-1 fix.
     //
     // The original assertion was:
     //   !grad_descent_valid_in |=> (value_updated_out == 16'b0)
@@ -76,9 +76,11 @@ module gradient_descent_assertions (
 
     // ------------------------------------------------------------------
     // GD-A6: not done implies valid was NOT set last cycle.
+    //        Guard with $past(rst) to prevent $past() from returning X on
+    //        the first active clock edge after reset.
     // ------------------------------------------------------------------
     property p_not_done_implies_valid_was_clear;
-        @(posedge clk) disable iff (rst)
+        @(posedge clk) disable iff (rst || $past(rst))
         !grad_descent_done_out |-> !$past(grad_descent_valid_in);
     endproperty
 
@@ -92,8 +94,10 @@ module gradient_descent_assertions (
     property p_weight_mode_produces_output_when_valid;
         @(posedge clk) disable iff (rst)
         (grad_descent_valid_in && grad_bias_or_weight
-         && value_old_in != 16'b0 && grad_in != 16'b0 && lr_in != 16'b0)
-        |=> (value_updated_out != 16'b0);
+         && value_old_in[15]                           // negative old weight
+         && !grad_in[15] && grad_in != 16'b0           // positive gradient → grad*lr > 0
+         && !lr_in[15]   && lr_in   != 16'b0)          // positive learning rate
+        |=> (value_updated_out != 16'b0);              // negative - positive ≠ 0
     endproperty
 
     // ------------------------------------------------------------------
@@ -105,7 +109,7 @@ module gradient_descent_assertions (
         @(posedge clk) disable iff (rst)
         (grad_descent_valid_in && grad_bias_or_weight
          && !grad_in[15] && !lr_in[15])   // both positive
-        |=> ($signed(value_updated_out) < $signed($past(value_old_in)));
+        |=> ($signed(value_updated_out) <= $signed($past(value_old_in)));  // <= not < : grad*lr may round to 0 in Q8.8
     endproperty
 
     // ------------------------------------------------------------------
@@ -118,7 +122,27 @@ module gradient_descent_assertions (
     GD_A5: assert property (p_done_implies_valid_was_set)              else $error("GD-A5 FAIL: done=1 but valid_in was 0 last cycle");
     GD_A6: assert property (p_not_done_implies_valid_was_clear)        else $error("GD-A6 FAIL: done=0 but valid_in was 1 last cycle");
     GD_A7: assert property (p_weight_mode_produces_output_when_valid)  else $error("GD-A7 FAIL: weight mode output is 0 with non-zero inputs");
-    GD_A8: assert property (p_weight_mode_descent_direction)           else $error("GD-A8 FAIL: weight update did not decrease the weight (wrong direction)");
+    GD_A8: assert property (p_weight_mode_descent_direction)           else $error("GD-A8 FAIL: weight update increased the weight (wrong direction — output > old value)");
+
+    // ------------------------------------------------------------------
+    // GD-A9: Overflow flag is cleared on reset.
+    // RTL: if (rst) grad_overflow_out <= '0;
+    // ------------------------------------------------------------------
+    property p_rst_clears_overflow;
+        @(posedge clk) rst |=> !grad_overflow_out;
+    endproperty
+
+    // ------------------------------------------------------------------
+    // GD-A10: Overflow flag is sticky — once set, stays set until rst.
+    // RTL: grad_overflow_out <= grad_overflow_out | mul_overflow | sub_overflow;
+    // ------------------------------------------------------------------
+    property p_overflow_is_sticky;
+        @(posedge clk) disable iff (rst)
+        grad_overflow_out |=> grad_overflow_out;
+    endproperty
+
+    GD_A9:  assert property (p_rst_clears_overflow)  else $error("GD-A9  FAIL: rst did not clear grad_overflow_out");
+    GD_A10: assert property (p_overflow_is_sticky)    else $error("GD-A10 FAIL: grad_overflow_out dropped without rst");
 
     // ------------------------------------------------------------------
     // Assumptions (formal constraints) — Verification Plan Section 8
@@ -144,8 +168,10 @@ module gradient_descent_assertions (
 
     // GD-ASM-04: Learning rate is always positive (non-zero, sign bit clear).
     //            Negative LR is undefined behaviour for gradient descent.
-    GD_ASM_04: assume property (@(posedge clk) disable iff (rst)
-        !lr_in[15] && lr_in != 16'b0);
+    //            DISABLED for simulation: fires before learning rate is loaded
+    //            by the testbench (lr_in = 0 right after reset deasserts).
+    // GD_ASM_04: assume property (@(posedge clk) disable iff (rst)
+    //     !lr_in[15] && lr_in != 16'b0);
 
     // ------------------------------------------------------------------
     // Cover properties
@@ -154,5 +180,6 @@ module gradient_descent_assertions (
     GD_C2: cover property (@(posedge clk) disable iff (rst) grad_descent_valid_in && !grad_bias_or_weight);  // bias mode
     GD_C3: cover property (@(posedge clk) disable iff (rst) // bias mode accumulation (done cascades into next cycle)
                            !grad_bias_or_weight && grad_descent_done_out && grad_descent_valid_in);
+    GD_C4: cover property (@(posedge clk) disable iff (rst) $fell(grad_descent_valid_in));  // valid deasserted after a run (plan GD-COV03)
 
 endmodule

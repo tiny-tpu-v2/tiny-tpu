@@ -33,15 +33,14 @@ module vpu_assertions (
     input logic signed [15:0] vpu_data_out_1,
     input logic signed [15:0] vpu_data_out_2,
     input logic               vpu_valid_out_1,
-    input logic               vpu_valid_out_2
+    input logic               vpu_valid_out_2,
+
+    // Internal signals (connected via bind)
+    input logic signed [15:0] last_H_data_1_out,
+    input logic signed [15:0] last_H_data_2_out
 );
 
-    // ------------------------------------------------------------------
-    // Internal signal references (accessible because bind is in DUT scope)
-    // RTL: last_H_data_1_out / last_H_data_2_out are the output-side
-    //      registers of the last-H cache, driven by the sequential block
-    //      in vpu.sv (around line 340-349).
-    // ------------------------------------------------------------------
+    // Aliases for readability
     wire signed [15:0] _last_H_data_1_out = last_H_data_1_out;
     wire signed [15:0] _last_H_data_2_out = last_H_data_2_out;
 
@@ -140,8 +139,13 @@ module vpu_assertions (
 
     // ------------------------------------------------------------------
     // VPU-A9: Column symmetry — both channels produce equal valid timing.
-    //         When both inputs are driven simultaneously, both outputs
-    //         become valid at the same cycle.
+    //         When both inputs are driven simultaneously and a non-zero
+    //         pathway is active, both outputs must reach valid in the same
+    //         cycle (channels share the same pipeline stages).
+    //         Plan (v1.1): Proof type BMC k=4 (was incorrectly listed as
+    //         Comb k=0 — |=> is a sequential operator requiring k ≥ 1).
+    //         Constrained to non-zero pathway; antecedent guards both inputs
+    //         active simultaneously.
     // ------------------------------------------------------------------
     property p_both_columns_valid_together;
         @(posedge clk) disable iff (rst)
@@ -184,12 +188,20 @@ module vpu_assertions (
     // ------------------------------------------------------------------
     // VPU-A13: When the loss stage is active (pathway[1]=1), the
     //          last-H cache captures lr_data_out (last_H_data_*_in) each cycle.
-    //          We assert that the VPU output is non-trivially exercised (liveness).
+    //          Pipeline latency: bias(+1) + leaky_relu(+1) + register(+1) = 3 cycles
+    //          before lr_data_out produces non-zero output from new valid input.
+    //          Check at ##2 (T+3 from antecedent) to allow pipeline fill.
+    //          Guard: positive non-zero input + non-negative bias guarantees
+    //          a positive (non-zero) H after leaky_relu (positive passthrough path).
+    //          Original had no input guard — fired spuriously when input was zero
+    //          or when negative bias cancelled a positive input to zero.
     // ------------------------------------------------------------------
     property p_last_H_registers_when_loss_active;
         @(posedge clk) disable iff (rst)
-        (vpu_data_pathway[1] && vpu_valid_in_1)
-        |=> (_last_H_data_1_out != 16'b0 || _last_H_data_2_out != 16'b0);
+        (vpu_data_pathway[1] && vpu_valid_in_1
+         && !vpu_data_in_1[15] && vpu_data_in_1 != 16'b0  // positive non-zero input
+         && !bias_scalar_in_1[15])                          // non-negative bias: sum stays positive
+        |=> ##2 _last_H_data_1_out != 16'b0;               // H-cache captures non-zero ReLU output
     endproperty
 
     // ------------------------------------------------------------------
@@ -199,11 +211,11 @@ module vpu_assertions (
     VPU_A2:  assert property (p_rst_clears_data_out)                   else $error("VPU-A2  FAIL: rst did not clear vpu_data_out");
     VPU_A3:  assert property (p_zero_pathway_valid_passthrough)        else $error("VPU-A3  FAIL: zero pathway valid not passed through combinationally");
     VPU_A4:  assert property (p_zero_pathway_data_passthrough)         else $error("VPU-A4  FAIL: zero pathway data not passed through combinationally");
-    VPU_A5:  assert property (p_forward_path_two_cycle_latency)        else $error("VPU-A5  FAIL: forward path (1100) latency != 2 cycles");
-    VPU_A6:  assert property (p_backward_path_one_cycle_latency)       else $error("VPU-A6  FAIL: backward path (0001) latency != 1 cycle");
+    VPU_A5:  assert property (p_forward_path_two_cycle_latency)        else $error("VPU-A5  FAIL: forward path (1100) valid_out not asserted 3 cycles after valid_in (|=> ##2 = T+3)");
+    VPU_A6:  assert property (p_backward_path_one_cycle_latency)       else $error("VPU-A6  FAIL: backward path (0001) valid_out not asserted 2 cycles after valid_in (|=> ##1 = T+2)");
     VPU_A7:  assert property (p_transition_path_four_cycle_latency)    else $error("VPU-A7  FAIL: transition path (1111) latency != 5 cycles");
     VPU_A8:  assert property (p_no_valid_out_zero_path_no_valid_in)    else $error("VPU-A8  FAIL: valid_out asserted with zero pathway and no valid_in");
-    VPU_A9:  assert property (p_both_columns_valid_together)           else $error("VPU-A9  FAIL: columns did not become valid at the same cycle");
+    VPU_A9:  assert property (p_both_columns_valid_together)           else $error("VPU-A9  FAIL: columns did not produce equal valid timing (plan v1.1: BMC k=4)");
     VPU_A10: assert property (p_valid_out_deasserts_after_in_drops_fwd) else $error("VPU-A10 FAIL: valid_out did not deassert after valid_in fell (fwd path)");
     VPU_A11: assert property (p_rst_clears_last_H_cache)               else $error("VPU-A11 FAIL: rst did not clear last_H cache outputs");
     VPU_A12: assert property (p_last_H_clears_when_loss_inactive)      else $error("VPU-A12 FAIL: last_H did not clear when pathway[1]=0");
