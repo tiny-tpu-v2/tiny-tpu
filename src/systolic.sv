@@ -11,7 +11,7 @@ module systolic #(
     // input signals from left side of systolic array
     input logic [15:0] sys_data_in_11,
     input logic [15:0] sys_data_in_21,
-    input logic sys_start_1,   // start signal for row 1 (BUG-SYS-2 fix: renamed and split)
+    input logic sys_start_1,   // start signal for row 1
     input logic sys_start_2,   // start signal for row 2 (independent channel timing)
 
     output logic [15:0] sys_data_out_21,
@@ -49,7 +49,7 @@ module systolic #(
     
     // valid_out for each PE (top to bottom)
     wire pe_valid_out_11;   // this wire will connect the valid signal from pe11 to pe12
-    wire pe_valid_out_12;   // this wire will connect the valid signal from pe12 to pe22 (BUG-COMMENT-FIX: was incorrectly labelled pe21→pe22)
+    wire pe_valid_out_12;   // connects valid signal from pe12 to pe22
 
     // PE columns to enable
     logic [1:0] pe_enabled;
@@ -72,7 +72,7 @@ module systolic #(
         .pe_input_out(pe_input_out_11),
         .pe_psum_out(pe_psum_out_11),
         .pe_weight_out(pe_weight_out_11),
-        .pe_overflow_out()  // BUG-OVF-1: observable via hierarchical reference
+        .pe_overflow_out()
     );
 
     pe pe12 (
@@ -93,7 +93,7 @@ module systolic #(
         .pe_input_out(),
         .pe_psum_out(pe_psum_out_12),
         .pe_weight_out(pe_weight_out_12),
-        .pe_overflow_out()  // BUG-OVF-1: observable via hierarchical reference
+        .pe_overflow_out()
     );
 
     pe pe21 (
@@ -101,7 +101,7 @@ module systolic #(
         .rst(rst),
         .pe_enabled(pe_enabled[0]),
 
-        .pe_valid_in(sys_start_2),   // BUG-SYS-2 fix: uses independent row-2 start signal
+        .pe_valid_in(sys_start_2),
         .pe_valid_out(sys_valid_out_21),
 
         .pe_accept_w_in(sys_accept_w_1),
@@ -114,7 +114,7 @@ module systolic #(
         .pe_input_out(pe_input_out_21),
         .pe_psum_out(sys_data_out_21),
         .pe_weight_out(),
-        .pe_overflow_out()  // BUG-OVF-1: observable via hierarchical reference
+        .pe_overflow_out()
     );
 
     pe pe22 ( // pe_valid_in comes from pe12 (same column), pe_enabled controlled by col_size
@@ -135,15 +135,14 @@ module systolic #(
         .pe_input_out(),
         .pe_psum_out(sys_data_out_22),
         .pe_weight_out(),
-        .pe_overflow_out()  // BUG-OVF-1: observable via hierarchical reference
+        .pe_overflow_out()
     );
 
-    always_ff @(posedge clk or posedge rst) begin  // BUG-SYS-3 fix: always_ff
+    always_ff @(posedge clk or posedge rst) begin
         if(rst) begin
             pe_enabled <= 2'b11;  // default all columns enabled; col_size command overrides
         end else begin
             if(ub_rd_col_size_valid_in) begin
-                // BUG-SYS-1 fix: explicit case prevents silent overflow/underflow
                 case (ub_rd_col_size_in[1:0])
                     2'd1:    pe_enabled <= 2'b01;
                     2'd2:    pe_enabled <= 2'b11;

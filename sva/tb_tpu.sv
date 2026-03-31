@@ -186,16 +186,16 @@ module tb_tpu;
         @(posedge clk);
 
         // W1[1][0], W1[0][1]
-        ub_wr_host_data_in[0]  <= to_fixed(0.0913);  // W1[1][0]
+        ub_wr_host_data_in[0]  <= to_fixed(-0.35);   // W1[1][0] — negative so col-2 pre-bias output is negative for x=[1,0], exercising BC_C2/LR_C2 on column_2
         ub_wr_host_valid_in[0] <= 1;
         ub_wr_host_data_in[1]  <= to_fixed(-0.5792); // W1[0][1]
         ub_wr_host_valid_in[1] <= 1;
         @(posedge clk);
 
         // B1[0], W1[1][1]
-        ub_wr_host_data_in[0]  <= to_fixed(-0.4939); // B1[0]
+        ub_wr_host_data_in[0]  <= to_fixed(0.25);    // B1[0] — positive to exercise BC_C2 (neg systolic + pos bias)
         ub_wr_host_valid_in[0] <= 1;
-        ub_wr_host_data_in[1]  <= to_fixed(0.4234);  // W1[1][1]
+        ub_wr_host_data_in[1]  <= to_fixed(-0.35);   // W1[1][1] — negative so column_2 systolic output is negative for x=[0,1],[1,0],[1,1], exercising BC_C2/LR_C2 on column_2
         ub_wr_host_valid_in[1] <= 1;
         @(posedge clk);
 
@@ -374,7 +374,9 @@ module tb_tpu;
         @(posedge clk);
 
         clear_ctrl();
-        @(negedge dut.vpu_valid_out_1);
+        // vpu_valid_out_1 never asserts during pathway=0001 (col_size=1 → sys_valid_out_21 never fires);
+        // replace the stalling negedge wait with a fixed delay to let the pipeline drain.
+        repeat(15) @(posedge clk);
 
         // ============================================================
         // Weight gradient W1 — tile 1
@@ -567,6 +569,34 @@ module tb_tpu;
         #50000;
         $display("===== TIMEOUT: simulation exceeded 50us =====");
         $finish;
+    end
+
+    // ── Cover diagnostics: monitor both column_1 AND column_2 of bias/lr/loss
+    always @(posedge clk) begin
+        if (!rst && dut.vpu_inst.bias_parent_inst.column_2.bias_sys_valid_in)
+            $display("[COL2-DIAG] BC2 @%0t: data=%h(%0d) scalar=%h(%0d) neg=%b posScalar=%b",
+                $time,
+                dut.vpu_inst.bias_parent_inst.column_2.bias_sys_data_in,
+                $signed(dut.vpu_inst.bias_parent_inst.column_2.bias_sys_data_in),
+                dut.vpu_inst.bias_parent_inst.column_2.bias_scalar_in,
+                $signed(dut.vpu_inst.bias_parent_inst.column_2.bias_scalar_in),
+                dut.vpu_inst.bias_parent_inst.column_2.bias_sys_data_in[15],
+                !dut.vpu_inst.bias_parent_inst.column_2.bias_scalar_in[15]);
+        if (!rst && dut.vpu_inst.leaky_relu_parent_inst.leaky_relu_col_2.lr_valid_in)
+            $display("[COL2-DIAG] LR2 @%0t: data=%h(%0d) neg=%b",
+                $time,
+                dut.vpu_inst.leaky_relu_parent_inst.leaky_relu_col_2.lr_data_in,
+                $signed(dut.vpu_inst.leaky_relu_parent_inst.leaky_relu_col_2.lr_data_in),
+                dut.vpu_inst.leaky_relu_parent_inst.leaky_relu_col_2.lr_data_in[15]);
+        if (!rst && dut.vpu_inst.loss_parent_inst.second_column.valid_in)
+            $display("[COL2-DIAG] LC2 @%0t: H=%h(%0d) Y=%h(%0d) H>Y=%b H<Y=%b",
+                $time,
+                dut.vpu_inst.loss_parent_inst.second_column.H_in,
+                $signed(dut.vpu_inst.loss_parent_inst.second_column.H_in),
+                dut.vpu_inst.loss_parent_inst.second_column.Y_in,
+                $signed(dut.vpu_inst.loss_parent_inst.second_column.Y_in),
+                $signed(dut.vpu_inst.loss_parent_inst.second_column.H_in) > $signed(dut.vpu_inst.loss_parent_inst.second_column.Y_in),
+                $signed(dut.vpu_inst.loss_parent_inst.second_column.H_in) < $signed(dut.vpu_inst.loss_parent_inst.second_column.Y_in));
     end
 
 endmodule

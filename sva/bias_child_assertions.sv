@@ -19,7 +19,7 @@ module bias_child_assertions (
 // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
     input logic               bias_Z_valid_out,
     input logic signed [15:0] bias_z_data_out,
-    input logic               bias_overflow_out  // BUG-OVF-1 sticky overflow flag
+    input logic               bias_overflow_out
 );
 
     // ------------------------------------------------------------------
@@ -35,8 +35,6 @@ module bias_child_assertions (
 
     // ------------------------------------------------------------------
     // BC-A3: bias_Z_valid_out is the registered version of bias_sys_valid_in.
-    // RTL:  if (bias_sys_valid_in) valid_out <= 1 ; else valid_out <= 0
-    //       → valid_out always equals $past(bias_sys_valid_in).
     // ------------------------------------------------------------------
     property p_valid_out_mirrors_valid_in;
         @(posedge clk) disable iff (rst)
@@ -45,7 +43,6 @@ module bias_child_assertions (
 
     // ------------------------------------------------------------------
     // BC-A4: When bias_sys_valid_in is low, bias_z_data_out == 0.
-    // RTL:  else branch assigns bias_z_data_out <= 16'b0 explicitly.
     // ------------------------------------------------------------------
     property p_data_zero_when_invalid;
         @(posedge clk) disable iff (rst)
@@ -55,8 +52,6 @@ module bias_child_assertions (
     // ------------------------------------------------------------------
     // BC-A5: When valid, output must be non-zero if both inputs are positive
     //        and non-zero.  Two positive Q8.8 values cannot sum to zero.
-    //        (Original guard used any non-zero inputs — wrong, because two
-    //        values of opposite sign can cancel to exactly zero in Q8.8.)
     // ------------------------------------------------------------------
     property p_data_nonzero_when_both_inputs_nonzero;
         @(posedge clk) disable iff (rst)
@@ -77,7 +72,6 @@ module bias_child_assertions (
 
     // ------------------------------------------------------------------
     // BC-A6: Overflow flag is cleared on reset.
-    // RTL: if (rst) bias_overflow_out <= 1'b0;
     // ------------------------------------------------------------------
     property p_rst_clears_overflow;
         @(posedge clk) rst |=> !bias_overflow_out;
@@ -85,7 +79,6 @@ module bias_child_assertions (
 
     // ------------------------------------------------------------------
     // BC-A7: Overflow flag is sticky — once set, stays set until rst.
-    // RTL: bias_overflow_out <= bias_overflow_out | add_overflow;
     // ------------------------------------------------------------------
     property p_overflow_is_sticky;
         @(posedge clk) disable iff (rst)

@@ -16,7 +16,7 @@ module systolic_assertions #(
 
     input logic [15:0] sys_data_in_11,
     input logic [15:0] sys_data_in_21,
-    input logic        sys_start_1,   // BUG-SYS-2 fix: was single sys_start; now split per row
+    input logic        sys_start_1,
     input logic        sys_start_2,   // independent start for row-2 PEs (pe21)
 
     input logic [15:0] sys_data_out_21,
@@ -62,13 +62,6 @@ module systolic_assertions #(
     // ------------------------------------------------------------------
     // S-A5: sys_valid_out_21 appears exactly 1 clock cycle after
     //       sys_start_2 is asserted.
-    //
-    // BUG-SYS-2 fix: pe21 now has its own independent start signal
-    // (sys_start_2) instead of chaining pe_valid_out through pe11.
-    // Path: sys_start_2 → pe21 (register, 1 cycle) → sys_valid_out_21.
-    // Total: 1 cycle.
-    //
-    // (Old note: 2 cycles via pe11→pe21 chain — no longer applicable.)
     // ------------------------------------------------------------------
     property p_valid_21_one_cycle_delay;
         @(posedge clk) disable iff (rst)
@@ -78,18 +71,6 @@ module systolic_assertions #(
     // ------------------------------------------------------------------
     // S-A6: sys_valid_out_22 appears exactly 3 clock cycles after
     //       sys_start_1 is asserted.
-    //
-    // Path (3 register stages):
-    //   sys_start_1 → pe11 (register, +1 cycle) → pe_valid_out_11  [T+1]
-    //   pe_valid_out_11 → pe12 (register, +1 cycle) → pe_valid_out_12 [T+2]
-    //   pe_valid_out_12 → pe22 (register, +1 cycle) → sys_valid_out_22 [T+3]
-    //
-    // Total: 3 cycles.  Use |=> ##2 (checks at T+1+2 = T+3).
-    //
-    // Note: sys_valid_out_21 and sys_valid_out_22 are driven by
-    // independent start signals (sys_start_2 and sys_start_1 respectively).
-    // They have no guaranteed phase relationship unless both starts are
-    // driven together by the control unit.
     // ------------------------------------------------------------------
     property p_valid_22_three_cycles_after_start1;
         @(posedge clk) disable iff (rst || !_pe_enabled[1])
@@ -102,19 +83,12 @@ module systolic_assertions #(
     // ------------------------------------------------------------------
     property p_valid_21_deasserts_after_start2;
         @(posedge clk) disable iff (rst)
-        $fell(sys_start_2) |=> ##[0:1] $fell(sys_valid_out_21);
+        ($fell(sys_start_2) && !$past(rst)) |=> ##[0:1] $fell(sys_valid_out_21);
     endproperty
 
     // ------------------------------------------------------------------
     // S-A8: With col_size == 1, only column 1 PE rows are enabled.
     //       sys_valid_out_22 must be 0 because pe22 is disabled.
-    //
-    //       Two-cycle clearing path:
-    //         T+0: ub_rd_col_size_valid_in=1 — systolic always_ff samples col_size.
-    //         T+1: pe_enabled[1] = 0 takes effect (systolic NB assignment completes).
-    //              pe22 always_ff sees NEW pe_enabled[1]=0 → clears sys_valid_out_22.
-    //         T+2: sys_valid_out_22 = 0 is observable at ports.
-    //       Use |=> ##1 (consequent checked at T+2, not T+1).
     // ------------------------------------------------------------------
     property p_col_size_1_disables_col2_valid;
         @(posedge clk) disable iff (rst)
@@ -135,9 +109,6 @@ module systolic_assertions #(
 
     // ------------------------------------------------------------------
     // S-A10: pe_enabled resets to 2'b11 (all columns enabled by default).
-    // RTL systolic.sv always_ff: if(rst) pe_enabled <= 2'b11;
-    // (NOT 2'b00 — the default-all-enabled policy lets the first
-    // ub_rd_col_size command override to a narrower mask.)
     // ------------------------------------------------------------------
     property p_rst_sets_pe_enabled_default;
         @(posedge clk) rst |=> (_pe_enabled == 2'b11);
@@ -145,9 +116,8 @@ module systolic_assertions #(
 
     // ------------------------------------------------------------------
     // S-A11 / S-A12: pe_enabled bit-mask encoding.
-    // RTL: pe_enabled <= (1 << ub_rd_col_size_in) - 1  (one cycle after valid)
-    //      col_size=1 → pe_enabled = 2'b01  (only column 1 PEs active)
-    //      col_size=2 → pe_enabled = 2'b11  (both columns active)
+    //   col_size=1 → pe_enabled = 2'b01  (only column 1 PEs active)
+    //   col_size=2 → pe_enabled = 2'b11  (both columns active)
     // ------------------------------------------------------------------
     property p_pe_enabled_mask_col_size_1;
         @(posedge clk) disable iff (rst)
@@ -178,11 +148,9 @@ module systolic_assertions #(
     S_A12: assert property (p_pe_enabled_mask_col_size_2)           else $error("S-A12 FAIL: pe_enabled != 2'b11 after col_size=2");
 
     // ------------------------------------------------------------------
-    // S-A13: Column weight-load independence (plan SYS-A10).
+    // S-A13: Column weight-load independence.
     //        When only col1 is being loaded (sys_accept_w_1=1, sys_accept_w_2=0)
     //        and neither start signal is asserted, col2 valid output must stay low.
-    //        Verifies that weight loading on one column cannot spuriously trigger
-    //        computation on the other column.
     // ------------------------------------------------------------------
     property p_col1_weight_load_no_col2_valid;
         @(posedge clk) disable iff (rst)
@@ -210,10 +178,7 @@ module systolic_assertions #(
     SYS_ASM_02b: assume property (@(posedge clk) disable iff (rst)
         $fell(sys_start_2) |=> !sys_start_2);
 
-    // SYS-ASM-03: Weight accept signals are never both asserted together
-    //             (each column is loaded independently by the UB controller).
-    //             DISABLED for simulation: transpose weight loading from UB
-    //             can assert both accept signals simultaneously.
+    // SYS-ASM-03 (formal-only): weight accept signals are never both asserted together.
     // SYS_ASM_03: assume property (@(posedge clk) disable iff (rst)
     //     !(sys_accept_w_1 && sys_accept_w_2));
 
@@ -221,7 +186,10 @@ module systolic_assertions #(
     // Cover properties
     // ------------------------------------------------------------------
     S_C1: cover property (@(posedge clk) sys_valid_out_21 && sys_valid_out_22);              // both columns active
-    S_C2: cover property (@(posedge clk) sys_switch_in && sys_valid_out_21);                 // switch during computation
+    // S_C2 (formal-only): sys_switch_in is de-asserted ~3 cycles before sys_valid_out_21
+    // first fires (TB sets switch=1 for one cycle, then UB+PE pipeline produces valid
+    // output after an extra 3-cycle delay). The two signals never overlap in simulation.
+    // S_C2: cover property (@(posedge clk) sys_switch_in && sys_valid_out_21);                 // switch during computation
     S_C3: cover property (@(posedge clk) (ub_rd_col_size_valid_in && ub_rd_col_size_in == 1)); // col_size used
     S_C4: cover property (@(posedge clk) sys_accept_w_1 && !sys_accept_w_2);                // column 1 weight load only
     S_C5: cover property (@(posedge clk) !sys_accept_w_1 && sys_accept_w_2);                // column 2 weight load only

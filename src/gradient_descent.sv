@@ -23,14 +23,14 @@ module gradient_descent (
     // updated weight and done signal
     output logic signed [15:0] value_updated_out,
     output logic grad_descent_done_out,
-    output logic grad_overflow_out  // BUG-OVF-1 fix: sticky arithmetic overflow flag
+    output logic grad_overflow_out
 );
 
     logic signed [15:0] sub_value_out;
     logic grad_descent_in_reg;
     logic signed [15:0] sub_in_a;
     logic signed [15:0] mul_out;
-    logic mul_overflow, sub_overflow;  // BUG-OVF-1 fix
+    logic mul_overflow, sub_overflow;
 
     fxp_mul mul_inst (
         .ina(grad_in),

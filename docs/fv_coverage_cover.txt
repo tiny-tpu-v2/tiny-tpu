@@ -1,0 +1,456 @@
+Coverage Report by instance with details
+
+=================================================================================
+=== Instance: /tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert
+=== Design Unit: work.gradient_descent_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       4         4         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C1
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(181)
+                                                                                 2 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C2
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(182)
+                                                                                 3 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C3
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(184)
+                                                                                 2 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C4
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(185)
+                                                                                 4 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert
+=== Design Unit: work.gradient_descent_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       4         4         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C1
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(181)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C2
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(182)
+                                                                                 3 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C3
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(184)
+                                                                                 2 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C4
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(185)
+                                                                                 6 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/ub_inst/u_ub_assert
+=== Design Unit: work.unified_buffer_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       9         9         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_01
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(412)
+                                                                                 8 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_02
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(418)
+                                                                                 5 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_03
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(424)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_04
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(430)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_05
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(436)
+                                                                                18 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_06
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(442)
+                                                                                 7 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_07
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(448)
+                                                                               103 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_08
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(454)
+                                                                                 5 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_09
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(460)
+                                                                                70 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/systolic_inst/u_sys_assert
+=== Design Unit: work.systolic_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       6         6         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C1
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(227)
+                                                                                 5 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C3
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(232)
+                                                                                 1 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C4
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(233)
+                                                                                 8 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C5
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(234)
+                                                                                 6 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C6
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(235)
+                                                                                 8 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C7
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(236)
+                                                                                10 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert
+=== Design Unit: work.bias_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       3         3         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert/BC_C1
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(101)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert/BC_C2
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(102)
+                                                                                 6 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert/BC_C3
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(103)
+                                                                                 3 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert
+=== Design Unit: work.bias_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       3         3         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert/BC_C1
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(101)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert/BC_C2
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(102)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert/BC_C3
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(103)
+                                                                                 2 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert
+=== Design Unit: work.leaky_relu_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       3         3         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert/LR_C1
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(123)
+                                                                                 5 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert/LR_C2
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(124)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert/LR_C4
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(127)
+                                                                                 3 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert
+=== Design Unit: work.leaky_relu_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       3         3         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert/LR_C1
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(123)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert/LR_C2
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(124)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert/LR_C4
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(127)
+                                                                                 2 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/loss_parent_inst/first_column/u_lc_assert
+=== Design Unit: work.loss_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       1         1         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/loss_parent_inst/first_column/u_lc_assert/LC_C4
+                                         loss_child_assertions Verilog  SVA  sva/loss_child_assertions.sv(133)
+                                                                                 2 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/loss_parent_inst/second_column/u_lc_assert
+=== Design Unit: work.loss_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       1         1         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/loss_parent_inst/second_column/u_lc_assert/LC_C4
+                                         loss_child_assertions Verilog  SVA  sva/loss_child_assertions.sv(133)
+                                                                                 1 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_1/u_lrd_assert
+=== Design Unit: work.leaky_relu_derivative_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       2         2         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_1/u_lrd_assert/LRD_C1
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(117)
+                                                                                 4 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_1/u_lrd_assert/LRD_C4
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(123)
+                                                                                 2 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_2/u_lrd_assert
+=== Design Unit: work.leaky_relu_derivative_child_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       2         2         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_2/u_lrd_assert/LRD_C1
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(117)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_2/u_lrd_assert/LRD_C4
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(123)
+                                                                                 2 Covered  
+
+=================================================================================
+=== Instance: /tb_tpu/dut/vpu_inst/u_vpu_assert
+=== Design Unit: work.vpu_assertions
+=================================================================================
+
+Directive Coverage:
+    Directives                       4         4         0   100.00%
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C1 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(270)
+                                                                                 4 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C2 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(271)
+                                                                                 4 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C4 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(275)
+                                                                                 6 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C5 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(276)
+                                                                                 5 Covered  
+
+
+DIRECTIVE COVERAGE:
+--------------------------------------------------------------------------------------------
+Name                                     Design Design   Lang File(Line)      Hits Status    
+                                         Unit   UnitType                                    
+--------------------------------------------------------------------------------------------
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C1
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(181)
+                                                                                 2 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C2
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(182)
+                                                                                 3 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C3
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(184)
+                                                                                 2 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[1]/gradient_descent_inst/u_gd_assert/GD_C4
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(185)
+                                                                                 4 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C1
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(181)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C2
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(182)
+                                                                                 3 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C3
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(184)
+                                                                                 2 Covered  
+/tb_tpu/dut/ub_inst/gradient_descent_gen[0]/gradient_descent_inst/u_gd_assert/GD_C4
+                                         gradient_descent_assertions Verilog  SVA  sva/gradient_descent_assertions.sv(185)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_01
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(412)
+                                                                                 8 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_02
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(418)
+                                                                                 5 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_03
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(424)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_04
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(430)
+                                                                                 6 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_05
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(436)
+                                                                                18 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_06
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(442)
+                                                                                 7 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_07
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(448)
+                                                                               103 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_08
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(454)
+                                                                                 5 Covered  
+/tb_tpu/dut/ub_inst/u_ub_assert/UB_COV_09
+                                         unified_buffer_assertions Verilog  SVA  sva/unified_buffer_assertions.sv(460)
+                                                                                70 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C1
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(227)
+                                                                                 5 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C3
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(232)
+                                                                                 1 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C4
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(233)
+                                                                                 8 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C5
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(234)
+                                                                                 6 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C6
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(235)
+                                                                                 8 Covered  
+/tb_tpu/dut/systolic_inst/u_sys_assert/S_C7
+                                         systolic_assertions Verilog  SVA  sva/systolic_assertions.sv(236)
+                                                                                10 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert/BC_C1
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(101)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert/BC_C2
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(102)
+                                                                                 6 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_1/u_bc_assert/BC_C3
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(103)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert/BC_C1
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(101)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert/BC_C2
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(102)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/bias_parent_inst/column_2/u_bc_assert/BC_C3
+                                         bias_child_assertions Verilog  SVA  sva/bias_child_assertions.sv(103)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert/LR_C1
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(123)
+                                                                                 5 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert/LR_C2
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(124)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_1/u_lr_assert/LR_C4
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(127)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert/LR_C1
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(123)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert/LR_C2
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(124)
+                                                                                 3 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_parent_inst/leaky_relu_col_2/u_lr_assert/LR_C4
+                                         leaky_relu_child_assertions Verilog  SVA  sva/leaky_relu_child_assertions.sv(127)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/loss_parent_inst/first_column/u_lc_assert/LC_C4
+                                         loss_child_assertions Verilog  SVA  sva/loss_child_assertions.sv(133)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/loss_parent_inst/second_column/u_lc_assert/LC_C4
+                                         loss_child_assertions Verilog  SVA  sva/loss_child_assertions.sv(133)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_1/u_lrd_assert/LRD_C1
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(117)
+                                                                                 4 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_1/u_lrd_assert/LRD_C4
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(123)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_2/u_lrd_assert/LRD_C1
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(117)
+                                                                                 1 Covered  
+/tb_tpu/dut/vpu_inst/leaky_relu_derivative_parent_inst/lr_d_col_2/u_lrd_assert/LRD_C4
+                                         leaky_relu_derivative_child_assertions Verilog  SVA  sva/leaky_relu_derivative_child_assertions.sv(123)
+                                                                                 2 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C1 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(270)
+                                                                                 4 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C2 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(271)
+                                                                                 4 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C4 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(275)
+                                                                                 6 Covered  
+/tb_tpu/dut/vpu_inst/u_vpu_assert/VPU_C5 vpu_assertions Verilog  SVA  sva/vpu_assertions.sv(276)
+                                                                                 5 Covered  
+
+TOTAL DIRECTIVE COVERAGE: 100.00%  COVERS: 45
+
+Total Coverage By Instance (filtered view): 100.00%

@@ -28,7 +28,6 @@ module unified_buffer #(
     input logic [15:0] learning_rate_in,
 
     // Read ports from UB to left side of systolic array
-    // (I had trouble connecting arrays of ports to other modules in the tpu.sv file for some reason so I had to split them like so)
     output logic [15:0] ub_rd_input_data_out_0,
     output logic [15:0] ub_rd_input_data_out_1,
     output logic ub_rd_input_valid_out_0,

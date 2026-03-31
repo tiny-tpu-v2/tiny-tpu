@@ -7,10 +7,6 @@
 // concurrent properties clocked at $global_clock but checking
 // the same-cycle combinational relationship.
 //
-// BUG-CU-1 fix update: instruction word is now 130 bits [129:0],
-// port widths widened, and ub_ptr_sel renamed to ub_ptr_select.
-// Old encoding (88 bits) has been replaced in full.
-//
 // Bind with:
 //   bind control_unit control_unit_assertions u_cu_assert (.*);
 // ============================================================
@@ -20,26 +16,22 @@
 module control_unit_assertions (
     // NOTE: control_unit has no clock port (purely combinational RTL).
     // clk is declared here so that the cover properties compile correctly.
-    // When using:
-    //   bind control_unit control_unit_assertions u_cu_assert (.*);
-    // the formal tool must be told to drive clk from the primary clock via
-    // its TCL configuration (e.g. JasperGold: clock create clk -period 10).
     // For simulation, instantiate control_unit_assertions manually with the
     // testbench clock connected to this port.
     input logic         clk,
 
-    input logic [129:0] instruction,   // BUG-CU-1 fix: widened from 88→130 bits
+    input logic [129:0] instruction,
 
-    // decoded outputs — widths match RTL after BUG-CU-1 fix
+    // decoded outputs
     input logic         sys_switch_in,
     input logic         ub_rd_start_in,
     input logic         ub_rd_transpose,
     input logic         ub_wr_host_valid_in_1,
     input logic         ub_wr_host_valid_in_2,
-    input logic [15:0]  ub_rd_col_size,              // was [1:0];  now [15:0]
-    input logic [15:0]  ub_rd_row_size,              // was [7:0];  now [15:0]
-    input logic [15:0]  ub_rd_addr_in,               // was [1:0];  now [15:0]
-    input logic [8:0]   ub_ptr_select,               // was ub_ptr_sel [2:0]; renamed + widened [8:0]
+    input logic [15:0]  ub_rd_col_size,
+    input logic [15:0]  ub_rd_row_size,
+    input logic [15:0]  ub_rd_addr_in,
+    input logic [8:0]   ub_ptr_select,
     input logic [15:0]  ub_wr_host_data_in_1,
     input logic [15:0]  ub_wr_host_data_in_2,
     input logic [3:0]   vpu_data_pathway,
@@ -50,9 +42,7 @@ module control_unit_assertions (
     // ------------------------------------------------------------------
     // CU-A1 to CU-A14: Each decoded output exactly equals the
     //                   corresponding instruction slice.
-    // Pure combinational — checked at every $global_clock edge.
-    //
-    // Bit assignments match control_unit.sv after BUG-CU-1 fix:
+    // Bit assignments:
     //   [0]       sys_switch_in
     //   [1]       ub_rd_start_in
     //   [2]       ub_rd_transpose
@@ -91,24 +81,7 @@ module control_unit_assertions (
 
     // ------------------------------------------------------------------
     // CU-A15: All 14 bit-fields exactly tile instruction[129:0] with no
-    //         gaps and no overlaps.  Verified by reassembling all named
-    //         output ports via concatenation and comparing to instruction.
-    //
-    //         Concatenation order (MSB→LSB):
-    //           [129:114] vpu_leak_factor_in
-    //           [113: 98] inv_batch_size_times_two_in
-    //           [ 97: 94] vpu_data_pathway
-    //           [ 93: 78] ub_wr_host_data_in_2
-    //           [ 77: 62] ub_wr_host_data_in_1
-    //           [ 61: 53] ub_ptr_select
-    //           [ 52: 37] ub_rd_addr_in
-    //           [ 36: 21] ub_rd_row_size
-    //           [ 20:  5] ub_rd_col_size
-    //           [  4]     ub_wr_host_valid_in_2
-    //           [  3]     ub_wr_host_valid_in_1
-    //           [  2]     ub_rd_transpose
-    //           [  1]     ub_rd_start_in
-    //           [  0]     sys_switch_in
+    //         gaps and no overlaps.
     // ------------------------------------------------------------------
     always_comb begin
         CU_A15: assert (instruction === {vpu_leak_factor_in,

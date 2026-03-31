@@ -24,14 +24,14 @@ module pe (
     output logic signed [15:0] pe_input_out,
     output logic pe_valid_out,
     output logic pe_switch_out,
-    output logic pe_overflow_out  // BUG-OVF-1 fix: sticky MAC overflow flag
+    output logic pe_overflow_out
 );
 
     logic signed [15:0] mult_out;
     wire signed [15:0] mac_out;
     logic signed [15:0] weight_reg_active;
     logic signed[15:0] weight_reg_inactive;
-    logic mult_overflow, add_overflow;  // BUG-OVF-1 fix
+    logic mult_overflow, add_overflow;
 
     fxp_mul mult (
         .ina(pe_input_in),
@@ -55,8 +55,8 @@ module pe (
             pe_valid_out <= 0;
             pe_weight_out <= 16'b0;
             pe_switch_out <= 0;
-            pe_psum_out <= 16'b0;  // BUG-PE-1 fix: was missing from reset
-            pe_overflow_out <= 1'b0;  // BUG-OVF-1: reset sticky flag
+            pe_psum_out <= 16'b0;
+            pe_overflow_out <= 1'b0;
         end else begin
             pe_valid_out <= pe_valid_in;
             pe_switch_out <= pe_switch_in;
@@ -79,7 +79,7 @@ module pe (
                 pe_psum_out     <= mac_out;
                 pe_overflow_out <= pe_overflow_out | mult_overflow | add_overflow; // sticky
             end else begin
-                pe_input_out <= 16'b0;  // BUG-PE-2 fix: clear stale input when invalid
+                pe_input_out <= 16'b0;
                 pe_psum_out  <= 16'b0;
             end
 

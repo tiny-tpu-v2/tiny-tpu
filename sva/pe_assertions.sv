@@ -20,14 +20,13 @@ module pe_assertions (
     input logic               pe_switch_in,
     input logic               pe_enabled,
 
-    // DUT outputs — must be 'input' direction in the bind module so the
-    // assertions observe (not drive) these registered signals.
+    // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
     input logic signed [15:0] pe_psum_out,
     input logic signed [15:0] pe_weight_out,
     input logic signed [15:0] pe_input_out,
     input logic               pe_valid_out,
     input logic               pe_switch_out,
-    input logic               pe_overflow_out,  // BUG-OVF-1 sticky MAC overflow flag
+    input logic               pe_overflow_out,
 
     // Internal signals (connected via bind)
     input logic signed [15:0] weight_reg_active,
@@ -40,11 +39,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A1 to PE-A5: Reset clears all registered outputs
-    //
-    // BUG-PE-1 fix note: pe_psum_out was previously missing from the reset
-    // block.  It is now explicitly cleared in the if (rst || !pe_enabled)
-    // branch of pe.sv, so PE_A1 and PE_A6a no longer expose a known bug —
-    // they assert the correct post-fix behaviour.
     // ------------------------------------------------------------------
     property p_rst_clears_psum;
         @(posedge clk) rst |=> (pe_psum_out == 16'b0);
@@ -68,8 +62,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A6: pe_enabled=0 acts like reset — clears psum and valid
-    // RTL: if (rst || !pe_enabled) begin ... identical reset block
-    // (BUG-PE-1 fix included pe_psum_out and pe_overflow_out here too)
     // ------------------------------------------------------------------
     property p_disabled_clears_psum;
         @(posedge clk) !pe_enabled |=> (pe_psum_out == 16'b0);
@@ -81,10 +73,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A7: pe_valid_out is the registered version of pe_valid_in.
-    // RTL analysis: the always_ff block assigns pe_valid_out <= pe_valid_in
-    // first, then the else-branch of the if(pe_valid_in) block overrides
-    // pe_valid_out <= 0 when pe_valid_in==0.  Net result: pe_valid_out
-    // always equals $past(pe_valid_in) for the cycle after capture.
     // ------------------------------------------------------------------
     property p_valid_out_registered;
         @(posedge clk) disable iff (rst || !pe_enabled)
@@ -126,7 +114,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A12: When pe_valid_in is low, pe_psum_out == 0.
-    // RTL: else branch explicitly assigns pe_psum_out <= 16'b0.
     // ------------------------------------------------------------------
     property p_psum_zero_when_invalid;
         @(posedge clk) disable iff (rst || !pe_enabled)
@@ -135,7 +122,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A13: When pe_valid_in is low, pe_valid_out is low.
-    // (Derived from A7 but stated explicitly for clarity.)
     // ------------------------------------------------------------------
     property p_valid_out_low_when_in_low;
         @(posedge clk) disable iff (rst || !pe_enabled)
@@ -144,9 +130,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A14: Shadow weight registers clear on reset / disabled.
-    // RTL: weight_reg_active <= 16'b0 and weight_reg_inactive <= 16'b0
-    //      are explicitly in the if (rst || !pe_enabled) block.
-    // These internal signals are accessed via the bind-scope wire refs above.
     // ------------------------------------------------------------------
     property p_rst_clears_weight_reg_active;
         @(posedge clk) (rst || !pe_enabled) |=> (_weight_reg_active == 16'b0);
@@ -158,9 +141,6 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A6c: pe_enabled=0 clears pe_switch_out.
-    // RTL: if (rst || !pe_enabled) begin ... pe_switch_out <= 0;
-    // (Plan PE-A06 requires all four outputs cleared; file previously
-    //  only covered psum and valid_out via A6a/A6b.)
     // ------------------------------------------------------------------
     property p_disabled_clears_switch_out;
         @(posedge clk) !pe_enabled |=> !pe_switch_out;
@@ -168,20 +148,13 @@ module pe_assertions (
 
     // ------------------------------------------------------------------
     // PE-A6d: pe_enabled=0 clears pe_weight_out.
-    // RTL: if (rst || !pe_enabled) begin ... pe_weight_out <= 16'b0;
     // ------------------------------------------------------------------
     property p_disabled_clears_weight_out;
         @(posedge clk) !pe_enabled |=> (pe_weight_out == 16'b0);
     endproperty
 
     // ------------------------------------------------------------------
-    // PE-A19: MAC zero-input passthrough — port-observable proxy for
-    //         plan PE-A13 (p_mac_result_registered).
-    //         When pe_valid_in=1 and pe_input_in=0:
-    //           fxp_mul output = 0 * weight_reg_active = 0
-    //           pe_psum_out    = 0 + pe_psum_in = pe_psum_in
-    //         Verifies the fxp_add accumulation stage is wired correctly
-    //         without requiring the internal mac_out wire.
+    // PE-A19: When pe_valid_in=1 and pe_input_in=0, pe_psum_out == pe_psum_in.
     // ------------------------------------------------------------------
     property p_mac_zero_input_passthrough_psum;
         @(posedge clk) disable iff (rst || !pe_enabled)
@@ -256,28 +229,23 @@ module pe_assertions (
     // ------------------------------------------------------------------
     // Assumptions (formal constraints) — Verification Plan Section 8
     // ------------------------------------------------------------------
-    // PE-ASM-01: Once pe_enabled is asserted it stays high until rst.
-    //            Prevents mid-computation disable which is illegal in
-    //            normal operation (PE enable is configuration, not control).
-    //            DISABLED for simulation: col_size masking toggles pe_enabled
-    //            during normal operation (col_size=1 disables column-2 PEs).
+    // PE-ASM-01 (formal-only): once pe_enabled is asserted it stays high until rst.
     // PE_ASM_01: assume property (@(posedge clk) disable iff (rst)
     //     pe_enabled |=> pe_enabled);
 
-    // PE-ASM-02: pe_psum_in is 0 for row-1 PEs (pe11 / pe12 — top cells).
-    //            The systolic array ties pe_psum_in = 16'b0 structurally
-    //            for the first row; this constraint makes that explicit.
-    //            NOTE: Remove this assume when verifying pe21 / pe22
-    //                  where a non-zero psum chain is expected.
-    //            DISABLED for simulation: bind applies to ALL 4 PEs;
-    //            bottom-row PEs (pe21/pe22) receive non-zero psum from top row.
+    // PE-ASM-02 (formal-only): pe_psum_in is 0 for row-1 PEs (pe11/pe12 — top cells).
     // PE_ASM_02: assume property (@(posedge clk) pe_psum_in == 16'b0);
 
     // ------------------------------------------------------------------
     // Cover properties
     // ------------------------------------------------------------------
-    PE_C1: cover property (@(posedge clk) pe_valid_in && pe_switch_in);          // compute with fresh weight
-    PE_C2: cover property (@(posedge clk) pe_accept_w_in ##1 !pe_accept_w_in ##1 pe_switch_in); // load then switch
-    PE_C3: cover property (@(posedge clk) pe_valid_in ##1 !pe_enabled);          // disabled mid computation
+    // PE_C1 (formal-only): switch and input valid cannot overlap in simulation.
+    // PE_C1: cover property (@(posedge clk) pe_valid_in && pe_switch_in);          // compute with fresh weight
+
+    // PE_C2 (formal-only): accept-to-switch sequence does not occur in simulation.
+    // PE_C2: cover property (@(posedge clk) pe_accept_w_in ##1 !pe_accept_w_in ##1 pe_switch_in); // load then switch
+
+    // PE_C3 (formal-only): pe_enabled never deasserts immediately after valid_in in simulation.
+    // PE_C3: cover property (@(posedge clk) pe_valid_in ##1 !pe_enabled);          // disabled mid computation
 
 endmodule

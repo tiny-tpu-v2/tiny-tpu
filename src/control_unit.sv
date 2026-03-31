@@ -2,9 +2,6 @@
 `default_nettype none
 
 module control_unit (
-    // BUG-CU-1 fix: expanded to 130 bits to match TPU port widths
-    // Old encoding was 88 bits; widening ub_rd_col_size (1->16b), ub_rd_row_size (7->16b),
-    // ub_rd_addr_in (1->16b), ub_ptr_select (2->9b) adds 42 bits.
     input logic [129:0] instruction,  // 130 bits total (0-129)
     
     // 1-bit signals - 5
@@ -14,16 +11,12 @@ module control_unit (
     output logic ub_wr_host_valid_in_1,
     output logic ub_wr_host_valid_in_2,
     
-    // 16-bit signals (BUG-CU-1 fix: widened to match TPU ub_rd_col_size [15:0])
     output logic [15:0] ub_rd_col_size,
 
-    // 16-bit signals (BUG-CU-1 fix: widened to match TPU ub_rd_row_size [15:0])
     output logic [15:0] ub_rd_row_size,
 
-    // 16-bit signal (BUG-CU-1 fix: widened to match TPU ub_rd_addr_in [15:0])
     output logic [15:0] ub_rd_addr_in,
 
-    // 9-bit signal (BUG-CU-1 fix: widened + renamed ub_ptr_sel -> ub_ptr_select to match TPU)
     output logic [8:0] ub_ptr_select,
 
     //16 bit signals
@@ -38,8 +31,7 @@ module control_unit (
     output logic [15:0] vpu_leak_factor_in
 );
 
-    // continuous assignments mapping instruction bits to output signals in sequential order
-    // bits 0-4: 1-bit signals (5 bits total)
+    // bits 0-4: 1-bit signals
     assign sys_switch_in         = instruction[0];
     assign ub_rd_start_in        = instruction[1];
     assign ub_rd_transpose       = instruction[2];

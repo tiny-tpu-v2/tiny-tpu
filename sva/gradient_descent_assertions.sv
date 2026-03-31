@@ -21,7 +21,7 @@ module gradient_descent_assertions (
     // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
     input logic [15:0] value_updated_out,
     input logic        grad_descent_done_out,
-    input logic        grad_overflow_out  // BUG-OVF-1 sticky overflow flag
+    input logic        grad_overflow_out
 );
 
     // ------------------------------------------------------------------
@@ -38,7 +38,6 @@ module gradient_descent_assertions (
     // ------------------------------------------------------------------
     // GD-A3: grad_descent_done_out is the registered version of
     //        grad_descent_valid_in (plain 1-cycle delay, no gating).
-    // RTL:  grad_descent_done_out <= grad_descent_valid_in  (unconditional)
     // ------------------------------------------------------------------
     property p_done_one_cycle_delay;
         @(posedge clk) disable iff (rst)
@@ -46,19 +45,7 @@ module gradient_descent_assertions (
     endproperty
 
     // ------------------------------------------------------------------
-    // GD-A4: REPLACED — original assertion was invalid after BUG-GD-1 fix.
-    //
-    // The original assertion was:
-    //   !grad_descent_valid_in |=> (value_updated_out == 16'b0)
-    //
-    // BUG-GD-1 fix changed the RTL so that value_updated_out HOLDS its
-    // last computed value when valid_in=0 (the else-branch that cleared
-    // it to zero was deliberately removed to preserve accumulated bias
-    // results before writeback).  Asserting == 0 here would always fail
-    // after the first valid computation cycle.
-    //
-    // Replacement: assert that the output is STABLE (does not change)
-    // when valid_in is low and no reset is active.
+    // GD-A4: output holds last value (stable) when valid_in=0.
     // ------------------------------------------------------------------
     property p_output_stable_when_not_valid;
         @(posedge clk) disable iff (rst)
@@ -67,7 +54,6 @@ module gradient_descent_assertions (
 
     // ------------------------------------------------------------------
     // GD-A5: done implies valid was set last cycle.
-    // (inverse implication from A3)
     // ------------------------------------------------------------------
     property p_done_implies_valid_was_set;
         @(posedge clk) disable iff (rst)
@@ -76,20 +62,14 @@ module gradient_descent_assertions (
 
     // ------------------------------------------------------------------
     // GD-A6: not done implies valid was NOT set last cycle.
-    //        Guard with $past(rst) to prevent $past() from returning X on
-    //        the first active clock edge after reset.
     // ------------------------------------------------------------------
     property p_not_done_implies_valid_was_clear;
-        @(posedge clk) disable iff (rst || $past(rst))
-        !grad_descent_done_out |-> !$past(grad_descent_valid_in);
+        @(posedge clk) disable iff (rst)
+        (!grad_descent_done_out && !$past(rst)) |-> !$past(grad_descent_valid_in);
     endproperty
 
     // ------------------------------------------------------------------
-    // GD-A7: In weight mode (grad_bias_or_weight=1), the update formula
-    //        is: value_updated = value_old - (grad * lr).
-    //        We assert that value_updated_out is non-zero when all three
-    //        inputs are non-zero (basic liveness — the subtractor is active).
-    //        Exact numerical equality requires the fxp reference model.
+    // GD-A7: weight mode produces non-zero output with non-zero inputs.
     // ------------------------------------------------------------------
     property p_weight_mode_produces_output_when_valid;
         @(posedge clk) disable iff (rst)
@@ -101,9 +81,8 @@ module gradient_descent_assertions (
     endproperty
 
     // ------------------------------------------------------------------
-    // GD-A8: In weight mode, output is always less than value_old when
-    //        gradient and learning rate are positive (gradient descent
-    //        decreases the weight).
+    // GD-A8: In weight mode, output decreases when gradient and learning rate
+    //        are positive (gradient descent decreases the weight).
     // ------------------------------------------------------------------
     property p_weight_mode_descent_direction;
         @(posedge clk) disable iff (rst)
@@ -126,7 +105,6 @@ module gradient_descent_assertions (
 
     // ------------------------------------------------------------------
     // GD-A9: Overflow flag is cleared on reset.
-    // RTL: if (rst) grad_overflow_out <= '0;
     // ------------------------------------------------------------------
     property p_rst_clears_overflow;
         @(posedge clk) rst |=> !grad_overflow_out;
@@ -134,7 +112,6 @@ module gradient_descent_assertions (
 
     // ------------------------------------------------------------------
     // GD-A10: Overflow flag is sticky — once set, stays set until rst.
-    // RTL: grad_overflow_out <= grad_overflow_out | mul_overflow | sub_overflow;
     // ------------------------------------------------------------------
     property p_overflow_is_sticky;
         @(posedge clk) disable iff (rst)
@@ -147,29 +124,15 @@ module gradient_descent_assertions (
     // ------------------------------------------------------------------
     // Assumptions (formal constraints) — Verification Plan Section 8
     // ------------------------------------------------------------------
-    // GD-ASM-01 (PROOF-RUN A — weight mode only):
-    //   Constrain the proof to weight mode so the bias feedback loop is
-    //   not exercised.  UNCOMMENT for weight-mode proof run only.
-    //   Comment out when running bias-mode proof (GD-ASM-02 run).
-    //
+    // GD-ASM-01 (formal-only): constrain to weight mode only.
     // GD_ASM_01: assume property (@(posedge clk) grad_bias_or_weight == 1'b1);
 
-    // GD-ASM-02 (PROOF-RUN B — bias mode, bounded k<=6):
-    //   Constrain to bias mode.  Formal engine handles accumulation up to
-    //   the bound k=6 which covers typical batch depth <= 4.
-    //   UNCOMMENT for bias-mode proof run only.
-    //
+    // GD-ASM-02 (formal-only): constrain to bias mode only.
     // GD_ASM_02: assume property (@(posedge clk) grad_bias_or_weight == 1'b0);
 
-    // GD-ASM-03: Inputs are valid for at most 4 consecutive cycles (batch bound).
-    //            Limits state explosion in the feedback accumulation path.
-    //            Implemented via tool-level bound k=6; no RTL assume required.
-    //            Documented here for traceability to GD-C02 in the FV plan.
+    // GD-ASM-03 (formal-only): inputs are valid for at most 4 consecutive cycles.
 
-    // GD-ASM-04: Learning rate is always positive (non-zero, sign bit clear).
-    //            Negative LR is undefined behaviour for gradient descent.
-    //            DISABLED for simulation: fires before learning rate is loaded
-    //            by the testbench (lr_in = 0 right after reset deasserts).
+    // GD-ASM-04 (formal-only): learning rate is always positive.
     // GD_ASM_04: assume property (@(posedge clk) disable iff (rst)
     //     !lr_in[15] && lr_in != 16'b0);
 

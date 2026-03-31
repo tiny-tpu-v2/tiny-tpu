@@ -9,12 +9,11 @@ module leaky_relu_child (
     input logic signed [15:0] lr_leak_factor_in,
     output logic signed [15:0] lr_data_out,
     output logic lr_valid_out,
-    output logic lr_overflow_out  // BUG-OVF-1 fix: sticky arithmetic overflow flag
+    output logic lr_overflow_out
 );
 
-    // fixed point module and storage
     logic signed [15:0] mul_out;
-    logic mul_overflow;  // BUG-OVF-1 fix
+    logic mul_overflow;
     fxp_mul mul_inst(
         .ina(lr_data_in),
         .inb(lr_leak_factor_in),

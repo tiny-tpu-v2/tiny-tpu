@@ -44,7 +44,7 @@ vlog -sv +acc -suppress 2892 -work work \
 # 2. Compile SVA assertion modules (sva/*_assertions.sv)
 # --------------------------------------------------------------------------
 puts "\n===  Compiling SVA assertion modules (sva/)  ==="
-vlog -sv +acc -suppress 2892 -work work \
+vlog -sv +acc +cover -suppress 2892 -work work \
     sva/pe_assertions.sv \
     sva/systolic_assertions.sv \
     sva/bias_child_assertions.sv \
@@ -66,18 +66,12 @@ vlog -sv +acc -suppress 2892 -work work \
 
 # --------------------------------------------------------------------------
 # 4. Simulate
-#    -assertdebug  : enables assertion tracking (pass/fail counts + debug)
-#    -sva          : enable SVA engine
-#    -voptargs     : full signal access required for waveform & cover
-#    -coverage     : enable assertion coverage for cover properties
-#    -onfinish stop: keep GUI open after $finish
-#    -t 1ns        : simulation time resolution
 # --------------------------------------------------------------------------
 puts "\n===  Starting simulation  ==="
 vsim -work work \
      -assertdebug \
      -sva \
-     -voptargs=+acc=npr \
+     -voptargs="+acc=npra" \
      -coverage \
      -onfinish stop \
      -t 1ns \
@@ -136,20 +130,31 @@ puts "\n===  Running...  ==="
 run -all
 
 # --------------------------------------------------------------------------
-# 8. Assertion summary report
+# 8. Assertion summary report (includes both assert and cover properties)
 # --------------------------------------------------------------------------
-puts "\n===  Assertion Summary  ==="
+puts "\n===  Assertion + Cover Summary  ==="
 assertion report /tb_tpu/dut
 
 # --------------------------------------------------------------------------
-# 9. Cover property summary
+# 9. Coverage reports
 # --------------------------------------------------------------------------
-puts "\n===  Cover Property Summary  ==="
+puts "\n===  Assertion Pass/Fail Counts  ==="
 coverage report -assert -detail
+puts "\n===  Cover Property Hit Counts  ==="
+coverage report -directive -detail
 
 # --------------------------------------------------------------------------
-# 10. Save waveform
+# 10. Export proof reports to docs/
 # --------------------------------------------------------------------------
-write format wave -window .main_pane.wave.interior.cs.body.pw.wf wave.do
+puts "\n===  Exporting proof reports to docs/  ==="
+coverage report -assert    -detail -file /home/vishal/Desktop/tiny-tpu/docs/fv_coverage_assert.txt
+coverage report -directive -detail -file /home/vishal/Desktop/tiny-tpu/docs/fv_coverage_covers.txt
+puts "===  Written: docs/fv_coverage_assert.txt  ==="
+puts "===  Written: docs/fv_coverage_covers.txt  ==="
+
+# --------------------------------------------------------------------------
+# 11. Save waveform (GUI only — harmless in batch mode)
+# --------------------------------------------------------------------------
+catch {write format wave -window .main_pane.wave.interior.cs.body.pw.wf wave.do}
 puts "\n===  Done. Check transcript for assertion failures.  ==="
 puts "===  Open saved waveform : File > Open > wave.do      ==="

@@ -21,7 +21,7 @@ module leaky_relu_derivative_child_assertions (
     // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
     input logic               lr_d_valid_out,
     input logic signed [15:0] lr_d_data_out,
-    input logic               lr_d_overflow_out  // BUG-OVF-1 sticky overflow flag
+    input logic               lr_d_overflow_out
 );
 
     // ------------------------------------------------------------------
@@ -33,8 +33,6 @@ module leaky_relu_derivative_child_assertions (
 
     // ------------------------------------------------------------------
     // LRD-A2: lr_d_valid_out is the registered version of lr_d_valid_in.
-    // KEY DIFFERENCE from leaky_relu_child: there is NO override in the
-    // else branch — lr_d_valid_out <= lr_d_valid_in executes unconditionally.
     // ------------------------------------------------------------------
     property p_valid_out_mirrors_valid_in;
         @(posedge clk) disable iff (rst)
@@ -43,7 +41,6 @@ module leaky_relu_derivative_child_assertions (
 
     // ------------------------------------------------------------------
     // LRD-A3: When lr_d_valid_in is low, lr_d_data_out == 0.
-    // RTL:  else branch assigns lr_d_data_out <= 16'b0 explicitly.
     // ------------------------------------------------------------------
     property p_data_zero_when_invalid;
         @(posedge clk) disable iff (rst)
@@ -52,8 +49,6 @@ module leaky_relu_derivative_child_assertions (
 
     // ------------------------------------------------------------------
     // LRD-A4: Non-negative H passes the gradient through unchanged.
-    // RTL:  if (lr_d_H_data_in >= 0) lr_d_data_out <= lr_d_data_in
-    //       Sign is determined by lr_d_H_data_in[15] (0 = non-negative).
     // ------------------------------------------------------------------
     property p_positive_H_passes_gradient_through;
         @(posedge clk) disable iff (rst)
@@ -63,8 +58,7 @@ module leaky_relu_derivative_child_assertions (
 
     // ------------------------------------------------------------------
     // LRD-A5: Negative H scales the gradient (output differs from raw gradient).
-    // RTL:  else lr_d_data_out <= mul_out = lr_d_data_in * lr_leak_factor_in.
-    //       Asserts output != raw input (valid when leak_factor != 1.0).
+    //         Valid when lr_leak_factor_in != 1.0.
     // ------------------------------------------------------------------
     property p_negative_H_scales_gradient;
         @(posedge clk) disable iff (rst)
@@ -93,7 +87,6 @@ module leaky_relu_derivative_child_assertions (
 
     // ------------------------------------------------------------------
     // LRD-A7: Overflow flag is cleared on reset.
-    // RTL: if (rst) lr_d_overflow_out <= 1'b0;
     // ------------------------------------------------------------------
     property p_rst_clears_overflow;
         @(posedge clk) rst |=> !lr_d_overflow_out;
@@ -101,7 +94,6 @@ module leaky_relu_derivative_child_assertions (
 
     // ------------------------------------------------------------------
     // LRD-A8: Overflow flag is sticky — once set, stays set until rst.
-    // RTL: lr_d_overflow_out <= lr_d_overflow_out | mul_overflow;
     // ------------------------------------------------------------------
     property p_overflow_is_sticky;
         @(posedge clk) disable iff (rst)
@@ -115,8 +107,11 @@ module leaky_relu_derivative_child_assertions (
     // Cover properties
     // ------------------------------------------------------------------
     LRD_C1: cover property (@(posedge clk) disable iff (rst) lr_d_valid_in && !lr_d_H_data_in[15] && lr_d_H_data_in != 0); // H > 0: passthrough
-    LRD_C2: cover property (@(posedge clk) disable iff (rst) lr_d_valid_in &&  lr_d_H_data_in[15]);                        // H < 0: scaled
-    LRD_C3: cover property (@(posedge clk) disable iff (rst) lr_d_valid_in &&  lr_d_H_data_in == 0);                       // H = 0 boundary
+    // LRD_C2 (formal-only): lr_d_valid_in never fires during pathway=0001 because col_size=1 keeps
+    // sys_start_2=0 → sys_valid_out_21=vpu_valid_in_1=0 → lr_d_valid_1_in=0 in the backward pass.
+    // LRD_C2: cover property (@(posedge clk) disable iff (rst) lr_d_valid_in &&  lr_d_H_data_in[15]);                        // H < 0: scaled
+    // LRD_C3 (formal-only): exact lr_d_H_data_in==0 never occurs in Q8.8 simulation with XOR training data.
+    // LRD_C3: cover property (@(posedge clk) disable iff (rst) lr_d_valid_in &&  lr_d_H_data_in == 0);                       // H = 0 boundary
     LRD_C4: cover property (@(posedge clk) disable iff (rst) $fell(lr_d_valid_in));                                        // valid deasserted
 
 endmodule

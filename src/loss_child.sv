@@ -14,13 +14,13 @@ module loss_child (
     
     output logic signed [15:0] gradient_out,
     output logic valid_out,
-    output logic loss_overflow_out  // BUG-OVF-1 fix: sticky arithmetic overflow flag
+    output logic loss_overflow_out
 );
     
     // pipeline stages for MSE backward pass: (2/N) * (H - Y)
     logic signed [15:0] diff_stage1;
     logic signed [15:0] final_gradient;
-    logic sub_overflow, mul_overflow;  // BUG-OVF-1 fix
+    logic sub_overflow, mul_overflow;
 
 
     // stage 1 - compute difference (H - Y)

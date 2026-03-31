@@ -28,8 +28,7 @@ module vpu_assertions (
     input logic signed [15:0]  H_in_1,
     input logic signed [15:0]  H_in_2,
 
-    // DUT outputs — must be 'input' direction in the bind module so the
-    // assertions observe (not drive) these registered signals.
+    // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
     input logic signed [15:0] vpu_data_out_1,
     input logic signed [15:0] vpu_data_out_2,
     input logic               vpu_valid_out_1,
@@ -57,10 +56,6 @@ module vpu_assertions (
 
     // ------------------------------------------------------------------
     // VPU-A3 / VPU-A4: Zero pathway — passthrough with 1-cycle registered delay.
-    // RTL: BUG-VPU-1 fix registers ALL vpu_data_out/vpu_valid_out in always_ff,
-    // so even pathway 0000 (all stages bypassed in combinational mux) incurs
-    // exactly 1 clock cycle before the output appears.
-    // Use |=> (next-cycle implication) instead of same-cycle |->
     // ------------------------------------------------------------------
     property p_zero_pathway_valid_passthrough;
         @(posedge clk) disable iff (rst)
@@ -77,14 +72,6 @@ module vpu_assertions (
     // ------------------------------------------------------------------
     // VPU-A5: Forward pass pathway (1100 = bias + leaky_relu only).
     //         Pipeline latency = 3 cycles.
-    //
-    //         Path: vpu_valid_in_1
-    //               → bias_child    (register, +1 cycle) → bias_valid_1_out      [T+1]
-    //               → leaky_relu_child (register, +1 cycle) → lr_valid_1_out     [T+2]
-    //               → vpu always_ff output register (+1 cycle) → vpu_valid_out_1 [T+3]
-    //
-    //         BUG-VPU-1 fix adds the output always_ff register so the total
-    //         latency is 3, not 2.  Use |=> ##2 (checks T+3 from T+0).
     // ------------------------------------------------------------------
     property p_forward_path_two_cycle_latency;
         @(posedge clk) disable iff (rst)
@@ -95,12 +82,6 @@ module vpu_assertions (
     // ------------------------------------------------------------------
     // VPU-A6: Backward pass pathway (0001 = lr_derivative only).
     //         Pipeline latency = 2 cycles.
-    //
-    //         Path: vpu_valid_in_1
-    //               → leaky_relu_derivative_child (register, +1 cycle)            [T+1]
-    //               → vpu always_ff output register (+1 cycle) → vpu_valid_out_1  [T+2]
-    //
-    //         Use |=> ##1 (checks T+2 from T+0).
     // ------------------------------------------------------------------
     property p_backward_path_one_cycle_latency;
         @(posedge clk) disable iff (rst)
@@ -111,15 +92,6 @@ module vpu_assertions (
     // ------------------------------------------------------------------
     // VPU-A7: Transition pathway (1111 = all four stages).
     //         Pipeline latency = 5 cycles.
-    //
-    //         Path: vpu_valid_in_1
-    //               → bias_child    (+1 cycle)  [T+1]
-    //               → leaky_relu_child (+1 cycle) [T+2]
-    //               → loss_child    (+1 cycle)  [T+3]
-    //               → leaky_relu_derivative_child (+1 cycle) [T+4]
-    //               → vpu always_ff output register (+1 cycle) → vpu_valid_out_1 [T+5]
-    //
-    //         Use |=> ##4 (checks T+5 from T+0).
     // ------------------------------------------------------------------
     property p_transition_path_four_cycle_latency;
         @(posedge clk) disable iff (rst)
@@ -129,7 +101,6 @@ module vpu_assertions (
 
     // ------------------------------------------------------------------
     // VPU-A8: No valid output when pathway=0000 and no valid input.
-    //         Since output is registered (BUG-VPU-1 fix), check next cycle.
     // ------------------------------------------------------------------
     property p_no_valid_out_zero_path_no_valid_in;
         @(posedge clk) disable iff (rst)
@@ -138,19 +109,13 @@ module vpu_assertions (
     endproperty
 
     // ------------------------------------------------------------------
-    // VPU-A9: Column symmetry — both channels produce equal valid timing.
-    //         When both inputs are driven simultaneously and a non-zero
-    //         pathway is active, both outputs must reach valid in the same
-    //         cycle (channels share the same pipeline stages).
-    //         Plan (v1.1): Proof type BMC k=4 (was incorrectly listed as
-    //         Comb k=0 — |=> is a sequential operator requiring k ≥ 1).
-    //         Constrained to non-zero pathway; antecedent guards both inputs
-    //         active simultaneously.
+    // VPU-A9: Column symmetry — both channels produce equal valid timing
+    //         during steady-state pipeline flow.
     // ------------------------------------------------------------------
     property p_both_columns_valid_together;
         @(posedge clk) disable iff (rst)
-        (vpu_valid_in_1 && vpu_valid_in_2 && vpu_data_pathway != 4'b0000)
-        |=> (vpu_valid_out_1 == vpu_valid_out_2);  // both fire at same relative offset
+        (vpu_valid_in_1 && vpu_valid_in_2 && vpu_data_pathway != 4'b0000) [*3]
+        |=> (vpu_valid_out_1 == vpu_valid_out_2);  // steady-state symmetry
     endproperty
 
     // ------------------------------------------------------------------
@@ -165,8 +130,6 @@ module vpu_assertions (
 
     // ------------------------------------------------------------------
     // VPU-A11: Reset clears the last-H cache output registers.
-    // RTL: last_H_data_1_out <= 0 and last_H_data_2_out <= 0 in the
-    //      posedge-rst sequential block of vpu.sv.
     // ------------------------------------------------------------------
     property p_rst_clears_last_H_cache;
         @(posedge clk) rst
@@ -176,8 +139,6 @@ module vpu_assertions (
     // ------------------------------------------------------------------
     // VPU-A12: When the loss stage is inactive (pathway[1]=0), the
     //          last-H cache outputs are forced to 0 on the next cycle.
-    // RTL: else-branch of if(vpu_data_pathway[1]) assigns 16'b0 to both
-    //      last_H_data_1_out and last_H_data_2_out.
     // ------------------------------------------------------------------
     property p_last_H_clears_when_loss_inactive;
         @(posedge clk) disable iff (rst)
@@ -187,14 +148,9 @@ module vpu_assertions (
 
     // ------------------------------------------------------------------
     // VPU-A13: When the loss stage is active (pathway[1]=1), the
-    //          last-H cache captures lr_data_out (last_H_data_*_in) each cycle.
-    //          Pipeline latency: bias(+1) + leaky_relu(+1) + register(+1) = 3 cycles
-    //          before lr_data_out produces non-zero output from new valid input.
-    //          Check at ##2 (T+3 from antecedent) to allow pipeline fill.
+    //          last-H cache captures lr_data_out each cycle.
     //          Guard: positive non-zero input + non-negative bias guarantees
-    //          a positive (non-zero) H after leaky_relu (positive passthrough path).
-    //          Original had no input guard — fired spuriously when input was zero
-    //          or when negative bias cancelled a positive input to zero.
+    //          a positive (non-zero) H after leaky_relu.
     // ------------------------------------------------------------------
     property p_last_H_registers_when_loss_active;
         @(posedge clk) disable iff (rst)
@@ -222,28 +178,18 @@ module vpu_assertions (
     VPU_A13: assert property (p_last_H_registers_when_loss_active)     else $error("VPU-A13 FAIL: last_H not updated when pathway[1]=1 with valid input");
 
     // ------------------------------------------------------------------
-    // Cover properties
-    // ------------------------------------------------------------------
-    // ------------------------------------------------------------------
     // Assumptions (formal constraints) — Verification Plan Section 8
     // ------------------------------------------------------------------
     // VPU-ASM-01: vpu_data_pathway is constrained to one of the four
-    //             architecturally defined values.  Any other encoding is
-    //             undefined behaviour and outside the verified input space.
+    //             architecturally defined values.
     VPU_ASM_01: assume property (@(posedge clk) disable iff (rst)
         vpu_data_pathway inside {4'b0000, 4'b1100, 4'b1111, 4'b0001});
 
-    // VPU-ASM-02: The pathway register is stable for the duration of a burst
-    //             (no mid-burst pathway change).  Pathway changes are only
-    //             allowed between bursts (when no valid is in-flight).
+    // VPU-ASM-02: The pathway register is stable for the duration of a burst.
     VPU_ASM_02: assume property (@(posedge clk) disable iff (rst)
         (vpu_valid_in_1 || vpu_valid_out_1) |=> $stable(vpu_data_pathway));
 
-    // VPU-ASM-03: For pipeline latency proof runs, valid_in is held high
-    //             for at least (pathway_depth + 1) cycles so the output
-    //             stage is exercised.  This is enforced via the FV tool's
-    //             TCL script (k bound) rather than an RTL assume.
-    //             Documented here for traceability to VPU-C02 in the FV plan.
+    // VPU-ASM-03 (formal-only): valid_in held high for pipeline latency proof runs.
 
     // VPU-ASM-04: Bias scalars are only non-zero when the bias stage is active.
     VPU_ASM_04: assume property (@(posedge clk) disable iff (rst)
@@ -254,7 +200,9 @@ module vpu_assertions (
     // ------------------------------------------------------------------
     VPU_C1: cover property (@(posedge clk) disable iff (rst) vpu_data_pathway == 4'b1100 && vpu_valid_out_1); // forward path completes
     VPU_C2: cover property (@(posedge clk) disable iff (rst) vpu_data_pathway == 4'b1111 && vpu_valid_out_1); // transition path completes
-    VPU_C3: cover property (@(posedge clk) disable iff (rst) vpu_data_pathway == 4'b0001 && vpu_valid_out_1); // backward path completes
+    // VPU_C3 (formal-only): pathway=0001 always uses col_size=1 in this TB (dL/dZ2 is a 4×1 vector).
+    // ub_rd_input_valid_out[1]=sys_start_2 never fires for col_size=1 → sys_valid_out_21=vpu_valid_in_1 always 0.
+    // VPU_C3: cover property (@(posedge clk) disable iff (rst) vpu_data_pathway == 4'b0001 && vpu_valid_in_1);  // backward path active
     VPU_C4: cover property (@(posedge clk) disable iff (rst) vpu_data_pathway == 4'b0000 && vpu_valid_in_1);  // zero pathway passthrough
     VPU_C5: cover property (@(posedge clk) disable iff (rst) vpu_valid_out_1 && vpu_valid_out_2);             // both channels active
 

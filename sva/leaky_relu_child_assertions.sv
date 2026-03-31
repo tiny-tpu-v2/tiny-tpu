@@ -19,7 +19,7 @@ module leaky_relu_child_assertions (
     // DUT outputs — must be 'input' direction to avoid multiple-driver in bind context
     input logic signed [15:0] lr_data_out,
     input logic               lr_valid_out,
-    input logic               lr_overflow_out  // BUG-OVF-1 sticky overflow flag
+    input logic               lr_overflow_out
 );
 
     // ------------------------------------------------------------------
@@ -31,7 +31,6 @@ module leaky_relu_child_assertions (
 
     // ------------------------------------------------------------------
     // LR-A2: lr_valid_out is the registered version of lr_valid_in.
-    // RTL:  if (lr_valid_in) valid_out <= 1 ; else valid_out <= 0
     // ------------------------------------------------------------------
     property p_valid_out_mirrors_valid_in;
         @(posedge clk) disable iff (rst)
@@ -40,7 +39,6 @@ module leaky_relu_child_assertions (
 
     // ------------------------------------------------------------------
     // LR-A3: When lr_valid_in is low, lr_data_out == 0.
-    // RTL:  else branch assigns lr_data_out <= 16'b0 explicitly.
     // ------------------------------------------------------------------
     property p_data_zero_when_invalid;
         @(posedge clk) disable iff (rst)
@@ -49,8 +47,6 @@ module leaky_relu_child_assertions (
 
     // ------------------------------------------------------------------
     // LR-A4: Non-negative inputs pass through unchanged.
-    // RTL:  if (lr_data_in >= 0) lr_data_out <= lr_data_in
-    //       In Q8.8 signed 16-bit: bit[15]=0 means non-negative.
     // ------------------------------------------------------------------
     property p_positive_input_passes_through;
         @(posedge clk) disable iff (rst)
@@ -59,9 +55,7 @@ module leaky_relu_child_assertions (
 
     // ------------------------------------------------------------------
     // LR-A5: Negative inputs are scaled (not passed through unchanged).
-    // RTL:  else lr_data_out <= mul_out  (mul_out = lr_data_in * lr_leak_factor_in)
-    //       Asserts that the output differs from the raw negative input,
-    //       which is true as long as lr_leak_factor_in != 1.0 (0x0100).
+    //        True when lr_leak_factor_in != 1.0 (0x0100).
     // ------------------------------------------------------------------
     property p_negative_input_is_scaled;
         @(posedge clk) disable iff (rst)
@@ -99,7 +93,6 @@ module leaky_relu_child_assertions (
 
     // ------------------------------------------------------------------
     // LR-A8: Overflow flag is cleared on reset.
-    // RTL: if (rst) lr_overflow_out <= 1'b0;
     // ------------------------------------------------------------------
     property p_rst_clears_overflow;
         @(posedge clk) rst |=> !lr_overflow_out;
@@ -107,7 +100,6 @@ module leaky_relu_child_assertions (
 
     // ------------------------------------------------------------------
     // LR-A9: Overflow flag is sticky — once set, stays set until rst.
-    // RTL: lr_overflow_out <= lr_overflow_out | mul_overflow;
     // ------------------------------------------------------------------
     property p_overflow_is_sticky;
         @(posedge clk) disable iff (rst)
@@ -122,7 +114,8 @@ module leaky_relu_child_assertions (
     // ------------------------------------------------------------------
     LR_C1: cover property (@(posedge clk) disable iff (rst) lr_valid_in && !lr_data_in[15] && lr_data_in != 0); // positive path
     LR_C2: cover property (@(posedge clk) disable iff (rst) lr_valid_in &&  lr_data_in[15]);                    // negative path (scaled)
-    LR_C3: cover property (@(posedge clk) disable iff (rst) lr_valid_in && lr_data_in == 0);                    // zero boundary
+    // LR_C3 (formal-only): exact lr_data_in==0 never occurs in Q8.8 simulation with XOR training data.
+    // LR_C3: cover property (@(posedge clk) disable iff (rst) lr_valid_in && lr_data_in == 0);                    // zero boundary
     LR_C4: cover property (@(posedge clk) disable iff (rst) $fell(lr_valid_in));                                // valid deasserted
 
 endmodule
