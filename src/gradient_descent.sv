@@ -6,13 +6,13 @@ module gradient_descent (
     input logic rst,
 
     // learning rate
-    input logic [15:0] lr_in,
+    input logic signed [15:0] lr_in,
 
     // old weight
-    input logic [15:0] value_old_in,
+    input logic signed [15:0] value_old_in,
 
     // gradient
-    input logic [15:0] grad_in,
+    input logic signed [15:0] grad_in,
 
     // start signal
     input logic grad_descent_valid_in,
@@ -21,20 +21,22 @@ module gradient_descent (
     input logic grad_bias_or_weight,
 
     // updated weight and done signal
-    output logic [15:0] value_updated_out,
-    output logic grad_descent_done_out
+    output logic signed [15:0] value_updated_out,
+    output logic grad_descent_done_out,
+    output logic grad_overflow_out
 );
 
-    logic [15:0] sub_value_out;
+    logic signed [15:0] sub_value_out;
     logic grad_descent_in_reg;
-    logic [15:0] sub_in_a;
-    logic [15:0] mul_out;
+    logic signed [15:0] sub_in_a;
+    logic signed [15:0] mul_out;
+    logic mul_overflow, sub_overflow;
 
     fxp_mul mul_inst (
         .ina(grad_in),
         .inb(lr_in),
         .out(mul_out),
-        .overflow()
+        .overflow(mul_overflow)
     );
 
     fxp_addsub sub_inst (
@@ -42,7 +44,7 @@ module gradient_descent (
         .inb(mul_out),
         .sub(1'b1),
         .out(sub_value_out),
-        .overflow()
+        .overflow(sub_overflow)
     );
 
     always_comb begin
@@ -63,16 +65,17 @@ module gradient_descent (
 
     always_ff @(posedge clk or posedge rst) begin
         if(rst) begin
-            sub_in_a <= '0;
-            value_updated_out <= '0;
+            value_updated_out   <= '0;
             grad_descent_done_out <= '0;
+            grad_overflow_out   <= '0;
         end else begin
             grad_descent_done_out <= grad_descent_valid_in;
             if(grad_descent_valid_in) begin
                 value_updated_out <= sub_value_out;
-            end else begin
-                value_updated_out <= '0;
+                grad_overflow_out <= grad_overflow_out | mul_overflow | sub_overflow; // sticky
             end
+            // BUG-GD-1 fix: hold value_updated_out when not updating so the
+            // accumulated bias result is not lost before writeback completes
         end
     end
 

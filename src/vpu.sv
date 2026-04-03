@@ -46,87 +46,95 @@ module vpu (
 );
 
     // bias
-    logic [15:0] bias_data_1_in; 
+    logic signed [15:0] bias_data_1_in; 
     logic bias_valid_1_in;
-    logic [15:0] bias_data_2_in;
+    logic signed [15:0] bias_data_2_in;
     logic bias_valid_2_in;
-    logic [15:0] bias_z_data_out_1;
+    logic signed [15:0] bias_z_data_out_1;
     logic bias_valid_1_out;
-    logic [15:0] bias_z_data_out_2;
+    logic signed [15:0] bias_z_data_out_2;
     logic bias_valid_2_out;
 
     // bias to lr intermediate values
-    logic [15:0] b_to_lr_data_in_1;
+    logic signed [15:0] b_to_lr_data_in_1;
     logic b_to_lr_valid_in_1;
-    logic [15:0] b_to_lr_data_in_2;
+    logic signed [15:0] b_to_lr_data_in_2;
     logic b_to_lr_valid_in_2;
 
     // lr
-    logic [15:0] lr_data_1_in; 
+    logic signed [15:0] lr_data_1_in; 
     logic lr_valid_1_in;
-    logic [15:0] lr_data_2_in;
+    logic signed [15:0] lr_data_2_in;
     logic lr_valid_2_in;
-    logic [15:0] lr_data_1_out;
+    logic signed [15:0] lr_data_1_out;
     logic lr_valid_1_out;
-    logic [15:0] lr_data_2_out;
+    logic signed [15:0] lr_data_2_out;
     logic lr_valid_2_out;
 
     // lr to loss intermediate values
-    logic [15:0] lr_to_loss_data_in_1;
+    logic signed [15:0] lr_to_loss_data_in_1;
     logic lr_to_loss_valid_in_1;
-    logic [15:0] lr_to_loss_data_in_2;
+    logic signed [15:0] lr_to_loss_data_in_2;
     logic lr_to_loss_valid_in_2;
 
     // loss
-    logic [15:0] loss_data_1_in; 
+    logic signed [15:0] loss_data_1_in; 
     logic loss_valid_1_in;
-    logic [15:0] loss_data_2_in;
+    logic signed [15:0] loss_data_2_in;
     logic loss_valid_2_in;
-    logic [15:0] loss_data_1_out;
+    logic signed [15:0] loss_data_1_out;
     logic loss_valid_1_out;
-    logic [15:0] loss_data_2_out;
+    logic signed [15:0] loss_data_2_out;
     logic loss_valid_2_out;
 
     // loss to lrd intermediate values
-    logic [15:0] loss_to_lrd_data_in_1;
+    logic signed [15:0] loss_to_lrd_data_in_1;
     logic loss_to_lrd_valid_in_1;
-    logic [15:0] loss_to_lrd_data_in_2;
+    logic signed [15:0] loss_to_lrd_data_in_2;
     logic loss_to_lrd_valid_in_2;
 
     // lr_d
-    logic [15:0] lr_d_data_1_in; 
+    logic signed [15:0] lr_d_data_1_in; 
     logic lr_d_valid_1_in;
-    logic [15:0] lr_d_data_2_in;
+    logic signed [15:0] lr_d_data_2_in;
     logic lr_d_valid_2_in;
-    logic [15:0] lr_d_data_1_out;
+    logic signed [15:0] lr_d_data_1_out;
     logic lr_d_valid_1_out;
-    logic [15:0] lr_d_data_2_out;
+    logic signed [15:0] lr_d_data_2_out;
     logic lr_d_valid_2_out;
-    logic [15:0] lr_d_H_in_1;
-    logic [15:0] lr_d_H_in_2;
+    logic signed [15:0] lr_d_H_in_1;
+    logic signed [15:0] lr_d_H_in_2;
     
 
     // temp 'last H matrix' cache
-    logic [15:0] last_H_data_1_in;
-    logic [15:0] last_H_data_2_in;
-    logic [15:0] last_H_data_1_out;
-    logic [15:0] last_H_data_2_out;
+    logic signed [15:0] last_H_data_1_in;  // combinational input to H-cache register
+    logic signed [15:0] last_H_data_2_in;  // combinational input to H-cache register
+    logic signed [15:0] last_H_data_1_out;
+    logic signed [15:0] last_H_data_2_out;
+
+    // BUG-VPU-1 fix: intermediate mux signals; vpu_data_out is registered in always_ff
+    logic signed [15:0] vpu_data_mux_1;
+    logic signed [15:0] vpu_data_mux_2;
+    logic               vpu_valid_mux_1;
+    logic               vpu_valid_mux_2;
 
     bias_parent bias_parent_inst (  
         .clk(clk),
         .rst(rst),
-        .bias_sys_data_in_1(bias_data_1_in),    // input
-        .bias_sys_data_in_2(bias_data_2_in),    // input
-        .bias_sys_valid_in_1(bias_valid_1_in),  // input
-        .bias_sys_valid_in_2(bias_valid_2_in),  // input
+        .bias_sys_data_in_1(bias_data_1_in),
+        .bias_sys_data_in_2(bias_data_2_in),
+        .bias_sys_valid_in_1(bias_valid_1_in),
+        .bias_sys_valid_in_2(bias_valid_2_in),
 
-        .bias_scalar_in_1(bias_scalar_in_1),    // input from UB
-        .bias_scalar_in_2(bias_scalar_in_2),    // input from UB 
+        .bias_scalar_in_1(bias_scalar_in_1),
+        .bias_scalar_in_2(bias_scalar_in_2),
 
-        .bias_Z_valid_out_1(bias_valid_1_out),  // output
-        .bias_Z_valid_out_2(bias_valid_2_out),  // output
-        .bias_z_data_out_1(bias_z_data_out_1),  // output
-        .bias_z_data_out_2(bias_z_data_out_2)   // output
+        .bias_Z_valid_out_1(bias_valid_1_out),
+        .bias_Z_valid_out_2(bias_valid_2_out),
+        .bias_z_data_out_1(bias_z_data_out_1),
+        .bias_z_data_out_2(bias_z_data_out_2),
+        .bias_overflow_out_1(),   // BUG-OVF-1: observable via hierarchical reference
+        .bias_overflow_out_2()
     );
 
 
@@ -134,62 +142,86 @@ module vpu (
         .clk(clk),
         .rst(rst),
 
-        .lr_data_1_in(lr_data_1_in),                // input
-        .lr_data_2_in(lr_data_2_in),                // input
-        .lr_valid_1_in(lr_valid_1_in),              // input
-        .lr_valid_2_in(lr_valid_2_in),              // input
+        .lr_data_1_in(lr_data_1_in),
+        .lr_data_2_in(lr_data_2_in),
+        .lr_valid_1_in(lr_valid_1_in),
+        .lr_valid_2_in(lr_valid_2_in),
 
-        .lr_leak_factor_in(lr_leak_factor_in),      // input from UB
+        .lr_leak_factor_in(lr_leak_factor_in),
         
-        .lr_data_1_out(lr_data_1_out),              // output 
-        .lr_data_2_out(lr_data_2_out),              // output
-        .lr_valid_1_out(lr_valid_1_out),            // output
-        .lr_valid_2_out(lr_valid_2_out)             // output
+        .lr_data_1_out(lr_data_1_out),
+        .lr_data_2_out(lr_data_2_out),
+        .lr_valid_1_out(lr_valid_1_out),
+        .lr_valid_2_out(lr_valid_2_out),
+        .lr_overflow_out_1(),   // BUG-OVF-1: observable via hierarchical reference
+        .lr_overflow_out_2()
     );
 
-    loss_parent loss_parent_inst ( // TODO: THIS SHOULD BE RENAMED TO LOSS DERIVATIVE MODULE. WE DONT HAVE A MODULE TO COMPUTE THE LOSS
+    loss_parent loss_parent_inst (
         .clk(clk),
         .rst(rst),
-        .H_1_in(loss_data_1_in),        // input
-        .H_2_in(loss_data_2_in),        // input
-        .valid_1_in(loss_valid_1_in),   // input
-        .valid_2_in(loss_valid_2_in),   // input
+        .H_1_in(loss_data_1_in),
+        .H_2_in(loss_data_2_in),
+        .valid_1_in(loss_valid_1_in),
+        .valid_2_in(loss_valid_2_in),
 
-        .Y_1_in(Y_in_1),                // input from UB
-        .Y_2_in(Y_in_2),                // input from UB
+        .Y_1_in(Y_in_1),
+        .Y_2_in(Y_in_2),
         .inv_batch_size_times_two_in(inv_batch_size_times_two_in),
 
-        .gradient_1_out(loss_data_1_out), // output
-        .gradient_2_out(loss_data_2_out), // output
+        .gradient_1_out(loss_data_1_out),
+        .gradient_2_out(loss_data_2_out),
         .valid_1_out(loss_valid_1_out),
-        .valid_2_out(loss_valid_2_out)
+        .valid_2_out(loss_valid_2_out),
+        .loss_overflow_out_1(),   // BUG-OVF-1: observable via hierarchical reference
+        .loss_overflow_out_2()
     );
 
     leaky_relu_derivative_parent leaky_relu_derivative_parent_inst (
         .clk(clk),
         .rst(rst),
-        .lr_d_data_1_in(lr_d_data_1_in),    // input
-        .lr_d_data_2_in(lr_d_data_2_in),    // input
-        .lr_d_valid_1_in(lr_d_valid_1_in),  // input
-        .lr_d_valid_2_in(lr_d_valid_2_in),  // input
+        .lr_d_data_1_in(lr_d_data_1_in),
+        .lr_d_data_2_in(lr_d_data_2_in),
+        .lr_d_valid_1_in(lr_d_valid_1_in),
+        .lr_d_valid_2_in(lr_d_valid_2_in),
          
-         // TODO - change this variable from leaky relu parent for consistency
-        .lr_d_H_1_in(lr_d_H_in_1),              // input from UB or temp 'last H matrix' cache
-        .lr_d_H_2_in(lr_d_H_in_2),              // input from UB or temp 'last H matrix' cache
+        .lr_d_H_1_in(lr_d_H_in_1),
+        .lr_d_H_2_in(lr_d_H_in_2),
         .lr_leak_factor_in(lr_leak_factor_in),
         
-        .lr_d_data_1_out(lr_d_data_1_out),      // output
-        .lr_d_data_2_out(lr_d_data_2_out),      // output
-        .lr_d_valid_1_out(lr_d_valid_1_out),    // output
-        .lr_d_valid_2_out(lr_d_valid_2_out)     // output
+        .lr_d_data_1_out(lr_d_data_1_out),
+        .lr_d_data_2_out(lr_d_data_2_out),
+        .lr_d_valid_1_out(lr_d_valid_1_out),
+        .lr_d_valid_2_out(lr_d_valid_2_out),
+        .lr_d_overflow_out_1(),   // BUG-OVF-1: observable via hierarchical reference
+        .lr_d_overflow_out_2()
     );
 
     always @(*) begin
+        // Default assignments for all intermediate signals to prevent latch inference.
+        // These are overridden by the routing logic below when rst is not asserted.
+        b_to_lr_data_in_1     = 16'b0;
+        b_to_lr_data_in_2     = 16'b0;
+        b_to_lr_valid_in_1    = 1'b0;
+        b_to_lr_valid_in_2    = 1'b0;
+        lr_to_loss_data_in_1  = 16'b0;
+        lr_to_loss_data_in_2  = 16'b0;
+        lr_to_loss_valid_in_1 = 1'b0;
+        lr_to_loss_valid_in_2 = 1'b0;
+        loss_to_lrd_data_in_1  = 16'b0;
+        loss_to_lrd_data_in_2  = 16'b0;
+        loss_to_lrd_valid_in_1 = 1'b0;
+        loss_to_lrd_valid_in_2 = 1'b0;
+        last_H_data_1_in = 16'b0;
+        last_H_data_2_in = 16'b0;
+        lr_d_H_in_1 = 16'b0;
+        lr_d_H_in_2 = 16'b0;
+
         if (rst) begin
-            vpu_data_out_1 = 16'b0;
-            vpu_data_out_2 = 16'b0;
-            vpu_valid_out_1 = 1'b0;
-            vpu_valid_out_2 = 1'b0;
+            vpu_data_mux_1 = 16'b0;
+            vpu_data_mux_2 = 16'b0;
+            vpu_valid_mux_1 = 1'b0;
+            vpu_valid_mux_2 = 1'b0;
             
             // default internal wire assignments during reset
             bias_data_1_in = 16'b0;
@@ -296,7 +328,10 @@ module vpu (
                 loss_to_lrd_valid_in_1 = lr_to_loss_valid_in_1;
                 loss_to_lrd_valid_in_2 = lr_to_loss_valid_in_2;
 
-                // Don't cache and use 'last H matrix'
+                // BUG-VPU-2 fix: clear last_H cache inputs when loss is not active
+                last_H_data_1_in = 16'b0;
+                last_H_data_2_in = 16'b0;
+                // BUG-VPU-3 fix: use UB H-input only during backward pass (pathway[0]=1)
                 lr_d_H_in_1 = H_in_1;
                 lr_d_H_in_2 = H_in_2;
             end
@@ -308,41 +343,48 @@ module vpu (
                 lr_d_valid_1_in = loss_to_lrd_valid_in_1;
                 lr_d_valid_2_in = loss_to_lrd_valid_in_2;
 
-                // connect lr_d outputs to vpu output
-                vpu_data_out_1 = lr_d_data_1_out;
-                vpu_data_out_2 = lr_d_data_2_out;
-                vpu_valid_out_1 = lr_d_valid_1_out;
-                vpu_valid_out_2 = lr_d_valid_2_out;
+                // connect lr_d outputs to vpu mux output
+                vpu_data_mux_1 = lr_d_data_1_out;
+                vpu_data_mux_2 = lr_d_data_2_out;
+                vpu_valid_mux_1 = lr_d_valid_1_out;
+                vpu_valid_mux_2 = lr_d_valid_2_out;
             end else begin
-                // disable inputs
-                lr_d_data_1_in = loss_to_lrd_data_in_1;
-                lr_d_data_2_in = loss_to_lrd_data_in_2;
-                lr_d_valid_1_in = loss_to_lrd_valid_in_1;
-                lr_d_valid_2_in = loss_to_lrd_valid_in_2;
+                // BUG-VPU-4 fix: zero lrd module inputs when disabled to prevent spurious state
+                lr_d_data_1_in = 16'b0;
+                lr_d_data_2_in = 16'b0;
+                lr_d_valid_1_in = 1'b0;
+                lr_d_valid_2_in = 1'b0;
 
-                // connect intermediate values to vpu output
-                vpu_data_out_1 = loss_to_lrd_data_in_1;
-                vpu_data_out_2 = loss_to_lrd_data_in_2;
-                vpu_valid_out_1 = loss_to_lrd_valid_in_1;
-                vpu_valid_out_2 = loss_to_lrd_valid_in_2;
+                // bypass: connect intermediate values directly to vpu mux output
+                vpu_data_mux_1 = loss_to_lrd_data_in_1;
+                vpu_data_mux_2 = loss_to_lrd_data_in_2;
+                vpu_valid_mux_1 = loss_to_lrd_valid_in_1;
+                vpu_valid_mux_2 = loss_to_lrd_valid_in_2;
             end
         end
     end
 
-    // sequential logic to cache last H???
-    always @(posedge clk or posedge rst) begin
+    // BUG-VPU-1 fix: register VPU outputs to prevent combinational glitches
+    // BUG-VPU-2 fix: removed dual driver on last_H_data_*_in (was also driven by always_ff reset)
+    always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            last_H_data_1_in <= 0;
-            last_H_data_2_in <= 0;
-            last_H_data_1_out <= 0;
-            last_H_data_2_out <= 0;
+            last_H_data_1_out <= '0;
+            last_H_data_2_out <= '0;
+            vpu_data_out_1   <= '0;
+            vpu_data_out_2   <= '0;
+            vpu_valid_out_1  <= '0;
+            vpu_valid_out_2  <= '0;
         end else begin
+            vpu_data_out_1  <= vpu_data_mux_1;
+            vpu_data_out_2  <= vpu_data_mux_2;
+            vpu_valid_out_1 <= vpu_valid_mux_1;
+            vpu_valid_out_2 <= vpu_valid_mux_2;
             if (vpu_data_pathway[1]) begin
                 last_H_data_1_out <= last_H_data_1_in;
                 last_H_data_2_out <= last_H_data_2_in;
             end else begin
-                last_H_data_1_out <= 0;
-                last_H_data_2_out <= 0;
+                last_H_data_1_out <= '0;
+                last_H_data_2_out <= '0;
             end 
         end
     end

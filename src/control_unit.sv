@@ -2,7 +2,7 @@
 `default_nettype none
 
 module control_unit (
-    input logic [87:0] instruction,  // updated to 88 bits total (0-87)
+    input logic [129:0] instruction,  // 130 bits total (0-129)
     
     // 1-bit signals - 5
     output logic sys_switch_in,
@@ -11,15 +11,13 @@ module control_unit (
     output logic ub_wr_host_valid_in_1,
     output logic ub_wr_host_valid_in_2,
     
-    // 2 bit signals
-    output logic [1:0] ub_rd_col_size,
+    output logic [15:0] ub_rd_col_size,
 
-    // 8-bit signals
-    output logic [7:0] ub_rd_row_size,
-    output logic [1:0] ub_rd_addr_in,
+    output logic [15:0] ub_rd_row_size,
 
-    // 3 bit signals
-    output logic [2:0] ub_ptr_sel,
+    output logic [15:0] ub_rd_addr_in,
+
+    output logic [8:0] ub_ptr_select,
 
     //16 bit signals
     output logic [15:0] ub_wr_host_data_in_1,
@@ -33,39 +31,38 @@ module control_unit (
     output logic [15:0] vpu_leak_factor_in
 );
 
-    // continuous assignments mapping instruction bits to output signals in sequential order
-    // bits 0-4: 1-bit signals (5 bits total)
-    assign sys_switch_in = instruction[0];
-    assign ub_rd_start_in = instruction[1];
-    assign ub_rd_transpose = instruction[2];
+    // bits 0-4: 1-bit signals
+    assign sys_switch_in         = instruction[0];
+    assign ub_rd_start_in        = instruction[1];
+    assign ub_rd_transpose       = instruction[2];
     assign ub_wr_host_valid_in_1 = instruction[3];
     assign ub_wr_host_valid_in_2 = instruction[4];
     
-    // bits 5-6: 2-bit signal
-    assign ub_rd_col_size = instruction[6:5];
+    // bits 5-20: ub_rd_col_size [15:0]
+    assign ub_rd_col_size = instruction[20:5];
     
-    // bits 7-14: 8-bit signal
-    assign ub_rd_row_size = instruction[14:7];
+    // bits 21-36: ub_rd_row_size [15:0]
+    assign ub_rd_row_size = instruction[36:21];
     
-    // bits 15-16: 2-bit signal
-    assign ub_rd_addr_in = instruction[16:15];
+    // bits 37-52: ub_rd_addr_in [15:0]
+    assign ub_rd_addr_in = instruction[52:37];
     
-    // bits 17-19: 3-bit signal
-    assign ub_ptr_sel = instruction[19:17];
+    // bits 53-61: ub_ptr_select [8:0]
+    assign ub_ptr_select = instruction[61:53];
     
-    // bits 20-35: 16-bit signal
-    assign ub_wr_host_data_in_1 = instruction[35:20];
+    // bits 62-77: ub_wr_host_data_in_1 [15:0]
+    assign ub_wr_host_data_in_1 = instruction[77:62];
     
-    // bits 36-51: 16-bit signal
-    assign ub_wr_host_data_in_2 = instruction[51:36];
+    // bits 78-93: ub_wr_host_data_in_2 [15:0]
+    assign ub_wr_host_data_in_2 = instruction[93:78];
     
-    // bits 52-55: 4-bit signal
-    assign vpu_data_pathway = instruction[55:52];
+    // bits 94-97: vpu_data_pathway [3:0]
+    assign vpu_data_pathway = instruction[97:94];
     
-    // bits 56-71: 16-bit signal
-    assign inv_batch_size_times_two_in = instruction[71:56];
+    // bits 98-113: inv_batch_size_times_two_in [15:0]
+    assign inv_batch_size_times_two_in = instruction[113:98];
     
-    // bits 72-87: 16-bit signal
-    assign vpu_leak_factor_in = instruction[87:72];
+    // bits 114-129: vpu_leak_factor_in [15:0]
+    assign vpu_leak_factor_in = instruction[129:114];
 
 endmodule

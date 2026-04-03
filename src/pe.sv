@@ -1,9 +1,7 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-module pe #(
-    parameter int DATA_WIDTH = 16 //TODO: remove? we're not using this yet, lol)
-) (
+module pe (
     input logic clk,
     input logic rst,
 
@@ -25,35 +23,29 @@ module pe #(
     // East wires of the PE
     output logic signed [15:0] pe_input_out,
     output logic pe_valid_out,
-    output logic pe_switch_out
+    output logic pe_switch_out,
+    output logic pe_overflow_out
 );
 
     logic signed [15:0] mult_out;
-    wire signed [15:0] mac_out; // just a wire
-    logic signed [15:0] weight_reg_active; // foreground register
-    logic signed[15:0] weight_reg_inactive; // background register
+    wire signed [15:0] mac_out;
+    logic signed [15:0] weight_reg_active;
+    logic signed[15:0] weight_reg_inactive;
+    logic mult_overflow, add_overflow;
 
     fxp_mul mult (
         .ina(pe_input_in),
         .inb(weight_reg_active),
         .out(mult_out),
-        .overflow()
+        .overflow(mult_overflow)
     );
 
     fxp_add adder (
         .ina(mult_out),
         .inb(pe_psum_in),
         .out(mac_out),
-        .overflow()
+        .overflow(add_overflow)
     );
-
-    // Only the switch flag is combinational (active register copies inactive register on the same clock cycle that switch flag is set)
-    // That means inputs from the left side of the PE can load in on the same clock cycle that the switch flag is set
-    always_comb begin
-        if (pe_switch_in) begin
-            weight_reg_active = weight_reg_inactive;
-        end
-    end
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst || !pe_enabled) begin
@@ -63,10 +55,17 @@ module pe #(
             pe_valid_out <= 0;
             pe_weight_out <= 16'b0;
             pe_switch_out <= 0;
+            pe_psum_out <= 16'b0;
+            pe_overflow_out <= 1'b0;
         end else begin
             pe_valid_out <= pe_valid_in;
             pe_switch_out <= pe_switch_in;
-            
+
+            // Switch active weight to the previously loaded shadow register
+            if (pe_switch_in) begin
+                weight_reg_active <= weight_reg_inactive;
+            end
+
             // Weight register updates - only on clock edges
             if (pe_accept_w_in) begin
                 weight_reg_inactive <= pe_weight_in;
@@ -76,11 +75,12 @@ module pe #(
             end
 
             if (pe_valid_in) begin
-                pe_input_out <= pe_input_in;
-                pe_psum_out <= mac_out;
+                pe_input_out    <= pe_input_in;
+                pe_psum_out     <= mac_out;
+                pe_overflow_out <= pe_overflow_out | mult_overflow | add_overflow; // sticky
             end else begin
-                pe_valid_out <= 0;
-                pe_psum_out <= 16'b0;
+                pe_input_out <= 16'b0;
+                pe_psum_out  <= 16'b0;
             end
 
         end

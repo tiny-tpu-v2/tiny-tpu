@@ -17,7 +17,9 @@ module loss_parent (
     output logic signed [15:0] gradient_1_out,
     output logic signed [15:0] gradient_2_out,
     output logic valid_1_out,
-    output logic valid_2_out
+    output logic valid_2_out,
+    output logic loss_overflow_out_1,  // BUG-OVF-1 fix
+    output logic loss_overflow_out_2   // BUG-OVF-1 fix
 );
 
 // loss child #1 instantiation
@@ -29,7 +31,8 @@ loss_child first_column (
     .valid_in(valid_1_in),
     .inv_batch_size_times_two_in(inv_batch_size_times_two_in),
     .gradient_out(gradient_1_out), 
-    .valid_out(valid_1_out)
+    .valid_out(valid_1_out),
+    .loss_overflow_out(loss_overflow_out_1)
 );
 
 // loss child #2 instantiation
@@ -41,7 +44,8 @@ loss_child second_column (
     .valid_in(valid_2_in),
     .inv_batch_size_times_two_in(inv_batch_size_times_two_in),
     .gradient_out(gradient_2_out),
-    .valid_out(valid_2_out)
+    .valid_out(valid_2_out),
+    .loss_overflow_out(loss_overflow_out_2)
 );
 
 
